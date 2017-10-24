@@ -525,7 +525,10 @@ void OrbitMainWindow::on_actionQuit_triggered()
 }
 
 //-----------------------------------------------------------------------------
-__declspec(noinline) QPixmap QtGrab( OrbitMainWindow* a_Window )
+#if _WIN32||_WIN64
+__declspec(noinline)
+#endif
+QPixmap QtGrab( OrbitMainWindow* a_Window )
 {
     QPixmap pixMap = a_Window->grab();
     if (GContextMenu)

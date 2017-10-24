@@ -1,8 +1,8 @@
 set(EXTERNAL_HEADERS
-    ${EXTERN_ROOT}/DIA2Dump/Callback.h
-    ${EXTERN_ROOT}/DIA2Dump/dia2dump.h
-    ${EXTERN_ROOT}/DIA2Dump/PrintSymbol.h
-    ${EXTERN_ROOT}/DIA2Dump/regs.h
+    #${EXTERN_ROOT}/DIA2Dump/Callback.h
+    #${EXTERN_ROOT}/DIA2Dump/dia2dump.h
+    #${EXTERN_ROOT}/DIA2Dump/PrintSymbol.h
+    #${EXTERN_ROOT}/DIA2Dump/regs.h
     ${EXTERN_ROOT}/multicore/common/autoresetevent.h
     ${EXTERN_ROOT}/multicore/common/autoreseteventcondvar.h
     ${EXTERN_ROOT}/multicore/common/benaphore.h
@@ -11,19 +11,19 @@ set(EXTERNAL_HEADERS
     ${EXTERN_ROOT}/multicore/common/inmemorylogger.h
     ${EXTERN_ROOT}/multicore/common/rwlock.h
     ${EXTERN_ROOT}/multicore/common/sema.h
-    ${EXTERN_ROOT}/peparse/nt-headers.h
-    ${EXTERN_ROOT}/peparse/parse.h
-    ${EXTERN_ROOT}/peparse/to_string.h
+    #${EXTERN_ROOT}/peparse/nt-headers.h
+    #${EXTERN_ROOT}/peparse/parse.h
+    #${EXTERN_ROOT}/peparse/to_string.h
 )
 
 set(EXTERNAL_SOURCES
-    ${EXTERN_ROOT}/DIA2Dump/dia2dump.cpp
-    ${EXTERN_ROOT}/DIA2Dump/PrintSymbol.cpp
-    ${EXTERN_ROOT}/DIA2Dump/regs.cpp
+    #${EXTERN_ROOT}/DIA2Dump/dia2dump.cpp
+    #${EXTERN_ROOT}/DIA2Dump/PrintSymbol.cpp
+    #${EXTERN_ROOT}/DIA2Dump/regs.cpp
     ${EXTERN_ROOT}/multicore/common/inmemorylogger.cpp
-    ${EXTERN_ROOT}/peparse/buffer.cpp
-    ${EXTERN_ROOT}/peparse/dump.cpp
-    ${EXTERN_ROOT}/peparse/parse.cpp
+    #${EXTERN_ROOT}/peparse/buffer.cpp
+    #${EXTERN_ROOT}/peparse/dump.cpp
+    #${EXTERN_ROOT}/peparse/parse.cpp
 )
 
 source_group("External\\Header Files" FILES ${EXTERNAL_HEADERS})

@@ -4,9 +4,13 @@
 
 #include "Path.h"
 #include "Utils.h"
+
+#if _WIN32||_WIN64
 #include <direct.h>
+#include <Shlobj.h>
+#endif
+
 #include <fstream>
-#include "Shlobj.h"
 
 using namespace std;
 

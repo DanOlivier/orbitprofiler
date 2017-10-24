@@ -9,8 +9,8 @@
 
 using namespace std;
 
-__declspec(thread) int CurrentDepth = 0;
-__declspec(thread) int CurrentDepthLocal = 0;
+thread_local int CurrentDepth = 0;
+thread_local int CurrentDepthLocal = 0;
 
 //-----------------------------------------------------------------------------
 void Timer::Start()

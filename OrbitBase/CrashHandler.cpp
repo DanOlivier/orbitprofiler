@@ -8,7 +8,11 @@
 #include "PrintVar.h"
 #include "Path.h"
 
+#if _WIN32||_WIN64
 #include "client/windows/handler/exception_handler.h"
+#else
+#include "client/linux/handler/exception_handler.h"
+#endif
 
 #include <fstream>
 

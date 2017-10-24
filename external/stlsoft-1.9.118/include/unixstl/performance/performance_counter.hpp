@@ -200,6 +200,14 @@ public:
     /// \brief Stops the current period, starts the next, and returns the
     ///  interval, in microseconds, for the prior period.
     interval_type   stop_get_microseconds_and_restart();
+
+    epoch_type  get_start() const; //{ return m_start; }   // start of measurement period
+    epoch_type  get_end() const; //  { return m_end; }     // End of measurement period
+    void set_start( epoch_type a_Start ); // { m_start = a_Start; }
+    void set_end( epoch_type a_End ); // { m_end = a_End; }
+
+    static interval_type get_period_count_from_microseconds( interval_type micros );
+
 /// @}
 
 /// \name Implementation

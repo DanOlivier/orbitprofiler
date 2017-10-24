@@ -7,6 +7,7 @@
 #include "Utils.h"
 
 #include <vector>
+#include <sstream>
 
 #define ORBIT_LOG( msg )       GLogger.Log( OrbitLog::Global, msg )
 #define ORBIT_LOGV( var )      GLogger.Log( OrbitLog::Global, #var, var );
@@ -89,8 +90,8 @@ public:
     template<class T>
     inline void Log(OrbitLog::Type a_Type, const char* a_VarName, const T& a_Value)
     {
-        stringstream l_StringStream;
-        l_StringStream << a_VarName << " = " << a_Value << endl;
+        std::stringstream l_StringStream;
+        l_StringStream << a_VarName << " = " << a_Value << std::endl;
         Log( a_Type, l_StringStream.str().c_str() );
     }
 

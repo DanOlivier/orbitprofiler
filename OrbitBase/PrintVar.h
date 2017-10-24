@@ -5,6 +5,8 @@
 
 #include <sstream>
 #include "Utils.h"
+//#include <varargs.h>
+#include <stdarg.h>
 
 #define PRINT                PrintDbg
 #define PRINT_VAR( var )	 PrintVar( #var, var )
@@ -20,19 +22,32 @@ inline void PrintVar( const char* a_VarName, const T& a_Value, bool a_SameLine =
 {
     std::stringstream l_StringStream;
     l_StringStream << a_VarName << " = " << a_Value;
-	if( !a_SameLine ) l_StringStream << std::endl;
+    if( !a_SameLine ) l_StringStream << std::endl;
+#if _WIN32||_WIN64    
     OutputDebugStringA( l_StringStream.str().c_str() );
+#else
+    printf( l_StringStream.str().c_str() );
+#endif
 }
 
 //-----------------------------------------------------------------------------
 inline void PrintVar( const char* a_VarName, const std::wstring& a_Value, bool a_SameLine = false )
 {    
+#if _WIN32||_WIN64    
     OutputDebugStringA( a_VarName );
     OutputDebugStringW(std::wstring( L" = " + a_Value).c_str() );
     if( !a_SameLine )
     {
         OutputDebugStringA( "\r\n" );
     }
+#else
+    printf( a_VarName );
+    wprintf(std::wstring( L" = " + a_Value).c_str() );
+    if( !a_SameLine )
+    {
+        printf( "\r\n" );
+    }
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -57,44 +72,63 @@ inline std::string VarToAnsi( const char* a_VarName, const T& a_Value )
 inline void PrintFunc( const char* a_Function )
 {
     std::string func = Format( "%s TID: %u\n", a_Function, GetCurrentThreadId() );
+#if _WIN32||_WIN64
     OutputDebugStringA( func.c_str() );
+#else
+    printf( func.c_str() );
+#endif
 }
 
 //-----------------------------------------------------------------------------
 inline void PrintDbg( const char* msg, ... )
 {
     va_list ap;
+    va_start( ap, msg );
+#if _WIN32||_WIN64
     const int BUFF_SIZE = 4096;
     char text[BUFF_SIZE] = { 0, };
-    va_start( ap, msg );
     vsnprintf_s( text, BUFF_SIZE - 1, msg, ap );
-    va_end( ap );
-
     OutputDebugStringA(text);
+#else
+    vprintf(msg, ap);
+#endif
+    va_end( ap );
 }
 
 //-----------------------------------------------------------------------------
 inline void PrintDbg( const WCHAR* msg, ... )
 {
     va_list ap;
+    va_start( ap, msg );
+#if _WIN32||_WIN64
     const int BUFF_SIZE = 4096;
     WCHAR text[BUFF_SIZE] = { 0, };
-    va_start( ap, msg );
     _vsnwprintf_s( text, BUFF_SIZE - 1, msg, ap );
-    va_end( ap );
     OutputDebugStringW( text );
+#else
+    vwprintf( msg, ap );
+#endif
+    va_end( ap );
 }
 
 //-----------------------------------------------------------------------------
 inline void PrintDbg( const std::string & a_Msg )
 {
+#if _WIN32||_WIN64
     OutputDebugStringA(a_Msg.c_str());
+#else
+    printf(a_Msg.c_str());
+#endif
 }
 
 //-----------------------------------------------------------------------------
 inline void PrintDbg( const std::wstring & a_Msg )
 {
+#if _WIN32||_WIN64
     OutputDebugStringW( a_Msg.c_str() );
+#else
+    wprintf(a_Msg.c_str());
+#endif
 }
 
 //-----------------------------------------------------------------------------

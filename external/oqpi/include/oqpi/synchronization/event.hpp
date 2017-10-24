@@ -8,7 +8,7 @@
 #if OQPI_PLATFORM_WIN
 #	include "oqpi/synchronization/win/win_event.hpp"
 #else
-#	error No event implementation defined for the current platform
+//#	error No event implementation defined for the current platform
 #endif
 
 namespace oqpi {

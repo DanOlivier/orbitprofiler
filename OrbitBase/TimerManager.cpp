@@ -8,7 +8,9 @@
 #include "TcpForward.h"
 //#include "Params.h"
 
+#if _WIN32||_WIN64
 #include <direct.h>
+#endif
 
 using namespace std;
 

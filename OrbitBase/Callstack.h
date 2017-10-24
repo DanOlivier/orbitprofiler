@@ -12,6 +12,7 @@
 #include <xxhash.h> // xxHash-r42
 
 #include <vector>
+#include <string.h>
 
 //-----------------------------------------------------------------------------
 struct CallStackPOD

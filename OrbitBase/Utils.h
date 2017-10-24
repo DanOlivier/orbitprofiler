@@ -10,9 +10,15 @@
 #include <functional>
 #include <algorithm>
 #include <string.h>
+#if _WIN32||_WIN64
 #include <wtypes.h>
+#else
+#include <winpr/wtypes.h>
+#endif
 #include <wchar.h>
 #include <sstream>
+#include <stdio.h>
+#include <stdarg.h>
 
 #include <xxhash.h> // xxHash-r42
 
@@ -46,12 +52,10 @@ inline std::wstring s2ws( const std::string& str )
 inline std::string GetEnvVar( const char* a_Var )
 {
     std::string var;
-    char* buf = nullptr;
-    size_t sz = 0;
-    if( _dupenv_s( &buf, &sz, a_Var ) == 0 && buf != nullptr )
+    char* buf = getenv(a_Var);
+    if( buf != nullptr )
     {
         var = buf;
-        free( buf );
     }
 
     return var;
@@ -89,21 +93,21 @@ inline std::string Format( const char* msg, ... )
     const int BUFF_SIZE = 4096;
     char text[BUFF_SIZE] = { 0, };
     va_start( ap, msg );
-    vsnprintf_s( text, BUFF_SIZE-1, msg, ap );
+    vsnprintf( text, BUFF_SIZE-1, msg, ap );
     va_end( ap );
     return std::string( text );
 }
 
 //-----------------------------------------------------------------------------
-inline std::wstring Format( const WCHAR* msg, ... )
+inline std::wstring Format( const wchar_t* msg, ... )
 {
     va_list ap;
     const int BUFF_SIZE = 4096;
-    WCHAR text[BUFF_SIZE] = { 0, };
+    wchar_t text[BUFF_SIZE] = { 0, };
     va_start(ap, msg);
-    _vsnwprintf_s(text, BUFF_SIZE-1, msg, ap);
+    vswprintf(text, msg, ap);
     va_end(ap);
-    return text;
+    return std::wstring(text);
 }
 
 //-----------------------------------------------------------------------------
@@ -119,12 +123,12 @@ inline T ToLower( const T & a_Str )
 inline std::vector< std::string > Tokenize( std::string a_String, const char* a_Delimiters = " " )
 {
     std::vector< std::string > tokens;
-    char* next_token;
-    char* token = strtok_s( &a_String[0], a_Delimiters, &next_token );
+    char* token = &a_String[0];
+    token = strtok( token, a_Delimiters );
     while (token != NULL)
     {
         tokens.push_back( token );
-        token = strtok_s( NULL, a_Delimiters, &next_token );
+        token = strtok( NULL, a_Delimiters );
     }
 
     return tokens;
@@ -134,12 +138,12 @@ inline std::vector< std::string > Tokenize( std::string a_String, const char* a_
 inline std::vector< std::wstring > Tokenize( std::wstring a_String, const wchar_t* a_Delimiters = L" " )
 {
     std::vector< std::wstring > tokens;
-    wchar_t* next_token;
-    wchar_t* token = wcstok_s(&a_String[0], a_Delimiters, &next_token);
+    wchar_t* token = &a_String[0];
+    token = wcstok(token, a_Delimiters);
     while (token != NULL)
     {
         tokens.push_back(token);
-        token = wcstok_s(NULL, a_Delimiters, &next_token);
+        token = wcstok(NULL, a_Delimiters);
     }
 
     return tokens;

@@ -4,7 +4,11 @@
 #pragma once
 
 #include <string>
+#if _WIN32||_WIN64
 #include <filesystem>
+#else
+#include <experimental/filesystem>
+#endif
 #include <functional>
 
 class Path

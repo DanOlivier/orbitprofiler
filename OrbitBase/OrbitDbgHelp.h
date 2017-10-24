@@ -3,6 +3,7 @@
 //-----------------------------------
 #pragma once
 
+#if _WIN32||_WIN64
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
@@ -15,3 +16,4 @@
 #include <DbgHelp.h>
 #pragma warning( pop )
 
+#endif

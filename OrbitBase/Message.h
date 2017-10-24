@@ -5,6 +5,7 @@
 
 #include "BaseTypes.h"
 #include <string>
+#include <memory.h>
 
 #ifndef _WINDEF_
 typedef unsigned long DWORD;

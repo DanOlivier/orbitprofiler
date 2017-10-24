@@ -3,7 +3,10 @@
 using namespace std;
 
 //-----------------------------------------------------------------------------
-__declspec(noinline) CallStackPOD CallStackPOD::Walk(DWORD64 a_Rip, DWORD64 a_Rsp)
+#if _WIN32||_WIN64
+__declspec(noinline)
+#endif
+CallStackPOD CallStackPOD::Walk(DWORD64 a_Rip, DWORD64 a_Rsp)
 {
     CallStackPOD                  callstack;
 

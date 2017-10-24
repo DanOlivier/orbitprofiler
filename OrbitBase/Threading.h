@@ -66,6 +66,7 @@ inline void SetThreadName( DWORD dwThreadID, char* threadName )
     info.dwThreadID = dwThreadID;
     info.dwFlags = 0;
 
+#if _WIN32||_WIN64
     __try
     {
         RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(ULONG_PTR), (ULONG_PTR*)&info);
@@ -73,5 +74,6 @@ inline void SetThreadName( DWORD dwThreadID, char* threadName )
     __except (EXCEPTION_EXECUTE_HANDLER)
     {
     }
+#endif
 }
 
