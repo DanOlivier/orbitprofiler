@@ -93,7 +93,7 @@ LocalScopeTimer::~LocalScopeTimer()
 //-----------------------------------------------------------------------------
 void ConditionalScopeTimer::Start( const char* a_Name )
 {
-    strcpy_s(m_Name, NameSize, a_Name);
+    strncpy(m_Name, a_Name, NameSize);
     m_Timer.Start();
     m_Active = true;
 }

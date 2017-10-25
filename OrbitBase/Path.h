@@ -11,46 +11,41 @@
 #endif
 #include <functional>
 
-class Path
+namespace Path
 {
-public:
-    static void Init();
-
-    static std::wstring GetExecutableName();
-    static std::wstring GetExecutablePath();
-    static std::wstring GetBasePath();
-    static std::wstring GetOrbitAppPdb();
-    static std::wstring GetDllPath( bool a_Is64Bit );
-    static std::wstring GetDllName( bool a_Is64Bit );
-    static std::wstring GetParamsFileName();
-    static std::wstring GetFileMappingFileName();
-    static std::wstring GetSymbolsFileName();
-    static std::wstring GetLicenseName();
-    static std::wstring GetCachePath();
-    static std::wstring GetPresetPath();
-    static std::wstring GetPluginPath();
-    static std::wstring GetCapturePath();
-    static std::wstring GetDumpPath();
-    static std::wstring GetTmpPath();
-    static std::wstring GetFileName( const std::wstring & a_FullName );
-    static std::wstring GetFileNameNoExt( const std::wstring & a_FullName );
-    static std::wstring StripExtension( const std::wstring & a_FullName );
-    static std::wstring GetExtension( const std::wstring & a_FullName );
-    static std::wstring GetDirectory( const std::wstring & a_FullName );
-    static std::wstring GetProgramFilesPath();
-    static std::wstring GetAppDataPath();
-    static std::wstring GetMainDrive();
+    //using path = std::experimental::filesystem::v1::path;
+    namespace fs = std::experimental::filesystem;
     
-    static bool FileExists( const std::wstring & a_File );
-    static bool DirExists( const std::wstring & a_Dir );
-    static bool IsSourceFile( const std::wstring & a_File );
-    static bool IsPackaged() { return m_IsPackaged; }
+    static fs::path GetExecutableName();
+    static fs::path GetExecutablePath();
+    static fs::path GetBasePath();
+    static fs::path GetOrbitAppPdb( bool a_Is64Bit );
+    static fs::path GetDllPath( bool a_Is64Bit );
+    static fs::path GetDllName( bool a_Is64Bit );
+    static fs::path GetParamsFileName();
+    static fs::path GetFileMappingFileName();
+    static fs::path GetSymbolsFileName();
+    static fs::path GetLicenseName();
+    static fs::path GetCachePath();
+    static fs::path GetPresetPath();
+    static fs::path GetPluginPath();
+    static fs::path GetCapturePath();
+    static fs::path GetDumpPath();
+    static fs::path GetTmpPath();
+    static fs::path GetFileName( const fs::path& a_FullName );
+    static fs::path GetFileNameNoExt( const fs::path& a_FullName );
+    static fs::path StripExtension( const fs::path& a_FullName );
+    static fs::path GetExtension( const fs::path& a_FullName );
+    static fs::path GetDirectory( const fs::path& a_FullName );
+    static fs::path GetProgramFilesPath();
+    static fs::path GetAppDataPath();
+    static fs::path GetMainDrive();
 
-    static std::vector< std::wstring > ListFiles( const std::wstring & a_Dir, std::function< bool(const std::wstring &)> a_Filter = [](const std::wstring &){ return true; });
-    static std::vector< std::wstring > ListFiles( const std::wstring & a_Dir, const std::wstring & a_Filter );
+    static bool FileExists( const fs::path& a_File );
+    static bool DirExists( const fs::path& a_Dir );
+    static bool IsSourceFile( const fs::path& a_File );
+    //static bool IsPackaged() { return m_IsPackaged; }
 
-private:
-    static std::wstring m_BasePath;
-    static bool m_IsPackaged;
-};
-
+    static std::vector<fs::path> ListFiles( const fs::path& a_Dir, std::function< bool(const fs::path&)> a_Filter = [](const fs::path&){ return true; });
+    static std::vector<fs::path> ListFiles( const fs::path& a_Dir, const fs::path& a_Filter );
+}

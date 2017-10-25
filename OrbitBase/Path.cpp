@@ -10,28 +10,26 @@
 #include <Shlobj.h>
 #endif
 
-#include <fstream>
-
 using namespace std;
+//using namespace std::experimental::filesystem::v1;
+namespace fs = std::experimental::filesystem;
 
-wstring Path::m_BasePath;
-bool         Path::m_IsPackaged;
+namespace Path {
 
+fs::path m_BasePath;
+bool    m_IsPackaged;
+
+#define countof(arr) sizeof(arr) / sizeof(arr[0])
 //-----------------------------------------------------------------------------
-void Path::Init()
+fs::path GetExecutableName()
 {
-}
-
-//-----------------------------------------------------------------------------
-wstring Path::GetExecutableName()
-{
+#if _WIN32||_WIN64
+    wstring exeFullName;
     WCHAR  cwBuffer[2048] = { 0 };
     LPWSTR pszBuffer = cwBuffer;
-    DWORD  dwMaxChars = _countof(cwBuffer);
-    DWORD  dwLength = 0;
-
-    dwLength = ::GetModuleFileNameW(NULL, pszBuffer, dwMaxChars);
-    wstring exeFullName = wstring(pszBuffer);
+    DWORD  dwMaxChars = countof(cwBuffer);
+    DWORD dwLength = ::GetModuleFileNameW(NULL, pszBuffer, dwMaxChars);
+    exeFullName = wstring(pszBuffer);
 
     // Clean up "../" inside full path
     wchar_t buffer[MAX_PATH];
@@ -39,258 +37,249 @@ wstring Path::GetExecutableName()
     exeFullName = buffer;
 
     replace(exeFullName.begin(), exeFullName.end(), '\\', '/');
-    return exeFullName;
+#endif
+    return fs::path();
 }
 
 //-----------------------------------------------------------------------------
-wstring Path::GetExecutablePath()
+fs::path GetExecutablePath()
 {
-    wstring fullPath = GetExecutableName();
-    wstring path = fullPath.substr(0, fullPath.find_last_of(L"/")) + L"/";
-    return path;
+    fs::path fullPath = GetExecutableName();
+    return fullPath.parent_path();
 }
 
 //-----------------------------------------------------------------------------
-bool Path::FileExists(const wstring & a_File)
+bool FileExists(const fs::path& a_File)
 {
-    ifstream f( a_File.c_str() );
-    return f.good();
+    error_code ec;
+    return fs::exists(a_File, ec);
 }
 
 //-----------------------------------------------------------------------------
-bool Path::DirExists( const wstring & a_Dir )
+bool DirExists( const fs::path& a_Dir )
 {
-    DWORD ftyp = GetFileAttributesA( ws2s(a_Dir).c_str() );
-    if( ftyp == INVALID_FILE_ATTRIBUTES )
-        return false;
-
-    if( ftyp & FILE_ATTRIBUTE_DIRECTORY )
-        return true;
-
-    return false;
+    error_code ec;
+    return fs::exists(a_Dir) && fs::is_directory(a_Dir);
 }
 
 //-----------------------------------------------------------------------------
-wstring Path::GetBasePath()
+fs::path GetBasePath()
 {
-    if( m_BasePath.size() > 0 )
+    if( !m_BasePath.empty() )
         return m_BasePath;
 
-    wstring exePath = GetExecutablePath();
-    m_BasePath = exePath.substr(0, exePath.find(L"bin/"));
-    m_IsPackaged = DirExists( GetBasePath() + L"text" );
+    fs::path exePath = GetExecutablePath();
+    fs::path basePath;
+    for(const auto& p : exePath)
+    {
+        if(p == "bin")
+            break;
+        basePath /= p;
+    }
+    m_BasePath = basePath;
+    m_IsPackaged = DirExists( GetBasePath() / "text" );
 
     return m_BasePath;
 }
  
 //-----------------------------------------------------------------------------
-wstring Path::GetOrbitAppPdb()
+fs::path GetOrbitAppPdb()
 {
-    return GetBasePath() + wstring( L"bin/Win32/Debug/OrbitApp.pdb" );
+    return GetBasePath() / "bin" / "Win32" / "Debug" / "OrbitApp.pdb";
 }
 
 //-----------------------------------------------------------------------------
-wstring Path::GetDllPath( bool a_Is64Bit )
+fs::path GetDllPath( bool a_Is64Bit )
 {
-    wstring basePath = GetBasePath();
-    
+    fs::path basePath = GetBasePath();
+    if(!m_IsPackaged)
+    {
+        basePath /= "bin";
+        basePath /= a_Is64Bit ? "x64" : "Win32";
+        
 #ifdef _DEBUG
-    basePath += m_IsPackaged ? L"" : ( a_Is64Bit ? L"bin/x64/Debug/" : L"bin/Win32/Debug/" );
+        basePath /= "Debug";
 #else
-    basePath += m_IsPackaged ? L"" : ( a_Is64Bit ? L"bin/x64/Release/" : L"bin/Win32/Release/" );
+        basePath /= "Release";
 #endif
-
-    return basePath + GetDllName( a_Is64Bit );
+    }
+    return basePath / GetDllName( a_Is64Bit );
 }
 
 //-----------------------------------------------------------------------------
-wstring Path::GetDllName( bool a_Is64Bit )
+fs::path GetDllName( bool a_Is64Bit )
 {
-    return a_Is64Bit ? L"Orbit64.dll" : L"Orbit32.dll";
+    return a_Is64Bit ? "Orbit64.dll" : "Orbit32.dll";
 }
 
 //-----------------------------------------------------------------------------
-wstring Path::GetParamsFileName()
+fs::path GetParamsFileName()
 {
-    wstring paramsDir = Path::GetAppDataPath() + L"config/";
-    _mkdir( ws2s( paramsDir ).c_str() );
-    return paramsDir + L"config.xml";
+    fs::path paramsDir = GetAppDataPath() / "config/";
+    error_code ec;
+    fs::create_directory( paramsDir, ec );
+    return paramsDir / "config.xml";
 }
 
 //-----------------------------------------------------------------------------
-wstring Path::GetFileMappingFileName()
+fs::path GetFileMappingFileName()
 {
-    wstring paramsDir = Path::GetAppDataPath() + L"config/";
-    _mkdir( ws2s( paramsDir ).c_str());
-    return paramsDir + wstring( L"FileMapping.txt" );
+    fs::path paramsDir = GetAppDataPath() / "config/";
+    error_code ec;
+    fs::create_directory( paramsDir, ec );
+    return paramsDir / "FileMapping.txt";
 }
 
 //-----------------------------------------------------------------------------
-wstring Path::GetSymbolsFileName()
+fs::path GetSymbolsFileName()
 {
-    wstring paramsDir = Path::GetAppDataPath() + L"config/";
-    _mkdir( ws2s( paramsDir ).c_str() );
-    return paramsDir + wstring( L"Symbols.txt" );
+    fs::path paramsDir = GetAppDataPath() / "config/";
+    error_code ec;
+    fs::create_directory( paramsDir, ec );
+    return paramsDir / "Symbols.txt";
 }
 
 //-----------------------------------------------------------------------------
-wstring Path::GetLicenseName()
+fs::path GetLicenseName()
 {
-    wstring appDataDir = Path::GetAppDataPath();
-    _mkdir( ws2s( appDataDir ).c_str() );
-    return  appDataDir + wstring( L"user.txt" );
+    fs::path appDataDir = GetAppDataPath();
+    error_code ec;
+    fs::create_directory( appDataDir, ec );
+    return  appDataDir / "user.txt";
 }
 
 //-----------------------------------------------------------------------------
-wstring Path::GetCachePath()
+fs::path GetCachePath()
 {
-    wstring cacheDir = Path::GetAppDataPath() + L"cache/";
-    _mkdir( ws2s( cacheDir ).c_str() );
+    fs::path cacheDir = GetAppDataPath() / "cache/";
+    error_code ec;
+    fs::create_directory( cacheDir, ec );
     return cacheDir;
 }
 
 //-----------------------------------------------------------------------------
-wstring Path::GetPresetPath()
+fs::path GetPresetPath()
 {
-    wstring presetDir = Path::GetAppDataPath() + L"presets/";
-    _mkdir( ws2s( presetDir ).c_str() );
+    fs::path presetDir = GetAppDataPath() / "presets/";
+    error_code ec;
+    fs::create_directory( presetDir, ec );
     return presetDir;
 }
 
 //-----------------------------------------------------------------------------
-wstring Path::GetPluginPath()
+fs::path GetPluginPath()
 {
-    wstring presetDir = Path::GetAppDataPath() + L"plugins/";
-    _mkdir( ws2s( presetDir ).c_str() );
+    fs::path presetDir = GetAppDataPath() / "plugins/";
+    error_code ec;
+    fs::create_directory( presetDir, ec );
     return presetDir;
 }
 
 //-----------------------------------------------------------------------------
-wstring Path::GetCapturePath()
+fs::path GetCapturePath()
 {
-    wstring captureDir = Path::GetAppDataPath() + L"output/";
-    _mkdir( ws2s( captureDir ).c_str() );
+    fs::path captureDir = GetAppDataPath() / "output/";
+    error_code ec;
+    fs::create_directory( captureDir, ec );
     return captureDir;
 }
 
 //-----------------------------------------------------------------------------
-wstring Path::GetDumpPath()
+fs::path GetDumpPath()
 {
-    wstring captureDir = Path::GetAppDataPath() + L"dumps/";
-    _mkdir( ws2s( captureDir ).c_str() );
-    return captureDir;
+    fs::path dumpsDir = GetAppDataPath() / "dumps/";
+    error_code ec;
+    fs::create_directory( dumpsDir, ec );
+    return dumpsDir;
 }
 
 //-----------------------------------------------------------------------------
-wstring Path::GetTmpPath()
+fs::path GetTmpPath()
 {
-    wstring captureDir = Path::GetAppDataPath() + L"temp/";
-    _mkdir( ws2s( captureDir ).c_str() );
-    return captureDir;
+    fs::path tmpDir = GetAppDataPath() / "temp/";
+    error_code ec;
+    fs::create_directory( tmpDir, ec );
+    return tmpDir;
 }
 
 //-----------------------------------------------------------------------------
-wstring Path::GetFileName( const wstring & a_FullName )
+fs::path GetFileName( const fs::path & a_FullName )
 {
-    wstring FullName = a_FullName;
-    replace( FullName.begin(), FullName.end(), '\\', '/' );
-    auto index = FullName.find_last_of( L"/" );
-    if( index != wstring::npos )
-    {
-        wstring FileName = FullName.substr( FullName.find_last_of( L"/" ) + 1 );
-        return FileName;
-    }
-    
-    return a_FullName;
+    return a_FullName.filename();
 }
 
 //-----------------------------------------------------------------------------
-wstring Path::GetFileNameNoExt( const wstring & a_FullName )
+fs::path GetFileNameNoExt( const fs::path & a_FullName )
 {
-    return StripExtension( GetFileName( a_FullName ) );
+    return a_FullName.stem();
 }
 
 //-----------------------------------------------------------------------------
-wstring Path::StripExtension( const wstring & a_FullName )
+fs::path StripExtension( const fs::path & a_FullName )
 {
-    size_t index = a_FullName.find_last_of( L"." );
-    if( index != wstring::npos )
-        return a_FullName.substr( 0, index );
-    return a_FullName;
+    return a_FullName.parent_path() / a_FullName.stem();
 }
 
 //-----------------------------------------------------------------------------
-wstring Path::GetExtension( const wstring & a_FullName )
+fs::path GetExtension( const fs::path& a_FullName )
 {
-    // returns ".ext" (includes point)
-    size_t index = a_FullName.find_last_of( L"." );
-    if( index != wstring::npos )
-        return a_FullName.substr( index, a_FullName.length() );
-    return L"";
+    return a_FullName.extension();
 }
 
 //-----------------------------------------------------------------------------
-wstring Path::GetDirectory( const wstring & a_FullName )
+fs::path GetDirectory( const fs::path& a_FullName )
 {
-    wstring FullName = a_FullName;
-    replace(FullName.begin(), FullName.end(), '\\', '/');
-    auto index = FullName.find_last_of( L"/" );
-    if (index != string::npos)
-    {
-        wstring FileName = FullName.substr(0, FullName.find_last_of( L"/" ) + 1);
-        return FileName;
-    }
-
-    return L"";
+    return a_FullName.parent_path();
 }
 
 //-----------------------------------------------------------------------------
-wstring Path::GetProgramFilesPath()
+fs::path GetProgramFilesPath()
 {
-    TCHAR pf[MAX_PATH] = {0};
+    /*TCHAR pf[MAX_PATH] = {0};
     SHGetSpecialFolderPath(
         0,
         pf,
         CSIDL_PROGRAM_FILES,
         FALSE );
-    return wstring(pf) + L"\\OrbitProfiler\\";
+    return wstring(pf) / "\\OrbitProfiler\\";*/
 }
 
 //-----------------------------------------------------------------------------
-wstring Path::GetAppDataPath()
+fs::path GetAppDataPath()
 {
-    string appData = GetEnvVar( "APPDATA" );
-    string path = appData + "\\OrbitProfiler\\";
-    _mkdir( path.c_str() );
-    return s2ws( path );
+    fs::path appData = GetEnvVar( "APPDATA" );
+    fs::path path = appData / "OrbitProfiler";
+    error_code ec;
+    fs::create_directory( path, ec );
+    return path;
 }
 
 //-----------------------------------------------------------------------------
-wstring Path::GetMainDrive()
+fs::path GetMainDrive()
 {
-    return s2ws( GetEnvVar("SystemDrive") );
+    return fs::path( GetEnvVar("SystemDrive") );
 }
 
 //-----------------------------------------------------------------------------
-bool Path::IsSourceFile( const wstring & a_File )
+bool IsSourceFile( const fs::path& a_File )
 {
-    wstring ext = Path::GetExtension( a_File );
-    return ext == L".c" || ext == L".cpp" || ext == L".h" || ext == L".hpp" || ext == L".inl" || ext == L".cxx";
+    fs::path ext = GetExtension( a_File );
+    return ext == ".c" || ext == ".cpp" || ext == ".h" || ext == ".hpp" || ext == ".inl" || ext == ".cxx";
 }
 
 //-----------------------------------------------------------------------------
-vector< wstring > Path::ListFiles( const wstring & a_Dir, function< bool(const wstring &)> a_Filter )
+vector<fs::path> ListFiles( const fs::path & a_Dir, function< bool(const fs::path &)> a_Filter )
 {
-    vector< wstring > files;
+    vector<fs::path> files;
 
-    for( auto it = tr2::sys::recursive_directory_iterator( a_Dir );
-        it != tr2::sys::recursive_directory_iterator(); ++it )
+    for( auto it = fs::recursive_directory_iterator( a_Dir );
+        it != fs::recursive_directory_iterator(); ++it )
     {
         const auto& file = it->path();
 
-        if( !is_directory( file ) && a_Filter( file.wstring() ) )
+        if( !is_directory( file ) && a_Filter( file ) )
         {
-            files.push_back( file.wstring() );
+            files.push_back( file );
         }
     }
 
@@ -298,7 +287,9 @@ vector< wstring > Path::ListFiles( const wstring & a_Dir, function< bool(const w
 }
 
 //-----------------------------------------------------------------------------
-vector< wstring > Path::ListFiles( const wstring & a_Dir, const wstring & a_Filter )
+vector<fs::path> ListFiles( const fs::path & a_Dir, const fs::path & a_Filter )
 {
-    return ListFiles( a_Dir, [&]( const wstring & a_Name ){ return Contains( a_Name, a_Filter ); } );
+    return ListFiles( a_Dir, [&]( const fs::path & a_Name ){ return Contains( a_Name, a_Filter ); } );
+}
+
 }

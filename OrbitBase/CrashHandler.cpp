@@ -86,7 +86,7 @@ void CrashHandler::SendMiniDump()
 void SendDumpInternal( const wstring & a_Dir, const wstring & a_Id )
 {
     wstring fileName = a_Dir + a_Id + L".dmp";
-    ifstream file( fileName.c_str(), ios::binary | ios::ate );
+    ifstream file( ws2s(fileName).c_str(), ios::binary | ios::ate );
     streamsize size = file.tellg();
     file.seekg( 0, ios::beg );
 

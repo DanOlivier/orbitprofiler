@@ -15,7 +15,7 @@
 #else
 #include <winpr/wtypes.h>
 #endif
-#include <wchar.h>
+#include <cwchar>
 #include <sstream>
 #include <stdio.h>
 #include <stdarg.h>
@@ -105,7 +105,7 @@ inline std::wstring Format( const wchar_t* msg, ... )
     const int BUFF_SIZE = 4096;
     wchar_t text[BUFF_SIZE] = { 0, };
     va_start(ap, msg);
-    vswprintf(text, msg, ap);
+    vswprintf(text, BUFF_SIZE-1, msg, ap);
     va_end(ap);
     return std::wstring(text);
 }
@@ -138,12 +138,12 @@ inline std::vector< std::string > Tokenize( std::string a_String, const char* a_
 inline std::vector< std::wstring > Tokenize( std::wstring a_String, const wchar_t* a_Delimiters = L" " )
 {
     std::vector< std::wstring > tokens;
-    wchar_t* token = &a_String[0];
-    token = wcstok(token, a_Delimiters);
+    wchar_t* next_token;
+    wchar_t* token = wcstok(&a_String[0], a_Delimiters, &next_token);
     while (token != NULL)
     {
         tokens.push_back(token);
-        token = wcstok(NULL, a_Delimiters);
+        token = wcstok(NULL, a_Delimiters, &next_token);
     }
 
     return tokens;
@@ -343,8 +343,8 @@ template <typename T> inline std::string ToHexString( T a_Value )
 //-----------------------------------------------------------------------------
 inline LONGLONG FileTimeDiffInMillis( const FILETIME & a_T0, const FILETIME & a_T1 )
 {
-    __int64 i0 = (__int64(a_T0.dwHighDateTime) << 32) + a_T0.dwLowDateTime;
-    __int64 i1 = (__int64(a_T1.dwHighDateTime) << 32) + a_T1.dwLowDateTime;
+    int64_t i0 = (int64_t(a_T0.dwHighDateTime) << 32) + a_T0.dwLowDateTime;
+    int64_t i1 = (int64_t(a_T1.dwHighDateTime) << 32) + a_T1.dwLowDateTime;
     return (i1 - i0) / 10000;
 }
 

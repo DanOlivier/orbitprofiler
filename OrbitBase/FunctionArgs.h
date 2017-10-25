@@ -10,7 +10,7 @@
 //-----------------------------------------------------------------------------
 struct Argument
 {
-    Argument() { memset(this, 0, sizeof(*this)); }
+    Argument() { std::memset(this, 0, sizeof(*this)); }
     DWORD      m_Index;
     CV_HREG_e  m_Reg;
     DWORD      m_Offset;

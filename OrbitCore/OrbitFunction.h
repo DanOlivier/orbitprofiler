@@ -17,7 +17,7 @@ class Pdb;
 //-----------------------------------------------------------------------------
 struct FunctionParam
 {
-    FunctionParam(){ memset( this, 0, sizeof( FunctionParam ) ); }
+    FunctionParam(){ std::memset( this, 0, sizeof( FunctionParam ) ); }
     std::wstring     m_Name;
     std::wstring     m_ParamType;
     std::wstring     m_Type;

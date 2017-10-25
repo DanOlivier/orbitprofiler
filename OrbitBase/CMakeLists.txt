@@ -37,7 +37,7 @@ set(HEADERS
 
 set(SOURCES
     CallstackPOD.cpp
-    CrashHandler.cpp
+    #CrashHandler.cpp
     Log.cpp
     Message.cpp
     OrbitAsio.cpp

@@ -211,7 +211,7 @@ struct TypeInfo
 {
     TypeInfo() 
     { 
-        memset(this, 0, sizeof(TypeInfo));
+        std::memset(this, 0, sizeof(TypeInfo));
         Info.sTypedefInfo.NamePtr = Name;
         Info.sDataInfo.NamePtr = Name;
         sUdtClassInfo.NamePtr = Name;

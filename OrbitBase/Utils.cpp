@@ -7,11 +7,15 @@
 #include <algorithm>
 #include <thread>
 #include <mutex>
+#if _WIN32||_WIN64
 #include <AtlBase.h>
 #include <atlconv.h>
+#endif
 #include <time.h>
 
 using namespace std;
+
+#if _WIN32||_WIN64
 
 //-----------------------------------------------------------------------------
 string GetLastErrorAsString()
@@ -289,17 +293,18 @@ string CWindowsMessageToString::GetStringFromMsg(DWORD dwMessage, bool bShowFreq
     return to_string( dwMessage );
 }
 
+#endif
+
 //-----------------------------------------------------------------------------
 string OrbitUtils::GetTimeStamp()
 {
     time_t rawtime;
-    struct tm timeinfo;
     char buffer[80];
 
     time(&rawtime);
-    localtime_s(&timeinfo, &rawtime);
+    struct tm* timeinfo = localtime(&rawtime);
 
-    strftime(buffer, 80, "%Y_%m_%d_%H_%M_%S", &timeinfo);
+    strftime(buffer, 80, "%Y_%m_%d_%H_%M_%S", timeinfo);
 
     return string(buffer);
 }

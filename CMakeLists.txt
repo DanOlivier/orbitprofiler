@@ -169,7 +169,7 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     #AppendToVar(CMAKE_CXX_FLAGS "-Wno-missing-field-initializers")
 endif()
 
-add_subdirectory(OrbitAsm)
+#add_subdirectory(OrbitAsm)
 add_subdirectory(OrbitBase)
 add_subdirectory(OrbitDll)
 add_subdirectory(OrbitCore)

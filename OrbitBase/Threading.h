@@ -58,7 +58,7 @@ typedef struct tagTHREADNAME_INFO
 #pragma pack(pop)
 
 //-----------------------------------------------------------------------------
-inline void SetThreadName( DWORD dwThreadID, char* threadName )
+inline void SetThreadName( DWORD dwThreadID, const char* threadName )
 {
     THREADNAME_INFO info;
     info.dwType = 0x1000;

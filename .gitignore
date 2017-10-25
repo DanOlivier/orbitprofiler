@@ -17,15 +17,12 @@ OrbitCore/OrbitCore.log
 build/
 
 .vscode/
+
 CMakeFiles/
+CMakeCache.txt
 cmake_install.cmake
 
-\.ninja_deps
-
-\.ninja_log
-
-CMakeCache\.txt
-
-build\.ninja
-
-rules\.ninja
+.ninja_deps
+.ninja_log
+build.ninja
+rules.ninja
