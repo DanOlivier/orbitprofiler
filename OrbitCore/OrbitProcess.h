@@ -18,7 +18,11 @@ class Variable;
 class Thread;
 class Session;
 struct Module;
-struct IDiaSymbol;
+
+namespace llvm { namespace pdb {
+    class PDBSymbol;
+    class IPDBSession;
+}}
 
 //-----------------------------------------------------------------------------
 class Process
@@ -65,7 +69,7 @@ public:
 
     Function* GetFunctionFromAddress( DWORD64 a_Address, bool a_IsExact = true );
     std::shared_ptr<Module> GetModuleFromAddress( DWORD64 a_Address );
-    IDiaSymbol* SymbolFromAddress( DWORD64 a_Address );
+    std::unique_ptr<llvm::pdb::PDBSymbol> SymbolFromAddress( DWORD64 a_Address );
     bool LineInfoFromAddress( DWORD64 a_Address, struct LineInfo & o_LineInfo );
 
     void LoadSession(const Session & a_Session);

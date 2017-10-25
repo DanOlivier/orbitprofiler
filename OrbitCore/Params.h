@@ -10,13 +10,15 @@
 #include "BaseTypes.h"
 #include <experimental/filesystem>
 
+namespace fs = std::experimental::filesystem;    
+
 struct Params
 {
     Params();
     void Load();
     void Save();
     
-    void AddToPdbHistory( const std::string & a_PdbName );
+    void AddToPdbHistory( const fs::path& a_PdbName );
     void ScanPdbCache();
 
 public:
@@ -35,7 +37,7 @@ public:
     DWORD64 m_NumBytesAssembly;
     std::string m_DiffExe;
     std::string m_DiffArgs;
-    std::vector< std::string > m_PdbHistory;
+    std::vector< fs::path > m_PdbHistory;
 
     //namespace fs = std::experimental::filesystem;
     std::unordered_map< std::string, std::experimental::filesystem::path > m_CachedPdbsMap;

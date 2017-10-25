@@ -39,7 +39,7 @@ public:
     void ReadMessage();
     void ReadPayload();
 	void ReadFooter();
-    void DecodeMessage( Message & a_Message );
+    void DecodeMessage( const Message & a_Message );
 
     bool IsWebsocket() { return m_WebSocketKey != ""; }
     void ReadWebsocketHandshake();

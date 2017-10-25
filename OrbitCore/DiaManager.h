@@ -5,9 +5,10 @@
 
 #include <string>
 
-struct IDiaDataSource;
-struct IDiaSession;
-struct IDiaSymbol;
+namespace llvm { namespace pdb {
+    class PDBSymbol;
+    class IPDBSession;
+}}
 
 class DiaManager
 {
@@ -18,10 +19,12 @@ public:
     void Init();
     void DeInit();
     bool InitDataSource();
-    bool LoadDataFromPdb( const wchar_t* a_FileName, IDiaSession** a_Session, IDiaSymbol** a_GlobalSymbol );
+    bool LoadDataFromPdb( const fs::path& a_FileName, 
+        std::unique_ptr<llvm::pdb::IPDBSession>& a_Session, 
+        std::unique_ptr<llvm::pdb::PDBSymbol>& a_GlobalSymbol );
 
     static void InitMsDiaDll();
 
 private:
-    IDiaDataSource* m_DiaDataSource;
+    //IDiaDataSource* m_DiaDataSource;
 };

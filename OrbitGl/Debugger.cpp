@@ -150,7 +150,7 @@ void* startAddress = 0;
 //-----------------------------------------------------------------------------
 void Debugger::DebuggerThread( const wstring & a_ProcessName, const wstring & a_WorkingDir, const wstring & a_Args )
 {
-    SetThreadName( GetCurrentThreadId(), "Debugger" );
+    SetThreadName( pthread_self(), "Debugger" );
 
     STARTUPINFO si;
     PROCESS_INFORMATION pi;

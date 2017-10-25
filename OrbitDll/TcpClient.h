@@ -20,7 +20,7 @@ protected:
     void ReadMessage();
     void ReadPayload();
 	void ReadFooter();
-    void DecodeMessage( Message & a_Message );
+    void DecodeMessage( const Message & a_Message );
     void OnError( const std::error_code& ec );
     virtual TcpSocket* GetSocket() override final { return m_TcpSocket; }
 

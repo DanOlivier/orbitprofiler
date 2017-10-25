@@ -132,7 +132,7 @@ int MaxOffsetWidth( DWORD64 a_Size )
 {
     DWORD64 size = a_Size;
     int count = 1;
-    while( size = size / 10 )
+    while( size /= 10 )
     {
         ++count;
     }

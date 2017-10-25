@@ -10,6 +10,9 @@
 #include "OrbitType.h"
 #include "Threading.h"
 
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;    
+
 class Process;
 class Session;
 class SamplingProfiler;
@@ -49,7 +52,7 @@ struct Capture
     static void CheckForUnrealSupport();
     static void PreSave();
     
-    typedef void (*LoadPdbAsyncFunc)( const std::vector<std::wstring> & a_Modules );
+    typedef void (*LoadPdbAsyncFunc)( const std::vector<fs::path> & a_Modules );
     static void SetLoadPdbAsyncFunc( LoadPdbAsyncFunc a_Func ){ GLoadPdbAsync = a_Func; }
 
     static bool         GInjected;

@@ -135,7 +135,6 @@ private:
 //-----------------------------------------------------------------------------
 void TcpEntity::SendData()
 {
-    //SetThreadName( GetCurrentThreadId(), "TcpSender" );
     SetThreadName(pthread_self(), "TcpSender");
     
     while( !m_ExitRequested )

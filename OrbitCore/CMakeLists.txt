@@ -103,10 +103,10 @@ set(SOURCES
     OrbitUnreal.cpp
     Params.cpp
     Pdb.cpp
-    ProcessUtils.cpp
-    SamplingProfiler.cpp
+    #ProcessUtils.cpp
+    #SamplingProfiler.cpp
     Serialization.cpp
-    SymbolUtils.cpp
+    #SymbolUtils.cpp
     Tcp.cpp
     TcpServer.cpp
     #TypeInfo.cpp

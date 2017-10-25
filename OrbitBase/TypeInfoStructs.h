@@ -1,11 +1,12 @@
 // Author: Oleg Starodumov
-
-#ifndef TypeInfoStructs_h
-#define TypeInfoStructs_h
+#pragma once
 
 //#define _NO_CVCONST_H
 #include "OrbitDbgHelp.h"
 #include "Serialization.h"
+
+#include <llvm/DebugInfo/PDB/PDBTypes.h>
+#include <llvm/DebugInfo/CodeView/CodeView.h>
 
 #include <vector>
 
@@ -18,7 +19,7 @@
 struct BaseTypeInfo 
 {
     // Basic type (DIA: baseType) 
-    enum BasicType BaseType; 
+    llvm::pdb::PDB_BuiltinType BaseType; 
     // Length (in bytes) (DIA: length)
     ULONG64 Length; 
 };
@@ -49,7 +50,7 @@ struct UdtClassInfo
     // Length (DIA: length) 
     ULONG64 Length; 
     // UDT kind (class, structure or union) (DIA: udtKind) 
-    enum UdtKind UDTKind; 
+    llvm::pdb::PDB_UdtType UDTKind; 
     // Nested ("true" if the declaration is nested in another UDT) (DIA: nested) 
     bool Nested;
     // Member variables
@@ -80,7 +81,7 @@ struct UdtUnionInfo
     // Length (in bytes) (DIA: length) 
     ULONG64 Length; 
     // UDT kind (class, structure or union) (DIA: udtKind) 
-    enum UdtKind UDTKind; 
+    llvm::pdb::PDB_UdtType UDTKind; 
     // Nested ("true" if the declaration is nested in another UDT) (DIA: nested) 
     bool Nested;
     // Members 
@@ -157,7 +158,7 @@ struct FunctionTypeInfo
     // Function arguments 
     std::vector< ULONG > Args;
     // Calling convention (DIA: callingConvention)
-    enum CV_call_e CallConv;
+    llvm::pdb::PDB_CallingConv CallConv;
     // "Is member function" flag (member function, if "true") 
     bool MemberFunction; 
     // Class symbol index (DIA: classParent) 
@@ -198,7 +199,7 @@ struct DataInfo
     // Index of the symbol that represents the type of the variable (DIA: type) 
     ULONG TypeIndex; 
     // Data kind (local, global, member, etc.) (DIA: dataKind) 
-    enum DataKind dataKind; 
+    llvm::pdb::PDB_DataKind dataKind; 
     // Address (defined if dataKind is: DataIsGlobal, DataIsStaticLocal, 
     // DataIsFileStatic, DataIsStaticMember) (DIA: address) 
     ULONG64 Address;
@@ -223,7 +224,7 @@ struct TypeInfo
     // Name (DIA: name) 
     WCHAR Name[TIS_MAXNAMELEN];
     // Symbol tag 
-    enum SymTagEnum Tag; 
+    llvm::pdb::PDB_SymType Tag; 
     // UDT kind (defined only if "Tag" is SymTagUDT: "true" if the symbol is 
     // a class or a structure, "false" if the symbol is a union) 
     bool UdtKind; 
@@ -265,7 +266,3 @@ void serialize( Archive & archive, TypeInfo::TypeInfoStructures & a_TypeInfoStru
 {
     archive( cereal::binary_data( &a_TypeInfoStructures, sizeof(a_TypeInfoStructures)) );
 }
-
-
-#endif // TypeInfoStructs_h
-

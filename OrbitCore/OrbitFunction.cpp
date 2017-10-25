@@ -259,7 +259,7 @@ void Function::Print()
         return;
     }
 
-    IDiaSymbol* diaSymbol = m_Pdb->GetDiaSymbolFromId( this->m_Id );
+    std::unique_ptr<llvm::pdb::PDBSymbol> diaSymbol = m_Pdb->GetDiaSymbolFromId( this->m_Id );
     if( diaSymbol )
     {
         OrbitDia::DiaDump( diaSymbol );
@@ -274,8 +274,6 @@ void Function::Print()
         DiaParser parser;
         parser.PrintFunctionType( diaSymbol );
         ORBIT_VIZ( parser.m_Log );
-
-        diaSymbol->Release();
     }
 
     LineInfo lineInfo;

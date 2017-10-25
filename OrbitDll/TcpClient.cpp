@@ -76,7 +76,7 @@ void TcpClient::Start()
 //-----------------------------------------------------------------------------
 void TcpClient::ClientThread()
 {
-    SetThreadName( GetCurrentThreadId(), "OrbitTcpClient" );
+    SetThreadName( pthread_self(), "OrbitTcpClient" );
     OutputDebugString(L"io_service started...\n");
     asio::io_service::work work( *m_TcpService->m_IoService );
     m_TcpService->m_IoService->run();
@@ -156,7 +156,7 @@ void TcpClient::OnError( const error_code& ec)
 }
 
 //-----------------------------------------------------------------------------
-void TcpClient::DecodeMessage( Message & a_Message )
+void TcpClient::DecodeMessage( const Message & a_Message )
 {
     Message::Header MessageHeader = a_Message.GetHeader();
 

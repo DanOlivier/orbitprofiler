@@ -11,20 +11,30 @@
 #include <functional>
 #include <thread>
 #include <atomic>
+#include <experimental/filesystem>
 
-struct IDiaSymbol;
-struct IDiaSession;
+namespace llvm { 
+    namespace pdb {
+        class PDBSymbol;
+        class IPDBSession;
+    }
+    namespace codeview {
+        struct GUID;
+    }
+}
+
+namespace fs = std::experimental::filesystem;    
 
 class Pdb
 {
 public:
-    Pdb( const wchar_t* a_PdbName );
+    Pdb( const fs::path& a_PdbName );
     ~Pdb();
 
     void Init();
     
-    virtual bool LoadPdb( const wchar_t* a_PdbName );
-    virtual void LoadPdbAsync( const wchar_t* a_PdbName, std::function<void()> a_CompletionCallback );
+    virtual bool LoadPdb( const fs::path& a_PdbName );
+    virtual void LoadPdbAsync( const fs::path& a_PdbName, std::function<void()> a_CompletionCallback );
 
     bool LoadDataFromPdb();
     bool LoadPdbDia();
@@ -37,8 +47,8 @@ public:
     void OnReceiveMessage( const Message & a_Msg );
     void AddArgumentRegister( const std::string & a_Reg, const std::string & a_Function );
 
-    const std::wstring & GetName() const             { return m_Name; }
-    const std::wstring & GetFileName() const         { return m_FileName; }
+    const fs::path& GetName() const             { return m_Name; }
+    const fs::path& GetFileName() const         { return m_FileName; }
     std::vector<Function>&    GetFunctions()              { return m_Functions; }
     std::vector<Type>&        GetTypes()                  { return m_Types; }
     std::vector<Variable>&    GetGlobals()                { return m_Globals; }
@@ -46,7 +56,7 @@ public:
     Type &               GetTypeFromId( ULONG a_Id ) { return m_TypeMap[a_Id]; }
     Type*                GetTypePtrFromId( ULONG a_ID );
     
-    GUID                 GetGuid();
+    llvm::codeview::GUID GetGuid();
 
     
     void SetMainModule( HMODULE a_Module ){ m_MainModule = a_Module; }
@@ -61,7 +71,7 @@ public:
 
     Function* GetFunctionFromExactAddress( DWORD64 a_Address );
     Function* GetFunctionFromProgramCounter( DWORD64 a_Address );
-    IDiaSymbol* SymbolFromAddress( DWORD64 a_Address );
+    std::unique_ptr<llvm::pdb::PDBSymbol> SymbolFromAddress( DWORD64 a_Address );
     bool LineInfoFromAddress( DWORD64 a_Address, struct LineInfo & o_LineInfo );
 
     void SetLoadTime( float a_LoadTime ) { m_LastLoadTime = a_LoadTime; }
@@ -69,7 +79,7 @@ public:
 
     std::wstring GetCachedName();
     std::wstring GetCachedKey();
-    bool Load( const std::string & a_CachedPdb );
+    bool Load( const fs::path& a_CachedPdb );
     void Save();
 
     bool IsLoading() const { return m_IsLoading; }
@@ -87,7 +97,7 @@ public:
           , CEREAL_NVP(m_TypeMap) );*/
     }
 
-    IDiaSymbol* GetDiaSymbolFromId( ULONG a_Id );
+    std::unique_ptr<llvm::pdb::PDBSymbol> GetDiaSymbolFromId( ULONG a_Id );
     void ProcessData();
 protected:
     void SendStatusToUi();
@@ -108,11 +118,11 @@ protected:
     std::map<std::string, std::vector< std::string > >  m_RegFunctionsMap;
 
     // Data
-    std::wstring                        m_Name;
-    std::wstring                        m_FileName;
-    std::vector<Function>                    m_Functions;
-    std::vector<Type>                        m_Types;
-    std::vector<Variable>                    m_Globals;
+    fs::path                        m_Name;
+    fs::path                        m_FileName;
+    std::vector<Function>               m_Functions;
+    std::vector<Type>                   m_Types;
+    std::vector<Variable>               m_Globals;
     //IMAGEHLP_MODULE64                   m_ModuleInfo;
     std::unordered_map<ULONG, Type>     m_TypeMap;
     std::map<DWORD64, Function*>        m_FunctionMap;
@@ -120,8 +130,8 @@ protected:
     Timer*                              m_LoadTimer;
     
     // DIA
-    IDiaSession*                        m_DiaSession;
-    IDiaSymbol*                         m_DiaGlobalSymbol;
+    std::unique_ptr<llvm::pdb::IPDBSession> m_DiaSession;
+    std::unique_ptr<llvm::pdb::PDBSymbol> m_DiaGlobalSymbol;
 };
 
 extern std::shared_ptr<Pdb> GPdbDbg;

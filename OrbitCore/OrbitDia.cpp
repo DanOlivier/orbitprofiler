@@ -91,7 +91,7 @@ void DumpDIAValue( ostream& //OS
 #define RAW_METHOD_DUMP(Stream, Method) DumpDIAValue(Stream, Indent, #Method, Symbol, &IDiaSymbol::Method);
 
 //-----------------------------------------------------------------------------
-void OrbitDia::DiaDump( IDiaSymbol* Symbol, ostream &OS, int Indent )
+void OrbitDia::DiaDump( std::unique_ptr<llvm::pdb::PDBSymbol> Symbol, ostream &OS, int Indent )
 {
     if( Symbol == nullptr )
         return;
@@ -315,7 +315,7 @@ void OrbitDia::DiaDump( IDiaSymbol* Symbol, ostream &OS, int Indent )
 }
 
 //-----------------------------------------------------------------------------
-void OrbitDia::DiaDump( IDiaSymbol* a_Symbol )
+void OrbitDia::DiaDump( std::unique_ptr<llvm::pdb::PDBSymbol> a_Symbol )
 {
     stringstream l_StringStream;
     
@@ -328,7 +328,7 @@ void OrbitDia::DiaDump( IDiaSymbol* a_Symbol )
 //-----------------------------------------------------------------------------
 void OrbitDia::DiaDump( unsigned long a_SymbolID )
 {
-    IDiaSymbol* symbol;
+    std::unique_ptr<llvm::pdb::PDBSymbol> symbol;
     if( g_pDiaSession->symbolById( a_SymbolID, &symbol ) == S_OK )
     {
         OrbitDia::DiaDump( symbol );

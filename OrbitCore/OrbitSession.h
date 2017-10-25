@@ -6,10 +6,13 @@
 
 #include "Serialization.h"
 
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;    
+
 //-----------------------------------------------------------------------------
 struct SessionModule
 {
-    std::wstring                m_Name;
+    fs::path                    m_Name;
     std::vector< uint64_t >     m_FunctionHashes;
     std::vector< std::wstring > m_WatchedVariables;
 
@@ -36,7 +39,7 @@ public:
                  , CEREAL_NVP(m_Modules) );
     }
 
-    std::wstring m_FileName;
-    std::wstring m_ProcessFullPath;
-    std::map< std::wstring, SessionModule > m_Modules;
+    fs::path m_FileName;
+    fs::path m_ProcessFullPath;
+    std::map< fs::path, SessionModule > m_Modules;
 };

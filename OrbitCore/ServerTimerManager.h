@@ -26,7 +26,7 @@ public:
     //-----------------------------------------------------------------------------
     void ConsumeTimers()
     {
-        //SetThreadName(GetCurrentThreadId(), "OrbitConsumeTimers");
+        SetThreadName(pthread_self(), "OrbitConsumeTimers");
         //SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
 
         Timer Timer;

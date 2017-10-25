@@ -268,6 +268,6 @@ bool TcpServer::HasConnection()
 void TcpServer::ServerThread()
 {
     PRINT_FUNC;
-    SetThreadName(GetCurrentThreadId(), "TcpServer");
+    SetThreadName(pthread_self(), "TcpServer");
     m_TcpService->m_IoService->run();
 }

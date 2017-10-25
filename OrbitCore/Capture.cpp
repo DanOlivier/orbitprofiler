@@ -511,10 +511,10 @@ void Capture::LoadSession( const shared_ptr<Session> & a_Session )
 {
     GSessionPresets = a_Session;
 
-    vector<wstring> modulesToLoad;
+    vector<fs::path> modulesToLoad;
     for( auto & it : a_Session->m_Modules )
     {
-        SessionModule & module = it.second;
+        SessionModule& module = it.second;
         ORBIT_LOG_DEBUG( module.m_Name );
         modulesToLoad.push_back( it.first );
     }
@@ -535,7 +535,8 @@ void Capture::SaveSession( const wstring & a_FileName )
     {
         if( func->IsSelected() )
         {
-            session.m_Modules[func->m_Pdb->GetName()].m_FunctionHashes.push_back( func->Hash() );
+            auto& mod = session.m_Modules[func->m_Pdb->GetName()];
+            mod.m_FunctionHashes.push_back( func->Hash() );
         }
     }
 
@@ -548,7 +549,7 @@ void Capture::SaveSession( const wstring & a_FileName )
     SCOPE_TIMER_LOG( Format( L"Saving Orbit session in %s", saveFileName.c_str() ) );
     ofstream file( ws2s(saveFileName), ios::binary );
     cereal::BinaryOutputArchive archive(file);
-    archive( cereal::make_nvp("Session", session) );
+    //archive( cereal::make_nvp("Session", session) );
 }
 
 //-----------------------------------------------------------------------------

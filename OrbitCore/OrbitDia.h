@@ -4,11 +4,15 @@
 #pragma once
 
 #include <ostream>
-struct IDiaSymbol;
+
+namespace llvm { namespace pdb {
+    class PDBSymbol;
+    class IPDBSession;
+}}
 
 namespace OrbitDia
 {
-    void DiaDump( IDiaSymbol* a_Symbol );
+    void DiaDump( std::unique_ptr<llvm::pdb::PDBSymbol> a_Symbol );
     void DiaDump( unsigned long a_SymbolId );
-    void DiaDump( IDiaSymbol* Symbol, std::ostream &OS, int Indent );
+    void DiaDump( std::unique_ptr<llvm::pdb::PDBSymbol> Symbol, std::ostream &OS, int Indent );
 }

@@ -140,7 +140,7 @@ void GetDesktopResolution(int& horizontal, int& vertical)
 }
 
 //-----------------------------------------------------------------------------
-void GLoadPdbAsync( const vector<wstring> & a_Modules )
+void GLoadPdbAsync( const vector<fs::path> & a_Modules )
 {
     GModuleManager.LoadPdbAsync( a_Modules, [](){ GOrbitApp->OnPdbLoaded(); } );
 }

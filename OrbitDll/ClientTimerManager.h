@@ -58,7 +58,7 @@ public:
     //-----------------------------------------------------------------------------
     void SendTimers()
     {
-        SetThreadName(GetCurrentThreadId(), "OrbitSendTimers");
+        SetThreadName(pthread_self(), "OrbitSendTimers");
 
         const size_t numTimers = 4096;
         Timer Timers[numTimers];

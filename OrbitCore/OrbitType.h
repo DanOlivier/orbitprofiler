@@ -8,7 +8,7 @@
 #include <map>
 #include <set>
 
-#include "cvconst.h"
+//#include "cvconst.h"
 
 #include "OrbitDbgHelp.h"
 #include "Variable.h"
@@ -65,13 +65,13 @@ public:
 
     void LoadDiaInfo();
     void GenerateDiaHierarchy();
-    void GenerateDiaHierarchy( struct IDiaSymbol* a_DiaSymbol );
-    void AddParent( IDiaSymbol* a_Parent );
+    void GenerateDiaHierarchy( std::unique_ptr<llvm::pdb::PDBSymbol> a_DiaSymbol );
+    void AddParent( std::unique_ptr<llvm::pdb::PDBSymbol> a_Parent );
     const std::map<ULONG, Variable> & GetFullVariableMap() const;
     Pdb* GetPdb() const { return m_Pdb; }
     const std::wstring & GetName() const { return m_Name; }
     const std::wstring & GetNameLower(){ if( m_NameLower.size() == 0 ){ m_NameLower = ToLower( m_Name ); } return m_NameLower;  }
-    IDiaSymbol* GetDiaSymbol();
+    std::unique_ptr<llvm::pdb::PDBSymbol> GetDiaSymbol();
     bool IsA( const std::wstring & a_TypeName );
     int GetOffset( const std::wstring & a_Member );
     bool HasMembers() const { return m_DataMembers.size() > 0; }

@@ -25,15 +25,23 @@
 #include "DiaManager.h"
 #include "Path.h"
 
-#include "external/DIA2Dump/DIA2Dump.h"
-#include "external/DIA2Dump/PrintSymbol.h"
+//#include "external/DIA2Dump/DIA2Dump.h"
+//#include "external/DIA2Dump/PrintSymbol.h"
+
+#include <llvm/DebugInfo/PDB/PDBSymbol.h>
+#include <llvm/DebugInfo/PDB/IPDBSession.h>
+#include <llvm/DebugInfo/PDB/PDBSymbolFunc.h>
+#include <llvm/DebugInfo/PDB/PDBSymbolData.h>
+#include <llvm/DebugInfo/PDB/IPDBLineNumber.h>
+#include <llvm/DebugInfo/PDB/IPDBSourceFile.h>
+#include <llvm/DebugInfo/PDB/PDBSymbolExe.h>
 
 using namespace std;
 
 shared_ptr<Pdb> GPdbDbg;
 
 //-----------------------------------------------------------------------------
-Pdb::Pdb( const wchar_t* a_PdbName ) : m_FileName( a_PdbName )
+Pdb::Pdb( const fs::path& a_PdbName ) : m_FileName( a_PdbName )
                                      , m_MainModule(0)
                                      , m_LastLoadTime(0)
                                      , m_LoadedFromCache(false)
@@ -45,15 +53,15 @@ Pdb::Pdb( const wchar_t* a_PdbName ) : m_FileName( a_PdbName )
                                      , m_DiaGlobalSymbol(nullptr)
 {
     m_Name = Path::GetFileName( m_FileName );
-    memset( &m_ModuleInfo, 0, sizeof(IMAGEHLP_MODULE64) );
-    m_ModuleInfo.SizeOfStruct = sizeof(IMAGEHLP_MODULE64);
+    //memset( &m_ModuleInfo, 0, sizeof(IMAGEHLP_MODULE64) );
+    //m_ModuleInfo.SizeOfStruct = sizeof(IMAGEHLP_MODULE64);
     m_LoadTimer = new Timer();
 }
 
 //-----------------------------------------------------------------------------
 Pdb::~Pdb()
 {
-    if( m_DiaSession )
+    /*if( m_DiaSession )
     {
         m_DiaSession->Release();
     }
@@ -61,7 +69,7 @@ Pdb::~Pdb()
     if( m_DiaGlobalSymbol )
     {
         m_DiaGlobalSymbol->Release();
-    }
+    }*/
 }
 
 //-----------------------------------------------------------------------------
@@ -146,12 +154,17 @@ Type * Pdb::GetTypePtrFromId( ULONG a_ID )
 }
 
 //-----------------------------------------------------------------------------
-GUID Pdb::GetGuid()
+llvm::codeview::GUID Pdb::GetGuid()
 {
-    GUID guid = {0};
+    llvm::codeview::GUID guid = {0};
     if( m_DiaGlobalSymbol )
     {
-        m_DiaGlobalSymbol->get_guid( &guid );
+        auto GlobalScope = m_DiaSession->getGlobalScope();
+        if( GlobalScope )
+        {
+            guid = GlobalScope->getGuid();
+            return guid;
+        }
     }
 
     return guid;
@@ -214,8 +227,12 @@ void Pdb::PrintGlobals() const
 //-----------------------------------------------------------------------------
 wstring Pdb::GetCachedName()
 {
-    string pdbName = ws2s( Path::GetFileName( m_FileName ) );
-    fs::path fileName = GuidToString( m_ModuleInfo.PdbSig70 ) + "-" + ToHexString( m_ModuleInfo.PdbAge ) + "_" + pdbName;
+    fs::path pdbName = Path::GetFileName( m_FileName );
+    fs::path fileName;
+    //fileName += GuidToString( m_ModuleInfo.PdbSig70 );
+    //fileName += "-" + ToHexString( m_ModuleInfo.PdbAge );
+    fileName += "_";
+    fileName += pdbName.c_str();
     fileName.replace_extension(".bin");
     return fileName.wstring();
 }
@@ -229,7 +246,7 @@ wstring Pdb::GetCachedKey()
 }
 
 //-----------------------------------------------------------------------------
-bool Pdb::Load( const string & /*a_CachedPdb*/ )
+bool Pdb::Load( const fs::path& /*a_CachedPdb*/ )
 {
     /*ifstream is( a_CachedPdb, ios::binary );
     if( !is.fail() )
@@ -295,12 +312,12 @@ void Pdb::SendStatusToUi()
 }
 
 //-----------------------------------------------------------------------------
-void ParseDll( const char* a_FileName );
+void ParseDll( const fs::path& a_FileName );
 
 //-----------------------------------------------------------------------------
-bool PdbGetFileSize( const TCHAR* pFileName, DWORD& FileSize )
+bool PdbGetFileSize( const fs::path& pFileName, DWORD& FileSize )
 {
-    HANDLE hFile = ::CreateFile( pFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL );
+    /*HANDLE hFile = ::CreateFile( pFileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL );
 
     if( hFile == INVALID_HANDLE_VALUE )
     {
@@ -326,44 +343,25 @@ bool PdbGetFileSize( const TCHAR* pFileName, DWORD& FileSize )
 
     // Complete 
     return ( FileSize != INVALID_FILE_SIZE );
+    */
+    return false;
 }
 
 
 //-----------------------------------------------------------------------------
-bool GetFileParams(const TCHAR* pFileName, DWORD64& BaseAddr, DWORD& FileSize)
+bool GetFileParams(const fs::path& pFileName, DWORD64& BaseAddr, DWORD& FileSize)
 {
     // Check parameters 
 
-    if( pFileName == 0 ) 
+    if( pFileName.empty() ) 
     {
         return false; 
     }
 
-
-    // Determine the extension of the file 
-
-    TCHAR szFileExt[_MAX_EXT] = {0}; 
-
-    /*
-    void __cdecl _tsplitpath (
-    register const _TSCHAR *path,
-    _TSCHAR *drive,
-    _TSCHAR *dir,
-    _TSCHAR *fname,
-    _TSCHAR *ext
-    )
-    {
-    */
-
-    _tsplitpath_s( pFileName, NULL, 0, NULL, 0, NULL, 0, szFileExt, _MAX_EXT ); 
-
-
     // Is it .PDB file ? 
-
-    if( _tcsicmp( szFileExt, _T(".PDB") ) == 0 ) 
+    if( pFileName.extension() == "pdb") // XXX: uppercase?
     {
         // Yes, it is a .PDB file 
-
         // Determine its size, and use a dummy base address 
 
         BaseAddr = 0x10000000; // it can be any non-zero value, but if we load symbols 
@@ -375,27 +373,19 @@ bool GetFileParams(const TCHAR* pFileName, DWORD64& BaseAddr, DWORD& FileSize)
         {
             return false; 
         }
-
     }
     else 
     {
         // It is not a .PDB file 
-
         // Base address and file size can be 0 
-
         BaseAddr = 0; 
         FileSize = 0; 
     }
-
-
-    // Complete 
-
     return true; 
-
 }
 
 //-----------------------------------------------------------------------------
-void ShowSymbolInfo( IMAGEHLP_MODULE64 & ModuleInfo ) 
+/*void ShowSymbolInfo( IMAGEHLP_MODULE64 & ModuleInfo ) 
 {
     switch( ModuleInfo.SymType ) 
     {
@@ -414,19 +404,19 @@ void ShowSymbolInfo( IMAGEHLP_MODULE64 & ModuleInfo )
     // Image name 
     if( wcslen( ModuleInfo.ImageName ) > 0 ) 
     {
-        ORBIT_LOG( Format( TEXT("Image name: %s \n"), ModuleInfo.ImageName ) );
+        ORBIT_LOG( Format( L"Image name: %s \n", ModuleInfo.ImageName ) );
     }
 
     // Loaded image name 
     if( wcslen( ModuleInfo.LoadedImageName ) > 0 ) 
     {
-        ORBIT_LOG( Format( TEXT("Loaded image name: %s \n"), ModuleInfo.LoadedImageName ) ); 
+        ORBIT_LOG( Format( L"Loaded image name: %s \n", ModuleInfo.LoadedImageName ) ); 
     }
 
     // Loaded PDB name 
     if( wcslen( ModuleInfo.LoadedPdbName ) > 0 ) 
     {
-        ORBIT_LOG( Format( TEXT("PDB file name: %s \n"), ModuleInfo.LoadedPdbName ) ); 
+        ORBIT_LOG( Format( L"PDB file name: %s \n", ModuleInfo.LoadedPdbName ) ); 
     }
 
     // Is debug information unmatched ? 
@@ -452,25 +442,23 @@ void ShowSymbolInfo( IMAGEHLP_MODULE64 & ModuleInfo )
     // Public symbols available ?
     ORBIT_LOG( Format( _T("Public symbols: %s \n"), ModuleInfo.Publics ? _T("Available") : _T("Not available") ) ); 
 }
-
+*/
 
 //-----------------------------------------------------------------------------
-bool Pdb::LoadPdb( const wchar_t* a_PdbName )
+bool Pdb::LoadPdb( const fs::path& a_PdbName )
 {
     SCOPE_TIMER_LOG( L"LOAD PDB" );
 
     m_IsLoading = true;
     m_LoadTimer->Start();
 
-    string msg = "pdb:" + ws2s( a_PdbName );
+    string msg = string("pdb:") + a_PdbName.string();
     GTcpServer->SendToUiAsync( msg );
 
-    string nameStr = ws2s( a_PdbName );
-
-    if( ToLower( Path::GetExtension( a_PdbName ).c_str() ) == L".dll" )
+    if( Path::GetExtension( a_PdbName ).string() == "dll" )
     {
         SCOPE_TIMER_LOG( L"LoadDll Exports" );
-        ParseDll( nameStr.c_str() );
+        ParseDll( a_PdbName );
     }
     else
     {
@@ -478,9 +466,9 @@ bool Pdb::LoadPdb( const wchar_t* a_PdbName )
         LoadPdbDia();
     }
 
-    ShowSymbolInfo( m_ModuleInfo );
+    //ShowSymbolInfo( m_ModuleInfo );
     ProcessData();
-    GParams.AddToPdbHistory( ws2s(a_PdbName).c_str() );
+    GParams.AddToPdbHistory( a_PdbName );
 
     m_FinishedLoading = true;
     m_IsLoading = false;
@@ -492,7 +480,7 @@ bool Pdb::LoadPdb( const wchar_t* a_PdbName )
 bool Pdb::LoadDataFromPdb()
 {
     DiaManager diaManager;
-    if( !diaManager.LoadDataFromPdb( m_FileName.c_str(), &m_DiaSession, &m_DiaGlobalSymbol ) )
+    if( !diaManager.LoadDataFromPdb( m_FileName, m_DiaSession, m_DiaGlobalSymbol ) )
     {
         return false;
     }
@@ -507,9 +495,9 @@ bool Pdb::LoadPdbDia()
     {
         Reserve();
         auto group = oqpi_tk::make_parallel_group<oqpi::task_type::waitable>( "Fork" );
-        group->addTask( oqpi_tk::make_task_item( "DumpAllFunctions"  , DumpAllFunctions  , m_DiaGlobalSymbol ) );
-        group->addTask( oqpi_tk::make_task_item( "DumpTypes"         , DumpTypes         , m_DiaGlobalSymbol ) );
-        group->addTask( oqpi_tk::make_task_item( "HookDumpAllGlobals", OrbitDumpAllGlobals, m_DiaGlobalSymbol ) );
+        //group->addTask( oqpi_tk::make_task_item( "DumpAllFunctions"  , DumpAllFunctions  , m_DiaGlobalSymbol ) );
+        //group->addTask( oqpi_tk::make_task_item( "DumpTypes"         , DumpTypes         , m_DiaGlobalSymbol ) );
+        //group->addTask( oqpi_tk::make_task_item( "HookDumpAllGlobals", OrbitDumpAllGlobals, m_DiaGlobalSymbol ) );
         oqpi_tk::schedule_task( oqpi::task_handle( group ) ).wait();
 
         return true;
@@ -519,7 +507,7 @@ bool Pdb::LoadPdbDia()
 }
 
 //-----------------------------------------------------------------------------
-void Pdb::LoadPdbAsync( const wchar_t* a_PdbName, function<void()> a_CompletionCallback )
+void Pdb::LoadPdbAsync( const fs::path& a_PdbName, function<void()> a_CompletionCallback )
 {
     m_FileName = a_PdbName;
     m_Name = Path::GetFileName( m_FileName );
@@ -594,7 +582,7 @@ void Pdb::ApplyPresets()
 
     if (Capture::GSessionPresets)
     {
-        wstring pdbName = Path::GetFileName( m_Name );
+        fs::path pdbName = Path::GetFileName( m_Name );
 
         auto it = Capture::GSessionPresets->m_Modules.find(pdbName);
         if (it != Capture::GSessionPresets->m_Modules.end())
@@ -633,7 +621,7 @@ Function* Pdb::GetFunctionFromProgramCounter( DWORD64 a_Address )
 {
     DWORD64 address = a_Address - (DWORD64)GetHModule();
 
-    auto & it = m_FunctionMap.upper_bound( address );
+    auto it = m_FunctionMap.upper_bound( address );
     if (!m_FunctionMap.empty() && it != m_FunctionMap.begin())
     {
         --it;
@@ -645,21 +633,13 @@ Function* Pdb::GetFunctionFromProgramCounter( DWORD64 a_Address )
 }
 
 //-----------------------------------------------------------------------------
-IDiaSymbol* Pdb::SymbolFromAddress( DWORD64 a_Address )
+unique_ptr<llvm::pdb::PDBSymbol> Pdb::SymbolFromAddress( DWORD64 a_Address )
 {
     if( m_DiaSession )
     {
-        IDiaSymbol* symbol;
-        DWORD rva = DWORD(a_Address - (DWORD64)GetHModule());
-        auto error = m_DiaSession->findSymbolByRVA( rva, SymTagFunction, &symbol );
-        if( error == S_OK )
-        {
-            return symbol;
-        }
-        else
-        {
-            PrintLastError();
-        }
+        unique_ptr<llvm::pdb::PDBSymbol> symbol = 
+            m_DiaSession->findSymbolByAddress( a_Address, llvm::pdb::PDB_SymType::Function);
+        return symbol;
     }
 
     return nullptr;
@@ -673,63 +653,42 @@ bool Pdb::LineInfoFromAddress( DWORD64 a_Address, LineInfo & o_LineInfo )
         return false;
     }
 
-    IDiaEnumLineNumbers * lineNumbers = nullptr;
-    DWORD rva = DWORD(a_Address - (DWORD64)GetHModule());
-    wstring fileNameW;
-    if( SUCCEEDED( m_DiaSession->findLinesByRVA( rva, 1, &lineNumbers ) ) )
-    {
-        IDiaLineNumber* pLineNumber;
-        ULONG celt = 0;
-
-        while( SUCCEEDED( lineNumbers->Next( 1, &pLineNumber, &celt ) ) && celt == 1 && fileNameW.size() == 0 )
-        {
-            IDiaSourceFile* sourceFile;
-            if( SUCCEEDED( pLineNumber->get_sourceFile( &sourceFile ) ) )
-            {
-                BSTR fileName;
-                if( SUCCEEDED( sourceFile->get_fileName( &fileName ) ) )
-                {
-                    fileNameW = wstring( fileName );
-                    o_LineInfo.m_Address = a_Address;
-                    o_LineInfo.m_File = fileName;
-                    o_LineInfo.m_Line = 0;
-
-                    SysFreeString( fileName );
-                }
-
-                DWORD lineNumber;
-                if( SUCCEEDED( pLineNumber->get_lineNumber( &lineNumber ) ) )
-                {
-                    o_LineInfo.m_Line = lineNumber;
-                }
-
-                sourceFile->Release();
-            }
-
-            pLineNumber->Release();
-        }
-
-        lineNumbers->Release();
+    //o_LineInfo.FunctionName = getFunctionName(a_Address, Specifier.FNKind);
+  
+    uint32_t Length = 1;
+    unique_ptr<llvm::pdb::PDBSymbol> Symbol =
+        m_DiaSession->findSymbolByAddress(a_Address, llvm::pdb::PDB_SymType::None);
+    if (auto Func = llvm::dyn_cast_or_null<llvm::pdb::PDBSymbolFunc>(Symbol.get())) {
+        Length = Func->getLength();
+    } else if (auto Data = llvm::dyn_cast_or_null<llvm::pdb::PDBSymbolData>(Symbol.get())) {
+        Length = Data->getLength();
     }
+  
+    // If we couldn't find a symbol, then just assume 1 byte, so that we get
+    // only the line number of the first instruction.
+    auto LineNumbers = m_DiaSession->findLineNumbersByAddress(a_Address, Length);
+    if (!LineNumbers || LineNumbers->getChildCount() == 0)
+      return false;
+  
+    auto LineInfo = LineNumbers->getNext();
+    assert(LineInfo);
+    auto SourceFile = m_DiaSession->getSourceFileById(LineInfo->getSourceFileId());
+    if (SourceFile)
+        o_LineInfo.m_File = s2ws(SourceFile->getFileName());
+    //o_LineInfo.Column = LineInfo->getColumnNumber();
+    o_LineInfo.m_Line = LineInfo->getLineNumber();
+    return !!SourceFile;
 
-    return fileNameW.size() > 0;
 }
 
 //-----------------------------------------------------------------------------
-IDiaSymbol* Pdb::GetDiaSymbolFromId( ULONG a_Id )
+unique_ptr<llvm::pdb::PDBSymbol> Pdb::GetDiaSymbolFromId( ULONG a_Id )
 {
-    IDiaSymbol* symbol;
+    unique_ptr<llvm::pdb::PDBSymbol> symbol;
     if( m_DiaSession )
     {
-        auto error = m_DiaSession->symbolById( a_Id, &symbol );
-        if( error  == S_OK )
-        {
-            return symbol;
-        }
-        else
-        {
-            PrintLastError();
-        }
+        symbol = m_DiaSession->getSymbolById( a_Id );
+        return symbol;
     }
 
     return nullptr;
@@ -780,7 +739,7 @@ void Pdb::ProcessData()
 //-----------------------------------------------------------------------------
 void Pdb::Save()
 {
-    wstring fullName = Path::GetCachePath() + GetCachedName();
+    fs::path fullName = Path::GetCachePath() / GetCachedName();
 
     SCOPE_TIMER_LOG( Format( L"Saving %s", fullName.c_str() ) );
 

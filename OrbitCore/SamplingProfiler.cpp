@@ -437,7 +437,7 @@ void SamplingProfiler::AddAddress( DWORD64 a_Address )
         symName = Format( L"%I64x", a_Address );
         PRINT_VAR( GetLastErrorAsString() );
 
-        IDiaSymbol* symbol = m_Process->SymbolFromAddress( a_Address );
+        std::unique_ptr<llvm::pdb::PDBSymbol> symbol = m_Process->SymbolFromAddress( a_Address );
         if( symbol )
         {
             BSTR bstrName;

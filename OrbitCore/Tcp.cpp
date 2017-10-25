@@ -336,7 +336,7 @@ void TcpConnection::ReadFooter()
 }
 
 //-----------------------------------------------------------------------------
-void TcpConnection::DecodeMessage( Message & a_Message )
+void TcpConnection::DecodeMessage( const Message & a_Message )
 {
     GTcpServer->GetServer()->RegisterConnection( this->shared_from_this() );
     GTcpServer->Receive( a_Message );

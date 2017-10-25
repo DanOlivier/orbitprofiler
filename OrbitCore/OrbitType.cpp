@@ -30,7 +30,7 @@ void Type::LoadDiaInfo()
 {
     if( !m_DiaInfoLoaded )
     {
-        if( IDiaSymbol* diaSymbol = GetDiaSymbol() )
+        if( std::unique_ptr<llvm::pdb::PDBSymbol> diaSymbol = GetDiaSymbol() )
         {
             m_DiaInfoLoaded = true;
             GenerateDiaHierarchy();
@@ -49,7 +49,7 @@ void Type::GenerateDiaHierarchy()
         return;
 
     LoadDiaInfo();
-    IDiaSymbol* diaSymbol = GetDiaSymbol();
+    std::unique_ptr<llvm::pdb::PDBSymbol> diaSymbol = GetDiaSymbol();
     GenerateDiaHierarchy( diaSymbol );
     diaSymbol->Release();
 
@@ -70,12 +70,12 @@ void Type::GenerateDiaHierarchy()
 }
 
 //-----------------------------------------------------------------------------
-void Type::AddParent( IDiaSymbol* a_Parent )
+void Type::AddParent( std::unique_ptr<llvm::pdb::PDBSymbol> a_Parent )
 {
     LONG offset;
     if( a_Parent->get_offset( &offset ) == S_OK )
     {
-        IDiaSymbol* typeSym;
+        std::unique_ptr<llvm::pdb::PDBSymbol> typeSym;
         if( a_Parent->get_type( &typeSym ) == S_OK )
         {
             DWORD typeId;
@@ -98,7 +98,7 @@ void Type::AddParent( IDiaSymbol* a_Parent )
 }
 
 //-----------------------------------------------------------------------------
-void Type::GenerateDiaHierarchy( IDiaSymbol* a_DiaSymbol )
+void Type::GenerateDiaHierarchy( std::unique_ptr<llvm::pdb::PDBSymbol> a_DiaSymbol )
 {
     IDiaEnumSymbols *pEnumChildren;
     IDiaSymbol *pChild;
@@ -177,14 +177,14 @@ const map<ULONG, Variable > & Type::GetFullVariableMap() const
 }
 
 //-----------------------------------------------------------------------------
-IDiaSymbol* Type::GetDiaSymbol()
+std::unique_ptr<llvm::pdb::PDBSymbol> Type::GetDiaSymbol()
 {
     if( !m_Pdb )
     {
         return nullptr;
     }
 
-    IDiaSymbol* sym = m_Pdb->GetDiaSymbolFromId( m_Id );
+    std::unique_ptr<llvm::pdb::PDBSymbol> sym = m_Pdb->GetDiaSymbolFromId( m_Id );
     if( sym == nullptr )
     {
         sym = m_Pdb->GetDiaSymbolFromId( m_UnmodifiedId );
