@@ -16,36 +16,36 @@ namespace Path
     //using path = std::experimental::filesystem::v1::path;
     namespace fs = std::experimental::filesystem;
     
-    static fs::path GetExecutableName();
-    static fs::path GetExecutablePath();
-    static fs::path GetBasePath();
-    static fs::path GetOrbitAppPdb( bool a_Is64Bit );
-    static fs::path GetDllPath( bool a_Is64Bit );
-    static fs::path GetDllName( bool a_Is64Bit );
-    static fs::path GetParamsFileName();
-    static fs::path GetFileMappingFileName();
-    static fs::path GetSymbolsFileName();
-    static fs::path GetLicenseName();
-    static fs::path GetCachePath();
-    static fs::path GetPresetPath();
-    static fs::path GetPluginPath();
-    static fs::path GetCapturePath();
-    static fs::path GetDumpPath();
-    static fs::path GetTmpPath();
-    static fs::path GetFileName( const fs::path& a_FullName );
-    static fs::path GetFileNameNoExt( const fs::path& a_FullName );
-    static fs::path StripExtension( const fs::path& a_FullName );
-    static fs::path GetExtension( const fs::path& a_FullName );
-    static fs::path GetDirectory( const fs::path& a_FullName );
-    static fs::path GetProgramFilesPath();
-    static fs::path GetAppDataPath();
-    static fs::path GetMainDrive();
+    fs::path GetExecutableName();
+    fs::path GetExecutablePath();
+    fs::path GetBasePath();
+    fs::path GetOrbitAppPdb( bool a_Is64Bit );
+    fs::path GetDllPath( bool a_Is64Bit );
+    fs::path GetDllName( bool a_Is64Bit );
+    fs::path GetParamsFileName();
+    fs::path GetFileMappingFileName();
+    fs::path GetSymbolsFileName();
+    fs::path GetLicenseName();
+    fs::path GetCachePath();
+    fs::path GetPresetPath();
+    fs::path GetPluginPath();
+    fs::path GetCapturePath();
+    fs::path GetDumpPath();
+    fs::path GetTmpPath();
+    fs::path GetFileName( const fs::path& a_FullName );
+    fs::path GetFileNameNoExt( const fs::path& a_FullName );
+    fs::path StripExtension( const fs::path& a_FullName );
+    fs::path GetExtension( const fs::path& a_FullName );
+    fs::path GetDirectory( const fs::path& a_FullName );
+    fs::path GetProgramFilesPath();
+    fs::path GetAppDataPath();
+    fs::path GetMainDrive();
 
-    static bool FileExists( const fs::path& a_File );
-    static bool DirExists( const fs::path& a_Dir );
-    static bool IsSourceFile( const fs::path& a_File );
-    //static bool IsPackaged() { return m_IsPackaged; }
+    bool FileExists( const fs::path& a_File );
+    bool DirExists( const fs::path& a_Dir );
+    bool IsSourceFile( const fs::path& a_File );
+    //bool IsPackaged() { return m_IsPackaged; }
 
-    static std::vector<fs::path> ListFiles( const fs::path& a_Dir, std::function< bool(const fs::path&)> a_Filter = [](const fs::path&){ return true; });
-    static std::vector<fs::path> ListFiles( const fs::path& a_Dir, const fs::path& a_Filter );
+    std::vector<fs::path> ListFiles( const fs::path& a_Dir, std::function< bool(const fs::path&)> a_Filter = [](const fs::path&){ return true; });
+    std::vector<fs::path> ListFiles( const fs::path& a_Dir, const fs::path& a_Filter );
 }

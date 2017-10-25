@@ -164,7 +164,7 @@ struct BlockChain
     bool keep(unsigned a_MaxElems )
     {
         bool hasDeleted = false;
-        a_MaxElems = max( BlockSize + 1, a_MaxElems );
+        a_MaxElems = std::max( BlockSize + 1, a_MaxElems );
 
         while( m_NumItems > a_MaxElems )
         {

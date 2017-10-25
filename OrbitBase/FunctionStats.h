@@ -6,7 +6,7 @@
 #include "BaseTypes.h"
 #include "SerializationMacros.h"
 
-#include <memory>
+#include <cstring>
 
 //-----------------------------------------------------------------------------
 struct FunctionStats

@@ -9,10 +9,10 @@
 #include "Path.h"
 
 #include <algorithm>
-#include <filesystem>
 #include <fstream>
 
 using namespace std;
+namespace fs = std::experimental::filesystem;
 
 Params GParams;
 
@@ -58,7 +58,7 @@ ORBIT_SERIALIZE( Params, 9 )
 //-----------------------------------------------------------------------------
 void Params::Save()
 {
-    wstring fileName = Path::GetParamsFileName();
+    fs::path fileName = Path::GetParamsFileName();
     SCOPE_TIMER_LOG( Format( L"Saving hook params in %s", fileName.c_str() ) );
     ofstream file( fileName );
     cereal::XMLOutputArchive archive( file );
@@ -92,17 +92,17 @@ void Params::AddToPdbHistory( const string & a_PdbName )
 //-----------------------------------------------------------------------------
 void Params::ScanPdbCache()
 {
-    wstring cachePath = Path::GetCachePath();
+    fs::path cachePath = Path::GetCachePath();
     SCOPE_TIMER_LOG( Format( L"Scanning cache (%s)", cachePath.c_str() ) );
 
-    for( auto it = tr2::sys::directory_iterator( cachePath ); it != tr2::sys::directory_iterator(); ++it )
+    for( auto it = fs::directory_iterator( cachePath ); it != fs::directory_iterator(); ++it )
     {
         const auto& file = it->path();
         if( file.extension() == ".bin" )
         {
             string fileName(file.filename().string());
             fileName = fileName.substr( 0, fileName.find_first_of('_') );
-            m_CachedPdbsMap.insert( make_pair( fileName, ws2s(cachePath + file.filename().wstring()) ) );
+            m_CachedPdbsMap.insert( make_pair( fileName, cachePath / file.filename() ) );
         }
     }
 }

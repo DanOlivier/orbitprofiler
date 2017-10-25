@@ -7,7 +7,8 @@
 #include "TcpServer.h"
 #include "TcpForward.h"
 #include "Path.h"
-#include "Injection.h"
+//#include "Injection.h"
+#include "ProcessUtils.h"
 #include "SamplingProfiler.h"
 #include "OrbitSession.h"
 #include "Serialization.h"
@@ -81,6 +82,7 @@ void Capture::Init()
 //-----------------------------------------------------------------------------
 bool Capture::Inject( bool a_WaitForConnection )
 {
+    /*XXX
     Injection inject;
     wstring dllName = Path::GetDllPath( GTargetProcess->GetIs64Bit() );
 
@@ -107,11 +109,14 @@ bool Capture::Inject( bool a_WaitForConnection )
     }
 
     return GInjected;
+    */
+    return false;
 }
 
 //-----------------------------------------------------------------------------
 bool Capture::InjectRemote()
 {
+    /*XXX
     Injection inject;
     wstring dllName = Path::GetDllPath( GTargetProcess->GetIs64Bit() );
     GTcpServer->Disconnect();
@@ -126,6 +131,8 @@ bool Capture::InjectRemote()
     }
 
     return GInjected;
+    */
+    return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -488,12 +495,15 @@ void Capture::OpenCapture( const wstring &  )
 //-----------------------------------------------------------------------------
 bool Capture::IsOtherInstanceRunning()
 {
+    /*XXX
     DWORD procID = 0;
     HANDLE procHandle = Injection::GetTargetProcessHandle( ORBIT_EXE_NAME, procID );
     PRINT_FUNC;
     bool otherInstanceFound = procHandle != NULL;
     PRINT_VAR( otherInstanceFound );
     return otherInstanceFound;
+    */
+    return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -536,7 +546,7 @@ void Capture::SaveSession( const wstring & a_FileName )
     }
 
     SCOPE_TIMER_LOG( Format( L"Saving Orbit session in %s", saveFileName.c_str() ) );
-    ofstream file( saveFileName, ios::binary );
+    ofstream file( ws2s(saveFileName), ios::binary );
     cereal::BinaryOutputArchive archive(file);
     archive( cereal::make_nvp("Session", session) );
 }

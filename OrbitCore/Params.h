@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include "SerializationMacros.h"
 #include "BaseTypes.h"
+#include <experimental/filesystem>
 
 struct Params
 {
@@ -35,7 +36,9 @@ public:
     std::string m_DiffExe;
     std::string m_DiffArgs;
     std::vector< std::string > m_PdbHistory;
-    std::unordered_map< std::string, std::string > m_CachedPdbsMap;
+
+    //namespace fs = std::experimental::filesystem;
+    std::unordered_map< std::string, std::experimental::filesystem::path > m_CachedPdbsMap;
 
     ORBIT_SERIALIZABLE;
 };

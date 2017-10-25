@@ -68,15 +68,16 @@ inline std::string VarToAnsi( const char* a_VarName, const T& a_Value )
     l_StringStream << a_VarName << " = " << a_Value;
     return l_StringStream.str();
 }
-
+#include <thread>
 //-----------------------------------------------------------------------------
 inline void PrintFunc( const char* a_Function )
 {
-    std::string func = Format( "%s TID: %u\n", a_Function, GetCurrentThreadId() );
 #if _WIN32||_WIN64
+    std::string func = Format( "%s TID: %u\n", a_Function, GetCurrentThreadId() );
     OutputDebugStringA( func.c_str() );
 #else
-    printf( func.c_str() );
+    pthread_t h = pthread_self();
+    printf( "%s TID: %lu\n", a_Function, h );
 #endif
 }
 

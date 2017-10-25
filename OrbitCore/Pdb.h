@@ -113,7 +113,7 @@ protected:
     std::vector<Function>                    m_Functions;
     std::vector<Type>                        m_Types;
     std::vector<Variable>                    m_Globals;
-    IMAGEHLP_MODULE64                   m_ModuleInfo;
+    //IMAGEHLP_MODULE64                   m_ModuleInfo;
     std::unordered_map<ULONG, Type>     m_TypeMap;
     std::map<DWORD64, Function*>        m_FunctionMap;
     std::unordered_map<unsigned long long, Function*> m_StringFunctionMap;

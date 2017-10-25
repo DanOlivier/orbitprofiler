@@ -61,22 +61,22 @@ SymUtils::ModuleMap_t SymUtils::ListModules( HANDLE a_ProcessHandle)
         module->m_AddressEnd = (DWORD64)moduleInfo.lpBaseOfDll + moduleInfo.SizeOfImage;
         module->m_EntryPoint = (DWORD64)moduleInfo.EntryPoint;
 
-        tr2::sys::path filePath = module->m_FullName;
+        fs::path filePath = module->m_FullName;
         filePath.replace_extension( ".pdb" );
-        if( tr2::sys::exists( filePath ) )
+        if( fs::exists( filePath ) )
         {
             module->m_FoundPdb = true;
-            module->m_PdbSize = ::tr2::sys::file_size( filePath );
+            module->m_PdbSize = ::fs::file_size( filePath );
             module->m_PdbName = filePath.wstring();
         }
         else if( Contains( module->m_FullName, L"qt" ) )
         {
             wstring pdbName = Path::GetFileName( filePath.wstring() );
             filePath = wstring( L"C:\\Qt\\5.8\\msvc2015_64\\bin\\" ) + pdbName;
-            if( tr2::sys::exists( filePath ) )
+            if( fs::exists( filePath ) )
             {
                 module->m_FoundPdb = true;
-                module->m_PdbSize = ::tr2::sys::file_size( filePath );
+                module->m_PdbSize = ::fs::file_size( filePath );
                 module->m_PdbName = filePath.wstring();
             }
         }

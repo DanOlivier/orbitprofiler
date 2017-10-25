@@ -11,13 +11,14 @@
 #include "OrbitType.h"
 #include "OrbitSession.h"
 #include "OrbitThread.h"
-#include "Injection.h"
+//#include "Injection.h"
 #include "ScopeTimer.h"
 #include "Serialization.h"
 
-#include <tlhelp32.h>
+//#include <tlhelp32.h>
 
 using namespace std;
+namespace fs = std::experimental::filesystem;
 
 //-----------------------------------------------------------------------------
 Process::Process() : m_ID(0)
@@ -226,7 +227,7 @@ void Process::SortThreadsById()
 //-----------------------------------------------------------------------------
 shared_ptr<Module> Process::FindModule( const wstring & a_ModuleName )
 {
-    wstring moduleName = ToLower( Path::GetFileNameNoExt( a_ModuleName ) );
+    wstring moduleName = ToLower( Path::GetFileNameNoExt( a_ModuleName ).wstring() );
 
     for( auto & it : m_Modules )
     {
@@ -362,11 +363,11 @@ void Process::FindPdbs( const vector< wstring > & a_SearchLocations )
     // Populate list of all available pdb files
     for( const wstring & dir : a_SearchLocations )
     {
-        vector< wstring > pdbFiles = Path::ListFiles( dir, L".pdb" );
-        for( const wstring & pdb : pdbFiles )
+        vector<fs::path> pdbFiles = Path::ListFiles( dir, L".pdb" );
+        for( const fs::path& pdb : pdbFiles )
         {
-            wstring pdbLower = Path::GetFileName( ToLower( pdb ) );
-            nameToPaths[pdbLower].push_back( pdb );
+            wstring pdbLower = Path::GetFileName( ToLower( pdb.wstring() ) ).wstring();
+            nameToPaths[pdbLower].push_back( pdb.wstring() );
         }
     }
 
@@ -378,7 +379,7 @@ void Process::FindPdbs( const vector< wstring > & a_SearchLocations )
         if( !module->m_FoundPdb )
         {
             wstring moduleName = ToLower( module->m_Name );
-            wstring pdbName = Path::StripExtension( moduleName ) + L".pdb";
+            wstring pdbName = Path::StripExtension( moduleName ).wstring() + L".pdb";
 
             const vector< wstring > & pdbs = nameToPaths[pdbName];
 
@@ -394,7 +395,7 @@ void Process::FindPdbs( const vector< wstring > & a_SearchLocations )
                 if( Contains( module->m_DebugSignature, signature ) )
                 {
                     // Found matching pdb
-                    module->m_PdbSize = ::tr2::sys::file_size( module->m_PdbName );
+                    module->m_PdbSize = fs::file_size( module->m_PdbName );
                     break;
                 }
                 else

@@ -45,6 +45,9 @@
 
 #include "SerializationMacros.h"
 
+#define __STDC_FORMAT_MACROS // breakpad
+#include <stdint.h>
+
 //-----------------------------------------------------------------------------
 class CounterStreamBuffer : public std::streambuf
 {
@@ -79,14 +82,27 @@ struct ScopeCounter
 
 #define ORBIT_SIZE_SCOPE( x ) ScopeCounter counter( x )
 
-#define ORBIT_NVP( v, x ) if( a_Version >= v ) a_Archive( cereal::make_nvp( #x, p.x ) )
+#define ORBIT_NVP( v, x ) \
+    if( a_Version >= v ) \
+        a_Archive( cereal::make_nvp( #x, p.x ) )
 
-#define ORBIT_NVP_VAL( v, x ) if( a_Version >= v ){ a_Archive( cereal::make_nvp( #x, x ) ); }
+#define ORBIT_NVP_VAL( v, x ) \
+    if( a_Version >= v ){ \
+        a_Archive( cereal::make_nvp( #x, x ) ); \
+    }
 
-#define ORBIT_NVP_DEBUG( v, x ) if( a_Version >= v ){ ORBIT_SIZE_SCOPE(#x); a_Archive( cereal::make_nvp( #x, x ) ); }
+#define ORBIT_NVP_DEBUG( v, x ) \
+    if( a_Version >= v ){ \
+        ORBIT_SIZE_SCOPE(#x); \
+        a_Archive( cereal::make_nvp( #x, x ) ); \
+    }
 
-#define ORBIT_SERIALIZATION_TEMPLATE_INST( x ) template void x::serialize<cereal::BinaryOutputArchive>(cereal::BinaryOutputArchive & a_Archive, std::uint32_t const a_Version); \
-                                               template void x::serialize<cereal::BinaryInputArchive>(cereal::BinaryInputArchive & a_Archive, std::uint32_t const a_Version);
-#define ORBIT_SERIALIZE( x, v ) CEREAL_CLASS_VERSION( x, v ); \
-                                ORBIT_SERIALIZATION_TEMPLATE_INST( x ); \
-                                template <class Archive> void x::serialize( Archive & a_Archive, std::uint32_t const a_Version )
+#define ORBIT_SERIALIZATION_TEMPLATE_INST( x ) \
+    template void x::serialize<cereal::BinaryOutputArchive>(cereal::BinaryOutputArchive & a_Archive, std::uint32_t const a_Version); \
+    template void x::serialize<cereal::BinaryInputArchive>(cereal::BinaryInputArchive & a_Archive, std::uint32_t const a_Version);
+
+#define ORBIT_SERIALIZE( x, v ) \
+    CEREAL_CLASS_VERSION( x, v ); \
+    ORBIT_SERIALIZATION_TEMPLATE_INST( x ); \
+    template <class Archive> void x::serialize( Archive & a_Archive, std::uint32_t const a_Version )
+    

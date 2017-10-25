@@ -104,7 +104,7 @@ void ModuleManager::DequeueAndLoad()
         wstring pdbName = m_ModulesQueue.back();
         m_ModulesQueue.pop_back();
     
-        module = Capture::GTargetProcess->FindModule( Path::GetFileName( pdbName ) );
+        module = Capture::GTargetProcess->FindModule( Path::GetFileName( pdbName ).wstring() );
         if( module )
         {
             GPdbDbg = module->m_Pdb;

@@ -15,7 +15,8 @@ thread_local int CurrentDepthLocal = 0;
 //-----------------------------------------------------------------------------
 void Timer::Start()
 {
-    m_TID = GetCurrentThreadId();
+    //m_TID = this_thread::get_id();
+    m_TID = pthread_self();
     m_Depth = CurrentDepth++;
     m_SessionID = Message::GSessionID;
     m_PerfCounter.start();

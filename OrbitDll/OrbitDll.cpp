@@ -12,26 +12,26 @@ using namespace std;
 
 extern "C"
 {
-    __declspec(dllexport) void __cdecl OrbitInit( void* a_Host )
+    void OrbitInit( void* a_Host )
     {
         PRINT_FUNC;
         std::string host = (char*)a_Host;
         Orbit::Init( host );
     }
 
-    __declspec( dllexport ) void __cdecl OrbitInitRemote( void* a_Host )
+    void OrbitInitRemote( void* a_Host )
     {
         PRINT_FUNC;
         std::string host = (char*)a_Host;
         Orbit::InitRemote( host );
     }
 
-    __declspec( dllexport ) bool __cdecl OrbitIsConnected()
+    bool OrbitIsConnected()
     {
         return GTcpClient && GTcpClient->IsValid();
     }
 
-    __declspec( dllexport ) bool __cdecl OrbitStart()
+    bool OrbitStart()
     {
         if( OrbitIsConnected() )
         {
@@ -42,7 +42,7 @@ extern "C"
         return false;
     }
 
-    __declspec( dllexport ) bool __cdecl OrbitStop()
+    bool OrbitStop()
     {
         if( OrbitIsConnected() )
         {
@@ -54,6 +54,7 @@ extern "C"
     }
 }
 
+#if _WIN32||_WIN64
 BOOL WINAPI DllMain( _In_ HINSTANCE hinstDLL
                    , _In_ DWORD fdwReason
                    , _In_ LPVOID lpvReserved )
@@ -82,3 +83,4 @@ BOOL WINAPI DllMain( _In_ HINSTANCE hinstDLL
 
     return TRUE;
 }
+#endif

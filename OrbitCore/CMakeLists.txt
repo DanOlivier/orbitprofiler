@@ -75,31 +75,31 @@ set(HEADERS
 )
 
 set(SOURCES
-    Callstack.cpp
+    #Callstack.cpp
     Capture.cpp
-    ContextSwitch.cpp
+    #ContextSwitch.cpp
     CoreApp.cpp
-    DiaManager.cpp
-    DiaParser.cpp
-    Diff.cpp
-    EventBuffer.cpp
-    EventCallbacks.cpp
-    EventTracer.cpp
-    EventUtils.cpp
+    #DiaManager.cpp
+    #DiaParser.cpp
+    #Diff.cpp
+    #EventBuffer.cpp
+    #EventCallbacks.cpp
+    #EventTracer.cpp
+    #EventUtils.cpp
     FunctionStats.cpp
-    Injection.cpp
+    #Injection.cpp
     LogInterface.cpp
     MemoryTracker.cpp
     MiniDump.cpp
     ModuleManager.cpp
-    OrbitDia.cpp
-    OrbitFunction.cpp
+    #OrbitDia.cpp
+    #OrbitFunction.cpp
     OrbitModule.cpp
-    OrbitProcess.cpp
+    #OrbitProcess.cpp
     OrbitRule.cpp
     OrbitSession.cpp
-    OrbitThread.cpp
-    OrbitType.cpp
+    #OrbitThread.cpp
+    #OrbitType.cpp
     OrbitUnreal.cpp
     Params.cpp
     Pdb.cpp
@@ -133,6 +133,13 @@ PRIVATE
 
 target_link_libraries(OrbitCore
     OrbitBase
-	dbghelp.lib
-	${BREAKPAD_LIBRARIES}
+    #dbghelp.lib
+    LLVMBinaryFormat
+    LLVMDebugInfoCodeView
+    LLVMDebugInfoMSF
+    LLVMDebugInfoPDB
+    LLVMObject
+    LLVMObjectYAML
+    LLVMSupport
+    ${BREAKPAD_LIBRARIES}
 )

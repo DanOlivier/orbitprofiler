@@ -7,8 +7,8 @@
 #include <algorithm>
 #include <functional>
 #include <fstream>
-#include <ppl.h>
-#include <tchar.h>
+//#include <ppl.h>
+#include <winpr/tchar.h>
 
 #include "SymbolUtils.h"
 
@@ -25,7 +25,7 @@
 #include "DiaManager.h"
 #include "Path.h"
 
-#include "external/DIA2Dump/dia2dump.h"
+#include "external/DIA2Dump/DIA2Dump.h"
 #include "external/DIA2Dump/PrintSymbol.h"
 
 using namespace std;
@@ -215,7 +215,7 @@ void Pdb::PrintGlobals() const
 wstring Pdb::GetCachedName()
 {
     string pdbName = ws2s( Path::GetFileName( m_FileName ) );
-    tr2::sys::path fileName = GuidToString( m_ModuleInfo.PdbSig70 ) + "-" + ToHexString( m_ModuleInfo.PdbAge ) + "_" + pdbName;
+    fs::path fileName = GuidToString( m_ModuleInfo.PdbSig70 ) + "-" + ToHexString( m_ModuleInfo.PdbAge ) + "_" + pdbName;
     fileName.replace_extension(".bin");
     return fileName.wstring();
 }
@@ -467,7 +467,7 @@ bool Pdb::LoadPdb( const wchar_t* a_PdbName )
 
     string nameStr = ws2s( a_PdbName );
 
-    if( ToLower( Path::GetExtension( a_PdbName ) ) == L".dll" )
+    if( ToLower( Path::GetExtension( a_PdbName ).c_str() ) == L".dll" )
     {
         SCOPE_TIMER_LOG( L"LoadDll Exports" );
         ParseDll( nameStr.c_str() );

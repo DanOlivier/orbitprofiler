@@ -66,7 +66,7 @@ inline void OrbitSymCleanup(HANDLE /*a_Handle*/)
 }
 
 //-----------------------------------------------------------------------------
-template<class Archive>
+/*template<class Archive>
 void serialize( Archive & archive, SYMBOL_INFO & a_SymbolInfo, std::uint32_t const version )
 {
     archive( cereal::binary_data( &a_SymbolInfo, sizeof(SYMBOL_INFO) ) );
@@ -78,4 +78,4 @@ void serialize( Archive & archive, IMAGEHLP_MODULE64 & a_Module, std::uint32_t c
 {
     archive( cereal::binary_data( &a_Module, sizeof(IMAGEHLP_MODULE64) ) );
 }
-
+*/

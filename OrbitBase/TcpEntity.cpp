@@ -56,7 +56,7 @@ void TcpEntity::Stop()
 }
 
 //-----------------------------------------------------------------------------
-void TcpEntity::SendMsg( Message & a_Message, const void* a_Payload )
+void TcpEntity::SendMsg( const Message & a_Message, const void* a_Payload )
 {
     TcpPacket buffer( a_Message, a_Payload );
     m_SendQueue.enqueue( buffer );
@@ -135,8 +135,9 @@ private:
 //-----------------------------------------------------------------------------
 void TcpEntity::SendData()
 {
-    SetThreadName( GetCurrentThreadId(), "TcpSender" );
-
+    //SetThreadName( GetCurrentThreadId(), "TcpSender" );
+    SetThreadName(pthread_self(), "TcpSender");
+    
     while( !m_ExitRequested )
     {
         // Wait for non-empty queue

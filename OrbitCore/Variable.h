@@ -121,7 +121,7 @@ public:
         unsigned long       m_ULong;
         long long           m_LongLong;
         unsigned long long  m_ULongLong;
-        enum                m_Enum;
+        //enum                m_Enum;
         float               m_Float;
         double              m_Double;
         long double         m_LDouble;

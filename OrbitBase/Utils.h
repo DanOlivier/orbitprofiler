@@ -115,7 +115,9 @@ template<class T>
 inline T ToLower( const T & a_Str )
 {
     T str = a_Str;
-    std::transform( str.begin(), str.end(), str.begin(), ::tolower );
+    //std::transform( str.begin(), str.end(), str.begin(), ::tolower );
+    for(auto& c : str)
+        c = ::tolower(c);
     return str;
 }
 

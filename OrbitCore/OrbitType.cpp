@@ -16,12 +16,12 @@
 #include "PrintVar.h"
 #include "OrbitDia.h"
 #include "DiaManager.h"
-#include "DiaParser.h"
+//#include "DiaParser.h"
 #include "Params.h"
 #include "Serialization.h"
 #include "TcpServer.h"
 
-#include <dia2.h>
+//#include <dia2.h>
 
 using namespace std;
 

@@ -1,10 +1,10 @@
 #pragma once
 
 #include "OrbitDbgHelp.h"
-#include "cvconst.h"
+//#include "cvconst.h"
 #include "BaseTypes.h"
 
-#include <string>
+#include <cstring>
 #include <vector>
 
 //-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@ struct Argument
 {
     Argument() { std::memset(this, 0, sizeof(*this)); }
     DWORD      m_Index;
-    CV_HREG_e  m_Reg;
+    //CV_HREG_e  m_Reg;
     DWORD      m_Offset;
     DWORD      m_NumBytes;
 };

@@ -56,9 +56,9 @@ include(CheckStructHasMember)
 #pkg_check_modules(QT5 Qt5Core REQUIRED)
 #find_package(Qt5Core)
 
-#find_package(LLVM REQUIRED CONFIG)
-#message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
-#message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
+find_package(LLVM REQUIRED CONFIG)
+message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
+message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
 
 get_filename_component(EXTERN_ROOT ${CMAKE_SOURCE_DIR}/external REALPATH)
 
@@ -171,7 +171,7 @@ endif()
 
 #add_subdirectory(OrbitAsm)
 add_subdirectory(OrbitBase)
-add_subdirectory(OrbitDll)
+#add_subdirectory(OrbitDll)
 add_subdirectory(OrbitCore)
 add_subdirectory(OrbitGl)
 add_subdirectory(OrbitQt)

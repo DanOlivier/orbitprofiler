@@ -38,7 +38,7 @@ protected:
 template<class T>
 inline void TraceVar( const char* a_VarName, const T& a_Value )
 {
-    stringstream l_StringStream;
+    std::stringstream l_StringStream;
     l_StringStream << a_VarName << " = " << a_Value;
     VariableTracing::Trace( l_StringStream.str().c_str() );
 }

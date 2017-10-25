@@ -2,10 +2,10 @@
 // Copyright Pierric Gimmig 2013-2017
 //-----------------------------------
 #pragma once
-#include "EventGuid.h"
+//#include "EventGuid.h"
 #include "EventBuffer.h"
 
-#include <evntrace.h>
+//#include <evntrace.h>
 
 //-----------------------------------------------------------------------------
 class EventTracer
@@ -30,7 +30,7 @@ protected:
     ULONG64 m_SessionHandle;
     ULONG64 m_TraceHandle;
     std::atomic<bool> m_IsTracing;
-    _EVENT_TRACE_PROPERTIES* m_SessionProperties;
+    //_EVENT_TRACE_PROPERTIES* m_SessionProperties;
     EventBuffer m_EventBuffer;
 };
 

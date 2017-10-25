@@ -5,6 +5,7 @@
 
 //#define _NO_CVCONST_H
 #include "OrbitDbgHelp.h"
+#include "Serialization.h"
 
 #include <vector>
 

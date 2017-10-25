@@ -3,7 +3,6 @@
 //-----------------------------------
 #pragma once
 
-#include <string>
 #include "OrbitDbgHelp.h"
 #include "cvconst.h"
 #include "BaseTypes.h"
@@ -11,6 +10,10 @@
 #include "SerializationMacros.h"
 #include "Utils.h"
 #include "FunctionArgs.h"
+
+#include <string>
+#include <winpr/tchar.h>
+#include <memory>
 
 class Pdb;
 
@@ -22,7 +25,7 @@ struct FunctionParam
     std::wstring     m_ParamType;
     std::wstring     m_Type;
     std::wstring     m_Address;
-    SYMBOL_INFO m_SymbolInfo;
+    //SYMBOL_INFO m_SymbolInfo;
 
     bool InRegister( int a_Index );
     bool IsPointer() { return m_Type.find( L"*" ) != std::wstring::npos; }

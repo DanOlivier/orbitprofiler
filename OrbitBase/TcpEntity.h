@@ -53,8 +53,8 @@ public:
 
     // Note: All Send methods can be called concurrently from multiple threads
     inline void Send(MessageType a_Type) { SendMsg(Message(a_Type), nullptr); }
-    inline void Send(Message & a_Message, void* a_Data);
-    inline void Send(Message & a_Message);
+    inline void Send(const Message & a_Message, void* a_Data);
+    inline void Send(const Message & a_Message);
     inline void Send(std::string& a_String);
     inline void Send(OrbitLogEntry& a_Entry);
     inline void Send(Orbit::UserData& a_Entry);
@@ -66,7 +66,7 @@ public:
     template<class T> void Send( MessageType a_Type , const T& a_Item );
 
 protected:
-    void SendMsg( Message & a_Message, const void* a_Payload );
+    void SendMsg( const Message & a_Message, const void* a_Payload );
     virtual TcpSocket* GetSocket() = 0;
     void SendData();
 
@@ -83,13 +83,13 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-void TcpEntity::Send( Message & a_Message, void* a_Data )
+void TcpEntity::Send( const Message & a_Message, void* a_Data )
 {
     SendMsg( a_Message, a_Data );
 }
 
 //-----------------------------------------------------------------------------
-inline void TcpEntity::Send( Message & a_Message )
+inline void TcpEntity::Send( const Message & a_Message )
 {
     SendMsg( a_Message, a_Message.m_Data );
 }
@@ -143,29 +143,35 @@ void TcpEntity::Send( Orbit::UserData& a_UserData )
 }
 
 //-----------------------------------------------------------------------------
-template<class T> void TcpEntity::Send( Message & a_Message, const std::vector<T> & a_Vector )
+template<class T> 
+void TcpEntity::Send( Message & a_Message, const std::vector<T> & a_Vector )
 {
     a_Message.m_Size = (int)a_Vector.size()*sizeof(T);
     SendMsg(a_Message, (void*)a_Vector.data());
 }
 
 //-----------------------------------------------------------------------------
-template<class T> void TcpEntity::Send( MessageType a_Type, const std::vector<T> & a_Vector )
+template<class T> 
+void TcpEntity::Send( MessageType a_Type, const std::vector<T> & a_Vector )
 {
-    Send(Message(a_Type), a_Vector);
+    Message msg(a_Type);
+    Send(msg, a_Vector);
 }
 
 //-----------------------------------------------------------------------------
-template<class T> void TcpEntity::Send( Message & a_Message, const T& a_Item )
+template<class T>
+ void TcpEntity::Send( Message & a_Message, const T& a_Item )
 {
     a_Message.m_Size = (int)sizeof(T);
     SendMsg(a_Message, (void*)&a_Item);
 }
 
 //-----------------------------------------------------------------------------
-template<class T> void TcpEntity::Send( MessageType a_Type, const T& a_Item )
+template<class T> 
+void TcpEntity::Send( MessageType a_Type, const T& a_Item )
 {
-    Send( Message(a_Type), a_Item );
+    Message msg(a_Type);
+    Send( msg, a_Item );
 }
 
 //-----------------------------------------------------------------------------
