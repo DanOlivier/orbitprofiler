@@ -23,6 +23,8 @@ namespace oqpi {
         virtual ~worker()
         {
             stop();
+            if(thread_)
+                delete thread_;
         }
 
     private:
@@ -41,7 +43,9 @@ namespace oqpi {
             }
 
             // Start the thread, running_ must be set to true beforehand
-            thread_ = _Thread(threadAttributes, [this]() { run(); });
+            if(thread_)
+                delete thread_;
+            thread_ = new _Thread(threadAttributes, [this]() { run(); });
         }
 
         //------------------------------------------------------------------------------------------
@@ -56,9 +60,9 @@ namespace oqpi {
         // If the thread hasn't been detached, this function will block until the worker stops
         virtual void join() override final
         {
-            if (thread_.joinable())
+            if (thread_ && thread_->joinable())
             {
-                thread_.join();
+                thread_->join();
             }
         }
 
@@ -132,7 +136,7 @@ namespace oqpi {
         // Reference to the parent scheduler, used to call signalAvailableWorker
         _Scheduler         &scheduler_;
         // The underlying thread
-        _Thread             thread_;
+        _Thread* thread_ = nullptr; // Tried to use a shared_ptr
         // Notifier used to signal/put to sleep the thread
         _Notifier           notifier_;
         // Whether or not the worker is up and running

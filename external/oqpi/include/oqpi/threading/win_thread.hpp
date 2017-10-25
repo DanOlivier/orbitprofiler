@@ -43,29 +43,6 @@ namespace oqpi {
 
     protected:
         //------------------------------------------------------------------------------------------
-        // Movable
-        win_thread(win_thread &&other) noexcept
-            : handle_(other.handle_)
-            , id_(other.id_)
-        {
-            other.handle_   = nullptr;
-            other.id_       = 0;
-        }
-        //------------------------------------------------------------------------------------------
-        win_thread& operator =(win_thread &&rhs)
-        {
-            if (this != &rhs && oqpi_ensure(handle_ == nullptr && id_ == 0))
-            {
-                handle_     = rhs.handle_;
-                id_         = rhs.id_;
-                rhs.handle_ = nullptr;
-                rhs.id_     = 0;
-            }
-            return (*this);
-        }
-        
-    protected:
-        //------------------------------------------------------------------------------------------
         template<typename _Launcher>
         bool create(const thread_attributes &attributes, void *pData)
         {

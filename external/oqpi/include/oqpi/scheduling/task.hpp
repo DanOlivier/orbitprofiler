@@ -4,6 +4,7 @@
 #include "oqpi/scheduling/task_result.hpp"
 #include "oqpi/scheduling/task_notifier.hpp"
 
+#include <tuple>
 
 namespace oqpi {
 

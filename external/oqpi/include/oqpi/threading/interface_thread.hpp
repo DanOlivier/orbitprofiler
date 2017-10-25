@@ -3,6 +3,7 @@
 #include <tuple>
 #include <memory>
 #include <type_traits>
+#include <functional>
 
 #include "oqpi/empty_layer.hpp"
 #include "oqpi/threading/thread_attributes.hpp"
@@ -32,7 +33,7 @@ namespace oqpi { namespace itfc {
         using base_type                 = typename std::conditional<is_lean, thread_impl, _Layer<thread_impl>>::type;
         // The actual type
         using self_type                 = thread<thread_impl, _Layer>;
-        
+
     public:
         //------------------------------------------------------------------------------------------
         // Returns the number of hardware threads (logical cores)
@@ -70,32 +71,11 @@ namespace oqpi { namespace itfc {
             }
         }
 
-    public:
-        //------------------------------------------------------------------------------------------
-        // Movable
-        thread(self_type &&other)
-            : base_type(std::move(other))
-        {}
-        //------------------------------------------------------------------------------------------
-        self_type& operator =(self_type &&rhs)
-        {
-            if (this != &rhs)
-            {
-                if (joinable())
-                {
-                    std::terminate();
-                }
-                thread_impl::operator =(std::move(rhs));
-            }
-            return (*this);
-        }
-
     private:
         //------------------------------------------------------------------------------------------
         // Not copyable
         thread(const self_type &)                   = delete;
         self_type& operator =(const self_type &)    = delete;
-
 
     public:
         //------------------------------------------------------------------------------------------
@@ -112,7 +92,7 @@ namespace oqpi { namespace itfc {
         bool                joinable()                                  const   { return thread_impl::joinable();                    }
         void                join()                                              { return thread_impl::join();                        }
         void                detach()                                            { return thread_impl::detach();                      }
-                                        
+
         void                setCoreAffinityMask(core_affinity affinity)         { return thread_impl::setCoreAffinityMask(affinity); }
         core_affinity       getCoreAffinityMask()                       const   { return thread_impl::getCoreAffinityMask();         }
 

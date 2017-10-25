@@ -8,6 +8,7 @@
 #include "oqpi/scheduling/worker_context.hpp"
 #include "oqpi/scheduling/task_group_base.hpp"
 
+#include <cstring>
 
 namespace oqpi {
 
