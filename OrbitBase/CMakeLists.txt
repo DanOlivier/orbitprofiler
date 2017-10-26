@@ -67,6 +67,5 @@ PUBLIC
     ${EXTERN_ROOT}/oqpi/include
     ${DIASDKDir}/include
 PRIVATE
-    #${EXTERN_ROOT}/mintomic/include
     ${BREAKPAD_INCLUDE_DIRS}
 )
