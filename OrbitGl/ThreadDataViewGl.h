@@ -13,7 +13,7 @@ public:
 
     enum ColumnType { THREAD_ID, HISTORY, USAGE };
 
-    virtual const std::vector<std::wstring>& GetColumnHeaders();
+    virtual const std::vector<std::wstring>& GetColumnHeaders() override;
     void OnSort(int a_Column, bool a_Toggle = true) override;
     void SetGlPanel( class GlPanel* a_GlPanel ) override;
 

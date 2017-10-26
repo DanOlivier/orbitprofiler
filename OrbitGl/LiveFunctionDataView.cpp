@@ -109,7 +109,7 @@ wstring LiveFunctionsDataView::GetValue( int a_Row, int a_Column )
     case LiveFunction::ADDRESS:
         value = Format( L"0x%llx", function.m_Address + (DWORD64)function.m_Pdb->GetHModule()); break;
     case LiveFunction::MODULE:
-        value = function.m_Pdb->GetName(); break;
+        value = function.m_Pdb->GetName().wstring(); break;
     default: break;
     }
 
@@ -117,8 +117,15 @@ wstring LiveFunctionsDataView::GetValue( int a_Row, int a_Column )
 }
 
 //-----------------------------------------------------------------------------
-#define ORBIT_FUNC_SORT( Member ) [&](int a, int b) { return OrbitUtils::Compare(functions[a]->##Member, functions[b]->##Member, ascending); }
-#define ORBIT_STAT_SORT( Member ) [&](int a, int b) { return OrbitUtils::Compare(functions[a]->m_Stats->##Member, functions[b]->m_Stats->##Member, ascending); }
+#define ORBIT_FUNC_SORT(Member) \
+    [&](int a, int b) { \
+        return OrbitUtils::Compare(functions[a]->Member, functions[b]->Member, ascending); \
+    }
+#define ORBIT_STAT_SORT(Member) \
+    [&](int a, int b) { \
+        return OrbitUtils::Compare( \
+            functions[a]->m_Stats->Member, functions[b]->m_Stats->Member, ascending); \
+    }
 
 //-----------------------------------------------------------------------------
 void LiveFunctionsDataView::OnSort( int a_Column, bool a_Toggle )
@@ -145,6 +152,9 @@ void LiveFunctionsDataView::OnSort( int a_Column, bool a_Toggle )
     case LiveFunction::ADDRESS:  sorter = ORBIT_FUNC_SORT( m_Address );        break;
     case LiveFunction::MODULE:   sorter = ORBIT_FUNC_SORT( m_Pdb->GetName() ); break;
     case LiveFunction::SELECTED: sorter = ORBIT_FUNC_SORT( IsSelected() );     break;
+    case LiveFunction::INDEX:
+    case LiveFunction::NUM_EXPOSED_MEMBERS:
+        break;
     }
 
     if( sorter ) 

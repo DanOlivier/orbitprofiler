@@ -8,20 +8,23 @@
 #include "OrbitType.h"
 #include "SerializationMacros.h"
 
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;    
+
 //-----------------------------------------------------------------------------
 class CaptureSerializer
 {
 public:
     CaptureSerializer();
-    void Save( const std::wstring a_FileName );
-    void Load( const std::wstring a_FileName );
+    void Save( const fs::path& a_FileName );
+    void Load( const fs::path& a_FileName );
 
     template <class T> void Save( T & a_Archive );
 
     class  TimeGraph*        m_TimeGraph;
     class  SamplingProfiler* m_SamplingProfiler;
 
-    std::string              m_CaptureName;
+    fs::path                 m_CaptureName;
     int                      m_Version;
     int                      m_TimerVersion;
     int                      m_NumTimers;

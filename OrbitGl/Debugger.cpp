@@ -11,10 +11,10 @@
 #include "Path.h"
 #include "PrintVar.h"
 
-#include <psapi.h>
+//#include <psapi.h>
 #include <thread>
 #include <string>
-#include <tchar.h>
+//#include <tchar.h>
 
 using namespace std;
 
@@ -29,7 +29,7 @@ Debugger::~Debugger()
 }
 
 //-----------------------------------------------------------------------------
-void Debugger::LaunchProcess( const wstring & a_ProcessName, const wstring & a_WorkingDir, const wstring & a_Args )
+void Debugger::LaunchProcess( const fs::path& a_ProcessName, const fs::path& a_WorkingDir, const wstring & a_Args )
 {
     thread t( &Debugger::DebuggerThread, this, a_ProcessName, a_WorkingDir, a_Args );
     t.detach();
@@ -54,7 +54,7 @@ void Debugger::SendThawMessage()
 {
     GTcpServer->Send( Msg_ThawMainThread, m_WaitLoop );
 }
-
+#if 0 // XXX
 #define BUFSIZE 512
 //-----------------------------------------------------------------------------
 string GetFileNameFromHandle( HANDLE hFile )
@@ -148,7 +148,7 @@ HANDLE hProcess = 0;
 void* startAddress = 0;
 
 //-----------------------------------------------------------------------------
-void Debugger::DebuggerThread( const wstring & a_ProcessName, const wstring & a_WorkingDir, const wstring & a_Args )
+void Debugger::DebuggerThread( const fs::path& a_ProcessName, const fs::path& a_WorkingDir, const wstring & a_Args )
 {
     SetThreadName( pthread_self(), "Debugger" );
 
@@ -158,7 +158,7 @@ void Debugger::DebuggerThread( const wstring & a_ProcessName, const wstring & a_
     si.cb = sizeof( si );
     ZeroMemory( &pi, sizeof( pi ) );
 
-    wstring dir = a_WorkingDir.size() ? a_WorkingDir : Path::GetDirectory( a_ProcessName );
+    fs::path dir = a_WorkingDir.empty() ? a_WorkingDir : Path::GetDirectory( a_ProcessName );
     wstring args = a_ProcessName + L" " + a_Args;
     TCHAR commandline[MAX_PATH + 1];
     int numChars = (int)min( (size_t)MAX_PATH, args.size() );
@@ -331,3 +331,4 @@ void Debugger::DebuggerThread( const wstring & a_ProcessName, const wstring & a_
         }
     }
 }
+#endif

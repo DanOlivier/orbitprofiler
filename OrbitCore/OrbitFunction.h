@@ -58,7 +58,7 @@ public:
     const std::wstring & PrettyName();
     inline const std::string & PrettyNameStr() { if( m_PrettyNameStr.size() == 0 ) m_PrettyNameStr = ws2s( m_PrettyName ); return m_PrettyNameStr; }
     inline const std::wstring & Lower() { if( m_PrettyNameLower.size() == 0 ) m_PrettyNameLower = ToLower( m_PrettyName ); return m_PrettyNameLower; }
-    static const TCHAR* GetCallingConventionString( int a_CallConv );
+    static const wchar_t* GetCallingConventionString( int a_CallConv );
     void ProcessArgumentInfo();
     bool IsMemberFunction();
     unsigned long long Hash() { if( m_NameHash == 0 ) { m_NameHash = StringHash( m_PrettyName ); } return m_NameHash; }

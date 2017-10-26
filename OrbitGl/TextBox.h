@@ -6,6 +6,8 @@
 #include "CoreMath.h"
 #include "ScopeTimer.h"
 
+#include <float.h>
+
 class TextRenderer;
 
 //-----------------------------------------------------------------------------

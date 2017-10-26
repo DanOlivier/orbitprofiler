@@ -13,6 +13,8 @@
 #include "Serialization.h"
 #include "DiaParser.h"
 
+#include <llvm/DebugInfo/PDB/PDBSymbol.h>
+
 using namespace std;
 
 //-----------------------------------------------------------------------------

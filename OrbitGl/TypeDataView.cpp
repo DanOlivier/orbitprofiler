@@ -12,6 +12,8 @@
 #include "OrbitDia.h"
 #include <algorithm>
 
+#include <llvm/DebugInfo/PDB/PDBSymbol.h>
+
 using namespace std;
 
 //-----------------------------------------------------------------------------
@@ -99,7 +101,7 @@ wstring TypesDataView::GetValue( int a_Row, int a_Column )
     case Type::BASE_OFFSET:                                
         value = Format(L"%d", type.m_BaseOffset);          break;
     case Type::MODULE:                                     
-        value = type.m_Pdb->GetName();                     break;
+        value = type.m_Pdb->GetName().wstring();           break;
     default:                                               break;
     }
 
@@ -160,7 +162,10 @@ void TypesDataView::ParallelFilter( const wstring & a_Filter )
 }
 
 //-----------------------------------------------------------------------------
-#define ORBIT_TYPE_SORT( Member ) [&](int a, int b) { return OrbitUtils::Compare(types[a]->##Member, types[b]->##Member, ascending); }
+#define ORBIT_TYPE_SORT(Member) \
+    [&](int a, int b) { \
+        return OrbitUtils::Compare(types[a]->Member, types[b]->Member, ascending); \
+    }
 
 //-----------------------------------------------------------------------------
 void TypesDataView::OnSort( int a_Column, bool a_Toggle )
@@ -189,6 +194,7 @@ void TypesDataView::OnSort( int a_Column, bool a_Toggle )
     case Type::BASE_OFFSET:        sorter   = ORBIT_TYPE_SORT(m_BaseOffset);     break;
     case Type::MODULE:             sorter   = ORBIT_TYPE_SORT(m_Pdb->GetName()); break;
     case Type::SELECTED:           sorter   = ORBIT_TYPE_SORT(m_Selected);       break;
+    default: break;
     }
 
     if( sorter )

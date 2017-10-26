@@ -51,10 +51,10 @@ bool Module::LoadDebugInfo()
 //-----------------------------------------------------------------------------
 ORBIT_SERIALIZE( Module, 0 )
 {
-    ORBIT_NVP_VAL( 0, m_Name );
-    ORBIT_NVP_VAL( 0, m_FullName );
-    ORBIT_NVP_VAL( 0, m_PdbName );
-    ORBIT_NVP_VAL( 0, m_Directory );
+    //XXX: ORBIT_NVP_VAL( 0, m_Name );
+    //XXX: ORBIT_NVP_VAL( 0, m_FullName );
+    //XXX: ORBIT_NVP_VAL( 0, m_PdbName );
+    //XXX: ORBIT_NVP_VAL( 0, m_Directory );
     ORBIT_NVP_VAL( 0, m_PrettyName );
     ORBIT_NVP_VAL( 0, m_AddressRange );
     ORBIT_NVP_VAL( 0, m_DebugSignature );

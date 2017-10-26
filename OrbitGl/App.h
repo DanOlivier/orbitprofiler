@@ -14,6 +14,9 @@
 #include <queue>
 #include <map>
 
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+
 struct CallStack;
 class Process;
 
@@ -34,19 +37,20 @@ public:
     void CheckForUpdate();
     void CheckDebugger();
 
-    std::wstring GetCaptureFileName();
-    std::wstring GetSessionFileName();
-    void OnSaveSession( const std::wstring a_FileName );
-    void OnLoadSession( const std::wstring a_FileName );
-    void OnSaveCapture( const std::wstring a_FileName );
-    void OnLoadCapture( const std::wstring a_FileName );
-    void OnOpenPdb(const std::wstring a_FileName);
-    void OnLaunchProcess(const std::wstring a_ProcessName, const std::wstring a_WorkingDir, const std::wstring a_Args );
-    void Inject(const std::wstring a_FileName);
+    fs::path GetCaptureFileName();
+    fs::path GetSessionFileName();
+    void OnSaveSession( const fs::path& a_FileName );
+    void OnLoadSession( const fs::path& a_FileName );
+    void OnSaveCapture( const fs::path& a_FileName );
+    void OnLoadCapture( const fs::path& a_FileName );
+    void OnOpenPdb(const fs::path& a_FileName);
+    void OnLaunchProcess(const fs::path& a_ProcessName, 
+        const fs::path& a_WorkingDir, const std::wstring a_Args );
+    void Inject(const fs::path& a_FileName);
     void StartCapture();
     void StopCapture();
     void ToggleCapture();
-    void OnOpenCapture(const std::wstring a_FileName);
+    void OnOpenCapture(const fs::path& a_FileName);
     void OnDisconnect();
     void OnPdbLoaded();
     void LogMsg( const std::wstring & a_Msg ) override;
@@ -61,7 +65,7 @@ public:
     void UpdateVariable( Variable* a_Variable ) override;
     void ClearWatchedVariables();
     void RefreshWatch();
-    virtual void Disassemble( Function* a_Function, const char* a_MachineCode, int a_Size );
+    virtual void Disassemble( Function* a_Function, const char* a_MachineCode, int a_Size ) override;
 
     int* GetScreenRes() { return m_ScreenRes; }
 
@@ -78,7 +82,7 @@ public:
     void RegisterRuleEditor( class RuleEditor* a_RuleEditor );
 
     void Unregister( class DataViewModel* a_Model );
-    bool SelectProcess( const std::wstring& a_Process );
+    bool SelectProcess( const fs::path& a_Process );
     bool SelectProcess( unsigned long a_ProcessID );
     bool Inject( unsigned long a_ProcessId );
     static void AddSamplingReport( std::shared_ptr< class SamplingProfiler> & a_SamplingProfiler );
@@ -133,7 +137,7 @@ public:
     void LaunchRuleEditor( Function* a_Function );
 
     RuleEditor* GetRuleEditor() { return m_RuleEditor; }
-    virtual const std::unordered_map<DWORD64, std::shared_ptr<class Rule> >* GetRules();
+    virtual const std::unordered_map<DWORD64, std::shared_ptr<class Rule> >* GetRules() override;
 
 private:
     std::vector< std::string >            m_Arguments;

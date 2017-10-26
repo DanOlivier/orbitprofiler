@@ -299,11 +299,11 @@ string CWindowsMessageToString::GetStringFromMsg(DWORD dwMessage, bool bShowFreq
 string OrbitUtils::GetTimeStamp()
 {
     time_t rawtime;
-    char buffer[80];
 
     time(&rawtime);
     struct tm* timeinfo = localtime(&rawtime);
 
+    char buffer[80];
     strftime(buffer, 80, "%Y_%m_%d_%H_%M_%S", timeinfo);
 
     return string(buffer);

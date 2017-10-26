@@ -55,7 +55,7 @@ void TextRenderer::Init()
 
     m_Font = NULL;
     m_Atlas = texture_atlas_new(512, 512, 1);
-    string exePath = ws2s(Path::GetExecutablePath());
+    string exePath = Path::GetExecutablePath();
     string fontFileName = exePath + "../../../external/freetype-gl/fonts/Vera.ttf";
     string vertShaderFileName = exePath + "../../../external/freetype-gl/shaders/v3f-t2f-c4f.vert";
     string fragShaderFileName = exePath + "../../../external/freetype-gl/shaders/v3f-t2f-c4f.frag";

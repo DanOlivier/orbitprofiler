@@ -23,6 +23,7 @@
 #include "ServerTimerManager.h"
 
 #include <algorithm>
+#include <limits.h>
 
 using namespace std;
 
@@ -253,49 +254,30 @@ void TimeGraph::AddContextSwitch( const ContextSwitch & a_CS )
 
     if( a_CS.m_Type == ContextSwitch::Out )
     {
-
-        if( true )
-        {
-            // Processor time line
-            map< long long, ContextSwitch > & csMap = m_CoreUtilizationMap[a_CS.m_ProcessorIndex];
-
-            if( csMap.rbegin() != csMap.rend() )
-            {
-                ContextSwitch & lastCS = csMap.rbegin()->second;
-                if( lastCS.m_Type == ContextSwitch::In )
-                {
-                    Timer timer;
-                    timer.m_PerfCounter.set_start(lastCS.m_Time);
-                    timer.m_PerfCounter.set_end(a_CS.m_Time);
-                    timer.m_TID = a_CS.m_ThreadId;
-                    timer.m_Processor = (int8_t)a_CS.m_ProcessorIndex;
-                    timer.m_SessionID = Message::GSessionID;
-                    timer.SetType(Timer::CORE_ACTIVITY);
-                
-                    GTimerManager->Add(timer);
-                }
-            }
-        }
-
-        if( false )
-        {
+        // Processor time line
+        map< long long, ContextSwitch >& csMap = m_CoreUtilizationMap[a_CS.m_ProcessorIndex];
+        if(false){
             // Thread time line
-            map< long long, ContextSwitch > & csMap = m_ContextSwitchesMap[a_CS.m_ThreadId];
-
-            if( csMap.rbegin() != csMap.rend() )
+            csMap = m_ContextSwitchesMap[a_CS.m_ThreadId];
+        }
+        if( csMap.rbegin() != csMap.rend() )
+        {
+            ContextSwitch & lastCS = csMap.rbegin()->second;
+            if( lastCS.m_Type == ContextSwitch::In )
             {
-                ContextSwitch & lastCS = csMap.rbegin()->second;
-                if( lastCS.m_Type == ContextSwitch::In )
-                {
-                    Timer timer;
-                    timer.m_PerfCounter.set_start( lastCS.m_Time );
-                    timer.m_PerfCounter.set_end( a_CS.m_Time );
-                    timer.m_TID = a_CS.m_ThreadId;
-                    timer.m_SessionID = Message::GSessionID;
+                Timer timer;
+                timer.m_PerfCounter.set_start(lastCS.m_Time);
+                timer.m_PerfCounter.set_end(a_CS.m_Time);
+                timer.m_TID = a_CS.m_ThreadId;
+                if(true)
+                    timer.m_Processor = (int8_t)a_CS.m_ProcessorIndex;
+                timer.m_SessionID = Message::GSessionID;
+                if(true)
+                    timer.SetType(Timer::CORE_ACTIVITY);
+                else
                     timer.SetType(Timer::THREAD_ACTIVITY);
-
-                    GTimerManager->Add( timer );
-                }
+                
+                GTimerManager->Add(timer);
             }
         }
     }

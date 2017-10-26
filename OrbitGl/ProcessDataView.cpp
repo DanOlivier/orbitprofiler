@@ -57,7 +57,7 @@ wstring ProcessesDataView::GetValue( int row, int col )
     case PDV_ProcessID:
         value = to_wstring((long)process.GetID());     break;
     case PDV_ProcessName:
-        value = process.GetName(); 
+        value = process.GetName().wstring(); 
         if( process.IsElevated() ) { value+=L"*"; }
         if( process.GetIsRemote() ){ value += L"[REMOTE]"; }
         break;
@@ -75,11 +75,14 @@ wstring ProcessesDataView::GetValue( int row, int col )
 wstring ProcessesDataView::GetToolTip( int a_Row, int a_Column )
 {
     const Process & process = *GetProcess(a_Row);
-    return process.GetFullName();
+    return process.GetFullName().wstring();
 }
 
 //-----------------------------------------------------------------------------
-#define ORBIT_PROC_SORT( Member ) [&](int a, int b) { return OrbitUtils::Compare(processes[a]->##Member, processes[b]->##Member, ascending); }
+#define ORBIT_PROC_SORT(Member) \
+    [&](int a, int b) { \
+        return OrbitUtils::Compare(processes[a]->Member, processes[b]->Member, ascending); \
+    }
 
 //-----------------------------------------------------------------------------
 void ProcessesDataView::OnSort(int a_Column, bool a_Toggle)
@@ -102,10 +105,21 @@ void ProcessesDataView::OnSort(int a_Column, bool a_Toggle)
 
     switch (pdvColumn)
     {
-    case PDV_ProcessID:   sorter = ORBIT_PROC_SORT(GetID());         break;
-    case PDV_ProcessName: sorter = ORBIT_PROC_SORT(GetName());       break;
-    case PDV_CPU: ascending = false; sorter = ORBIT_PROC_SORT(GetCpuUsage()); break;
-    case PDV_Type:        sorter = ORBIT_PROC_SORT(GetIs64Bit());    break;
+    case PDV_ProcessID:
+        sorter = ORBIT_PROC_SORT(GetID());
+        break;
+    case PDV_ProcessName:
+        sorter = ORBIT_PROC_SORT(GetName());
+        break;
+    case PDV_CPU:
+        ascending = false;
+        sorter = ORBIT_PROC_SORT(GetCpuUsage());
+        break;
+    case PDV_Type:
+        sorter = ORBIT_PROC_SORT(GetIs64Bit());
+        break;
+    default:
+        break;
     }
 
     if (sorter)
@@ -196,12 +210,12 @@ void ProcessesDataView::SetSelectedItem()
 }
 
 //-----------------------------------------------------------------------------
-bool ProcessesDataView::SelectProcess( const wstring & a_ProcessName )
+bool ProcessesDataView::SelectProcess( const fs::path& a_ProcessName )
 {
 	for( int i = 0; i < GetNumElements(); ++i )
 	{
 		Process & process = *GetProcess(i);
-		if ( process.GetFullName().find( a_ProcessName ) != string::npos )
+		if ( process.GetFullName().filename() == a_ProcessName )
 		{
 			OnSelect(i);
             Capture::GPresetToLoad = L"";
@@ -242,7 +256,7 @@ void ProcessesDataView::OnFilter( const wstring & a_Filter )
     for (int i = 0; i < (int)processes.size(); ++i)
     {
         const Process & process = *processes[i];
-        wstring name = ToLower( process.GetName() );
+        wstring name = ToLower( process.GetName().wstring() );
         wstring type = process.GetIs64Bit() ? L"64" : L"32";
 
         bool match = true;

@@ -17,6 +17,6 @@ typedef gte::Vector4<unsigned char> Color;
 template<class T>
 constexpr const T& clamp( const T& v, const T& lo, const T& hi )
 {
-    return min( max(v, lo), hi );
+    return std::min( std::max(v, lo), hi );
 }
 

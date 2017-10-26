@@ -5,7 +5,9 @@
 #include "App.h"
 #include "Callstack.h"
 #include "SamplingProfiler.h"
+
 #include <chrono>
+//#include <cwchar>
 
 using namespace std;
 
@@ -51,10 +53,9 @@ wstring LogDataView::GetValue( int a_Row, int a_Column )
         auto micros = PerfCounter::get_microseconds(Capture::GCaptureTimer.m_PerfCounter.get_start(), entry.m_Time);
         chrono::system_clock::time_point sysTime = Capture::GCaptureTimePoint + chrono::microseconds(micros);
         time_t now_c = chrono::system_clock::to_time_t(sysTime);
-        tm now_tm;
-        localtime_s(&now_tm, &now_c);
-        TCHAR buffer[256];
-        wcsftime( buffer, sizeof( buffer ), L"%H:%M:%S", &now_tm );
+        tm* now_tm = localtime(&now_c);
+        wchar_t buffer[256];
+        wcsftime( buffer, sizeof( buffer ), L"%H:%M:%S", now_tm );
 
         value = buffer;
         break;

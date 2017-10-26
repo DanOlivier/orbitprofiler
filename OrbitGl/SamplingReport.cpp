@@ -5,7 +5,7 @@
 #include "SamplingReport.h"
 #include "SamplingProfiler.h"
 #include "SamplingReportDataView.h"
-#include "CallstackDataView.h"
+#include "CallStackDataView.h"
 
 using namespace std;
 

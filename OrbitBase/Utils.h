@@ -81,7 +81,7 @@ inline size_t SizeOfArray(const T(&)[N])
 }
 
 template <typename T, typename U>
-inline void Fill( T& a_Array, U& a_Value )
+inline void Fill( T& a_Array, const U& a_Value )
 {
     std::fill( std::begin(a_Array), std::end(a_Array), a_Value );
 }

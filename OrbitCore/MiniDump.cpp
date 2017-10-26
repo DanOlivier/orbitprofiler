@@ -16,9 +16,9 @@ using namespace google_breakpad;
 namespace fs = std::experimental::filesystem;
 
 //-----------------------------------------------------------------------------
-MiniDump::MiniDump( wstring a_FileName )
+MiniDump::MiniDump( const fs::path& a_FileName )
 {
-    m_MiniDump = new google_breakpad::Minidump( ws2s(a_FileName) );
+    m_MiniDump = new google_breakpad::Minidump( a_FileName );
     m_MiniDump->Read();
 }
 
@@ -52,15 +52,15 @@ shared_ptr<Process> MiniDump::ToOrbitProcess()
 
             shared_ptr<Module> mod = make_shared<Module>();
             
-            mod->m_FullName = fullName.wstring();
-            mod->m_Name = Path::GetFileName( fullName ).wstring();
+            mod->m_FullName = fullName;
+            mod->m_Name = Path::GetFileName( fullName );
             
-            if( EndsWith( mod->m_Name, L".exe" ) )
+            if( mod->m_Name.extension() == L".exe" )
             {
                 process->m_Name = mod->m_Name;
             }
 
-            mod->m_Directory = Path::GetDirectory( fullName ).wstring();
+            mod->m_Directory = Path::GetDirectory( fullName );
             mod->m_AddressStart = module->base_address();
             mod->m_AddressEnd =   module->base_address() + module->size();
             mod->m_DebugSignature = s2ws( module->debug_identifier() );

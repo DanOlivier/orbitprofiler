@@ -3,7 +3,7 @@
 #include "Serialization.h"
 #include "ScopeTimer.h"
 
-#include "capture.h"
+#include "Capture.h"
 #include "TextBox.h"
 #include "TimeGraph.h"
 #include "Callstack.h"
@@ -28,7 +28,7 @@ CaptureSerializer::CaptureSerializer()
 }
 
 //-----------------------------------------------------------------------------
-void CaptureSerializer::Save( const wstring a_FileName )
+void CaptureSerializer::Save( const fs::path& a_FileName )
 {
     Capture::PreSave();
 
@@ -40,7 +40,7 @@ void CaptureSerializer::Save( const wstring a_FileName )
     GStreamCounter.Reset();
 
     // Binary
-    m_CaptureName = ws2s(a_FileName);
+    m_CaptureName = a_FileName;
     ofstream myfile( a_FileName, ios::binary );
     if( !myfile.fail() )
     {
@@ -117,7 +117,7 @@ template <class T> void CaptureSerializer::Save( T & a_Archive )
 }
 
 //-----------------------------------------------------------------------------
-void CaptureSerializer::Load( const wstring a_FileName )
+void CaptureSerializer::Load( const fs::path& a_FileName )
 {
     SCOPE_TIMER_LOG( Format( L"Loading capture %s", a_FileName.c_str() ) );
 
@@ -176,7 +176,7 @@ void CaptureSerializer::Load( const wstring a_FileName )
 //-----------------------------------------------------------------------------
 ORBIT_SERIALIZE( CaptureSerializer, 0 )
 {
-    ORBIT_NVP_VAL( 0, m_CaptureName );
+    //XXX:ORBIT_NVP_VAL( 0, m_CaptureName );
     ORBIT_NVP_VAL( 0, m_Version );
     ORBIT_NVP_VAL( 0, m_TimerVersion );
     ORBIT_NVP_VAL( 0, m_NumTimers );

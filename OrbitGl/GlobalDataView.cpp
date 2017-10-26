@@ -64,23 +64,31 @@ wstring GlobalsDataView::GetValue( int a_Row, int a_Column )
     switch ( s_HeaderMap[a_Column] )
     {
     case Variable::INDEX:
-        value = Format(L"%d", a_Row);  break;
+        value = Format(L"%d", a_Row);
+        break;
     case Variable::SELECTED:
-        value = variable.m_Selected ? L"*" : L""; break;
+        value = variable.m_Selected ? L"*" : L"";
+        break;
     case Variable::NAME:
-        value = variable.m_Name;              break;
+        value = variable.m_Name;
+        break;
     case Variable::TYPE:
-        value = variable.m_Type;              break;
+        value = variable.m_Type;
+        break;
     case Variable::FILE:
-        value = variable.m_File;              break;
+        value = variable.m_File;
+        break;
     case Variable::MODULE:
-        value = variable.m_Pdb->GetName();    break;
+        value = variable.m_Pdb->GetName().wstring();
+        break;
     /*case Variable::MODBASE:
         value = wxString::Format("0x%I64x", function.m_ModBase);  break;*/
     case Variable::ADDRESS:
-        value = Format( L"0x%llx", variable.m_Address ); break;
+        value = Format( L"0x%llx", variable.m_Address );
+        break;
     case Variable::LINE:
-        value = Format( L"%i", variable.m_Line );        break;
+        value = Format( L"%i", variable.m_Line );
+        break;
     default: break;;
     }
 
@@ -88,7 +96,10 @@ wstring GlobalsDataView::GetValue( int a_Row, int a_Column )
 }
 
 //-----------------------------------------------------------------------------
-#define ORBIT_FUNC_SORT( Member ) [&](int a, int b) { return OrbitUtils::Compare(functions[a]->##Member, functions[b]->##Member, ascending); }
+#define ORBIT_FUNC_SORT(Member) \
+    [&](int a, int b) { \
+        return OrbitUtils::Compare(functions[a]->Member, functions[b]->Member, ascending); \
+    }
 
 //-----------------------------------------------------------------------------
 void GlobalsDataView::OnSort(int a_Column, bool a_Toggle)
@@ -112,6 +123,10 @@ void GlobalsDataView::OnSort(int a_Column, bool a_Toggle)
     case Variable::MODULE:   sorter = ORBIT_FUNC_SORT(m_Pdb->GetName());   break;
     case Variable::FILE:     sorter = ORBIT_FUNC_SORT(m_File);     break;
     case Variable::SELECTED: sorter = ORBIT_FUNC_SORT(m_Selected); break;
+    case Variable::LINE:
+    case Variable::INDEX:
+    case Variable::NUM_EXPOSED_MEMBERS:
+        break;
     }
 
     if (sorter)

@@ -13,8 +13,8 @@ public:
 
     virtual const std::vector<std::wstring>& GetColumnHeaders() override;
     virtual const std::vector<float>& GetColumnHeadersRatios() override;
-    virtual const std::vector<std::wstring>& GetContextMenu(int a_Index);
-    virtual std::wstring GetValue( int a_Row, int a_Column );
+    virtual const std::vector<std::wstring>& GetContextMenu(int a_Index) override;
+    virtual std::wstring GetValue( int a_Row, int a_Column ) override;
 
     void OnFilter( const std::wstring & a_Filter ) override;
     void ParallelFilter();

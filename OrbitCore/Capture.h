@@ -39,10 +39,10 @@ struct Capture
     static void Update();
     static void DisplayStats();
     static void TestHooks();
-    static void OpenCapture( const std::wstring & a_CaptureName );
+    static void OpenCapture( const fs::path & a_CaptureName );
     static bool IsOtherInstanceRunning();
     static void LoadSession( const std::shared_ptr<Session> & a_Session );
-    static void SaveSession( const std::wstring & a_FileName );
+    static void SaveSession( const fs::path & a_FileName );
     static void NewSamplingProfiler();
     static bool IsTrackingEvents();
     static bool IsRemote();

@@ -127,16 +127,19 @@ void OrbitApp::SetCommandLineArguments(const vector< string > & a_Args)
 //-----------------------------------------------------------------------------
 void GetDesktopResolution(int& horizontal, int& vertical)
 {
+    /*XXX: re-implement!
     RECT desktop;
     // Get a handle to the desktop window
     const HWND hDesktop = GetDesktopWindow();
     // Get the size of screen to the variable desktop
     GetWindowRect(hDesktop, &desktop);
+    
     // The top left corner will have coordinates (0,0)
     // and the bottom right corner will have coordinates
     // (horizontal, vertical)
     horizontal = desktop.right;
     vertical = desktop.bottom;
+    */
 }
 
 //-----------------------------------------------------------------------------
@@ -152,8 +155,6 @@ bool OrbitApp::Init()
     GCoreApp = GOrbitApp;
     GTimerManager = new ServerTimerManager();
     GTcpServer = new TcpServer();
-
-    Path::Init();
 
     DiaManager::InitMsDiaDll();
     GModuleManager.Init();
@@ -197,7 +198,7 @@ void OrbitApp::PostInit()
 void OrbitApp::LoadFileMapping()
 {
     m_FileMapping.clear();
-    wstring fileName = Path::GetFileMappingFileName();
+    fs::path fileName = Path::GetFileMappingFileName();
     if ( !Path::FileExists( fileName ) )
     {
         ofstream outfile( fileName );
@@ -255,7 +256,7 @@ void OrbitApp::LoadSymbolsFile()
 {
     m_SymbolLocations.clear();
 
-    wstring fileName = Path::GetSymbolsFileName();
+    fs::path fileName = Path::GetSymbolsFileName();
     if( !Path::FileExists( fileName ) )
     {
         ofstream outfile( fileName );
@@ -292,9 +293,9 @@ void OrbitApp::LoadSymbolsFile()
 //-----------------------------------------------------------------------------
 void OrbitApp::ListSessions()
 {
-    vector< wstring > sessionFileNames = Path::ListFiles( Path::GetPresetPath(), L".opr" );
+    vector< fs::path > sessionFileNames = Path::ListFiles( Path::GetPresetPath(), L".opr" );
     vector< shared_ptr< Session > > sessions;
-    for( wstring & fileName : sessionFileNames )
+    for( auto& fileName : sessionFileNames )
     {
         shared_ptr<Session> session = make_shared<Session>();
 
@@ -302,7 +303,7 @@ void OrbitApp::ListSessions()
         if( !file.fail() )
         {
             cereal::BinaryInputArchive archive( file );
-            archive( *session );
+            //archive( *session ); XXX: implement serialization of fs::path
             file.close();
             session->m_FileName = fileName;
             sessions.push_back(session);
@@ -396,7 +397,7 @@ void OrbitApp::CallHomeThread()
     if( stream.fail() )
     {
         asio::error_code error = stream.error();
-        OutputDebugStringA( error.message().c_str() );
+        PrintDbg( error.message() );
         return;
     }
 
@@ -493,7 +494,7 @@ void OrbitApp::MainTick()
     
     if( Capture::GProcessToInject != L"" )
     {
-        cout << "Injecting into " << ws2s(Capture::GTargetProcess->GetFullName()) << endl;
+        cout << "Injecting into " << Capture::GTargetProcess->GetFullName() << endl;
         cout << "Orbit host: " << ws2s(Capture::GCaptureHost) << endl;
         GOrbitApp->SelectProcess(Capture::GProcessToInject);
         Capture::InjectRemote();
@@ -652,7 +653,7 @@ void OrbitApp::GoToCode( DWORD64 a_Address )
 }
 
 //-----------------------------------------------------------------------------
-void OrbitApp::OnOpenPdb( const wstring a_FileName )
+void OrbitApp::OnOpenPdb( const fs::path& a_FileName )
 {
     Capture::GTargetProcess = make_shared<Process>();
     shared_ptr<Module> mod = make_shared<Module>();
@@ -676,25 +677,25 @@ void OrbitApp::OnOpenPdb( const wstring a_FileName )
 }
 
 //-----------------------------------------------------------------------------
-void OrbitApp::OnLaunchProcess( const wstring a_ProcessName, const wstring a_WorkingDir, const wstring a_Args )
+void OrbitApp::OnLaunchProcess( const fs::path& a_ProcessName, const fs::path& a_WorkingDir, const wstring a_Args )
 {
     m_Debugger->LaunchProcess( a_ProcessName, a_WorkingDir, a_Args );
 }
 
 //-----------------------------------------------------------------------------
-wstring OrbitApp::GetCaptureFileName()
+fs::path OrbitApp::GetCaptureFileName()
 {
-    return Path::StripExtension( Capture::GTargetProcess->GetName() ) + L"_" + OrbitUtils::GetTimeStampW() + L".orbit";
+    return Path::StripExtension( Capture::GTargetProcess->GetName() ) / L"_" / OrbitUtils::GetTimeStampW() / L".orbit";
 }
 
 //-----------------------------------------------------------------------------
-wstring OrbitApp::GetSessionFileName()
+fs::path OrbitApp::GetSessionFileName()
 {
     return Capture::GSessionPresets ? Capture::GSessionPresets->m_FileName : L"";
 }
 
 //-----------------------------------------------------------------------------
-void OrbitApp::OnSaveSession( const wstring a_FileName )
+void OrbitApp::OnSaveSession( const fs::path& a_FileName )
 {
     Capture::SaveSession( a_FileName );
     ListSessions();
@@ -702,17 +703,18 @@ void OrbitApp::OnSaveSession( const wstring a_FileName )
 }
 
 //-----------------------------------------------------------------------------
-void OrbitApp::OnLoadSession( const wstring a_FileName )
+void OrbitApp::OnLoadSession( const fs::path& a_FileName )
 {
     shared_ptr<Session> session = make_shared<Session>();
 
-    wstring fileName = Path::GetDirectory( a_FileName ) == L"" ? Path::GetPresetPath() + a_FileName : a_FileName; 
+    fs::path fileName = Path::GetDirectory( a_FileName ).empty() ? 
+        Path::GetPresetPath() / a_FileName : a_FileName; 
 
     ifstream file( fileName.c_str() );
     if (!file.fail())
     {
         cereal::BinaryInputArchive archive( file );
-        archive(*session);
+        //archive(*session); XXX: implement serialization of fs::path
         if( SelectProcess( Path::GetFileName( session->m_ProcessFullPath ) ) )
         {
             session->m_FileName = fileName;
@@ -725,7 +727,7 @@ void OrbitApp::OnLoadSession( const wstring a_FileName )
 }
 
 //-----------------------------------------------------------------------------
-void OrbitApp::OnSaveCapture( const wstring a_FileName )
+void OrbitApp::OnSaveCapture( const fs::path& a_FileName )
 {
     CaptureSerializer ar;
     ar.m_TimeGraph = GCurrentTimeGraph;
@@ -733,7 +735,7 @@ void OrbitApp::OnSaveCapture( const wstring a_FileName )
 }
 
 //-----------------------------------------------------------------------------
-void OrbitApp::OnLoadCapture( const wstring a_FileName )
+void OrbitApp::OnLoadCapture( const fs::path& a_FileName )
 {
     StopCapture();
     Capture::ClearCaptureData();
@@ -757,7 +759,7 @@ void GLoadPdbAsync( const shared_ptr<Module> & a_Module )
 }
 
 //-----------------------------------------------------------------------------
-void OrbitApp::OnOpenCapture( const wstring a_FileName )
+void OrbitApp::OnOpenCapture( const fs::path& a_FileName )
 {
     Capture::OpenCapture( a_FileName );
     OnPdbLoaded();
@@ -859,7 +861,7 @@ void OrbitApp::Unregister( DataViewModel * a_Model )
 }
 
 //-----------------------------------------------------------------------------
-bool OrbitApp::SelectProcess( const wstring & a_Process )
+bool OrbitApp::SelectProcess( const fs::path& a_Process )
 {
     if( m_ProcessesDataView )
     {
@@ -996,8 +998,9 @@ bool OrbitApp::GetSamplingEnabled()
 //-----------------------------------------------------------------------------
 void OrbitApp::OnMiniDump( const Message & a_Message )
 {
-    wstring dumpPath = Path::GetDumpPath();
-    wstring o_File = dumpPath + L"a_received.dmp";
+    fs::path dumpPath = Path::GetDumpPath();
+    fs::path o_File = dumpPath / L"a_received.dmp";
+    
     ofstream out( o_File, ios::binary );
     out.write( a_Message.m_Data, a_Message.m_Size );
     out.close();
@@ -1012,5 +1015,5 @@ void OrbitApp::OnMiniDump( const Message & a_Message )
 void OrbitApp::LaunchRuleEditor( Function * a_Function )
 {
     m_RuleEditor->m_Window.Launch( a_Function );
-    SendToUiNow(TEXT("RuleEditor"));
+    SendToUiNow(L"RuleEditor");
 }

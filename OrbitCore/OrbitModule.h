@@ -9,6 +9,9 @@
 #include "BaseTypes.h"
 #include "SerializationMacros.h"
 
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+
 class Pdb;
 
 //-----------------------------------------------------------------------------
@@ -20,10 +23,10 @@ struct Module
     bool IsDll() const;
     bool LoadDebugInfo();
 
-    std::wstring  m_Name;
-    std::wstring  m_FullName;
-    std::wstring  m_PdbName;
-    std::wstring  m_Directory;
+    fs::path      m_Name;
+    fs::path      m_FullName;
+    fs::path      m_PdbName;
+    fs::path      m_Directory;
     std::wstring  m_PrettyName;
     std::wstring  m_AddressRange;
     std::wstring  m_DebugSignature;

@@ -7,6 +7,9 @@
 #include <vector>
 #include <functional>
 
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+
 class Pdb;
 struct Module;
 class Message;
@@ -20,7 +23,7 @@ public:
     void Init();
     void OnReceiveMessage( const Message & a_Msg );
     void LoadPdbAsync(const std::shared_ptr<Module> & a_Module, std::function<void()> a_CompletionCallback);
-    void LoadPdbAsync(const std::vector<std::wstring> a_Modules, std::function<void()> a_CompletionCallback);
+    void LoadPdbAsync(const std::vector<fs::path> a_Modules, std::function<void()> a_CompletionCallback);
     
 protected:
     void DequeueAndLoad();
@@ -30,7 +33,7 @@ protected:
 
 protected:
     std::function<void()> m_UserCompletionCallback;
-    std::vector<std::wstring> m_ModulesQueue;
+    std::vector<fs::path> m_ModulesQueue;
 };
 
 extern ModuleManager GModuleManager;

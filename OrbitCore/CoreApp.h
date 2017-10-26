@@ -9,6 +9,9 @@
 #include <unordered_map>
 #include "BaseTypes.h"
 
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+
 class CoreApp
 {
 public:
@@ -24,7 +27,7 @@ public:
     virtual void Disassemble( class Function*, const char*, int ){}
     virtual const std::unordered_map<DWORD64, std::shared_ptr<class Rule> >* GetRules(){ return nullptr; }
 
-    std::vector< std::wstring > m_SymbolLocations;
+    std::vector< fs::path > m_SymbolLocations;
 };
 
 extern CoreApp* GCoreApp;

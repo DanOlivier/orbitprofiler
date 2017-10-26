@@ -8,21 +8,24 @@
 #include "../OrbitPlugin/OrbitSDK.h"
 #include "Path.h"
 
+#include <dlfcn.h>
+
 PluginManager GPluginManager;
 
 using namespace std;
+namespace fs = std::experimental::filesystem;    
 
 //-----------------------------------------------------------------------------
 void PluginManager::Initialize()
 {
-    wstring dir = Path::GetPluginPath();
-    vector< wstring > plugins = Path::ListFiles( dir, L".dll" );
+    fs::path dir = Path::GetPluginPath();
+    vector< fs::path > plugins = Path::ListFiles( dir, L".dll" );
 
-    for( wstring & file : plugins )
+    for( fs::path & file : plugins )
     {
-        HMODULE module = LoadLibrary(file.c_str());
+        HMODULE module = dlopen(file.c_str(), RTLD_NOW);
         using function = Orbit::Plugin*();
-        function* func = (function*)GetProcAddress(module, "CreateOrbitPlugin");
+        function* func = (function*)dlsym(module, "CreateOrbitPlugin");
         if( func )
         {
             Orbit::Plugin* newPlugin = func();
@@ -32,8 +35,12 @@ void PluginManager::Initialize()
         }
     }
 
-    GTcpServer->SetCallback( Msg_UserData, [=]( const Message & a_Msg ){ this->OnReceiveUserData(a_Msg); } );
-    GTcpServer->SetCallback( Msg_OrbitData, [=]( const Message & a_Msg ){ this->OnReceiveOrbitData(a_Msg); } );
+    GTcpServer->SetCallback( Msg_UserData, [=]( const Message & a_Msg ) { 
+        this->OnReceiveUserData(a_Msg);
+    } );
+    GTcpServer->SetCallback( Msg_OrbitData, [=]( const Message & a_Msg ){ 
+        this->OnReceiveOrbitData(a_Msg);
+    } );
 }
 
 //-----------------------------------------------------------------------------

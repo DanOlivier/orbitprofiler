@@ -55,9 +55,9 @@ wstring ModulesDataView::GetValue( int row, int col )
     case MDV_Index:
         value = to_wstring((long)row); break;
     case MDV_ModuleName:
-        value = module->m_Name; break;
+        value = module->m_Name.wstring(); break;
     case MDV_Path:
-        value = module->m_FullName; break;
+        value = module->m_FullName.wstring(); break;
     case MDV_AddressRange:
         value = module->m_AddressRange; break;
     case MDV_HasPdb:
@@ -74,7 +74,10 @@ wstring ModulesDataView::GetValue( int row, int col )
 }
 
 //-----------------------------------------------------------------------------
-#define ORBIT_PROC_SORT( Member ) [&](int a, int b) { return OrbitUtils::Compare(m_Modules[a]->##Member, m_Modules[b]->##Member, ascending); }
+#define ORBIT_PROC_SORT(Member) \
+    [&](int a, int b) { \
+        return OrbitUtils::Compare(m_Modules[a]->Member, m_Modules[b]->Member, ascending); \
+    }
 
 //-----------------------------------------------------------------------------
 void ModulesDataView::OnSort(int a_Column, bool a_Toggle)
@@ -97,6 +100,9 @@ void ModulesDataView::OnSort(int a_Column, bool a_Toggle)
     case MDV_HasPdb:        sorter = ORBIT_PROC_SORT(m_FoundPdb);     break;
     case MDV_PdbSize:       sorter = ORBIT_PROC_SORT(m_PdbSize);      break;
     case MDV_Loaded:        sorter = ORBIT_PROC_SORT(m_Loaded);       break;
+    case MDV_Index:
+    case MDV_NumColumns:
+        break;
     }
 
     if (sorter)

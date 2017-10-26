@@ -63,14 +63,14 @@ wstring SessionsDataView::GetValue( int row, int col )
 {
 	wstring value;
 
-    const shared_ptr<Session> & session = GetSession(row);
+    const shared_ptr<Session>& session = GetSession(row);
 
     switch (col)
     {
     case SDV_SessionName:
-        value = Path::GetFileName( session->m_FileName ); break;
+        value = Path::GetFileName( session->m_FileName ).wstring(); break;
     case SDV_ProcessName:
-        value = Path::GetFileName( session->m_ProcessFullPath ); break;
+        value = Path::GetFileName( session->m_ProcessFullPath ).wstring(); break;
     /*case SDV_LastUsed:
         value = "LastUsed"; break;*/
         break;
@@ -84,11 +84,14 @@ wstring SessionsDataView::GetValue( int row, int col )
 wstring SessionsDataView::GetToolTip( int a_Row, int a_Column )
 {
     const Session & session = *GetSession(a_Row);
-    return session.m_FileName;
+    return session.m_FileName.wstring();
 }
 
 //-----------------------------------------------------------------------------
-#define ORBIT_SESSION_SORT( Member ) [&](int a, int b) { return OrbitUtils::Compare(m_Sessions[a]->##Member, m_Sessions[b]->##Member, ascending); }
+#define ORBIT_SESSION_SORT(Member) \
+    [&](int a, int b) { \
+        return OrbitUtils::Compare(m_Sessions[a]->Member, m_Sessions[b]->Member, ascending); \
+    }
 
 //-----------------------------------------------------------------------------
 void SessionsDataView::OnSort(int a_Column, bool a_Toggle)
@@ -107,6 +110,7 @@ void SessionsDataView::OnSort(int a_Column, bool a_Toggle)
     {
     case SDV_SessionName: sorter = ORBIT_SESSION_SORT(m_FileName); break;
     case SDV_ProcessName: sorter = ORBIT_SESSION_SORT(m_ProcessFullPath); break;
+    default: break;
     }
 
     if (sorter)
@@ -145,20 +149,20 @@ void SessionsDataView::OnFilter( const wstring & a_Filter )
 {
     vector<int> indices;
 
-    vector< wstring > tokens = Tokenize( ToLower( a_Filter ) );
+    vector<wstring> tokens = Tokenize( a_Filter ); // // XXX: ToLower
 
     for (int i = 0; i < (int)m_Sessions.size(); ++i)
     {
         const Session & session = *m_Sessions[i];
-        wstring name = Path::GetFileName( ToLower( session.m_FileName ) );
-        wstring path = ToLower( session.m_ProcessFullPath );
+        fs::path name = Path::GetFileName( session.m_FileName ); // XXX: ToLower? or implement case-insensitive compare?
+        fs::path path = session.m_ProcessFullPath;
 
         bool match = true;
 
-        for( wstring & filterToken : tokens )
+        for( const auto& filterToken : tokens )
         {
-            if (!(name.find(filterToken) != wstring::npos ||
-                path.find(filterToken) != wstring::npos))
+            if (!(name.wstring().find(filterToken) != wstring::npos ||
+                path.wstring().find(filterToken) != wstring::npos))
             {
                 match = false;
                 break;

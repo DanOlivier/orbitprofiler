@@ -80,7 +80,7 @@ wstring FunctionsDataView::GetValue( int a_Row, int a_Column )
     case Function::FILE:
         value = function.m_File; break;
     case Function::MODULE:
-        value = function.m_Pdb ? function.m_Pdb->GetName() : L""; break;
+        value = function.m_Pdb ? function.m_Pdb->GetName().wstring() : L""; break;
     case Function::LINE:
         value = Format( L"%i", function.m_Line ); break;
     case Function::SIZE:
@@ -94,7 +94,10 @@ wstring FunctionsDataView::GetValue( int a_Row, int a_Column )
 }
 
 //-----------------------------------------------------------------------------
-#define ORBIT_FUNC_SORT( Member ) [&](int a, int b) { return OrbitUtils::Compare(functions[a]->##Member, functions[b]->##Member, ascending); }
+#define ORBIT_FUNC_SORT(Member)\
+    [&](int a, int b) { \
+        return OrbitUtils::Compare(functions[a]->Member, functions[b]->Member, ascending); \
+    }
 
 //-----------------------------------------------------------------------------
 void FunctionsDataView::OnSort( int a_Column, bool a_Toggle )
@@ -125,6 +128,9 @@ void FunctionsDataView::OnSort( int a_Column, bool a_Toggle )
     case Function::SIZE:     sorter = ORBIT_FUNC_SORT( m_Size );           break;
     case Function::SELECTED: sorter = ORBIT_FUNC_SORT( IsSelected() );       break;
     case Function::CALL_CONV:sorter = ORBIT_FUNC_SORT( m_CallConv );       break;
+    case Function::INDEX:
+    case Function::NUM_EXPOSED_MEMBERS:
+        break;
     }
 
     if( sorter ) 

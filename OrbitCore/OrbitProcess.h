@@ -12,6 +12,9 @@
 #include <memory>
 #include <map>
 
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+
 class Function;
 class Type;
 class Variable;
@@ -33,7 +36,7 @@ public:
     ~Process();
 
     typedef std::map< DWORD64, std::shared_ptr<Module> > ModuleMap_t;
-    typedef std::map< std::wstring, std::shared_ptr<Module> > ModuleMapByName_t;
+    typedef std::map< fs::path, std::shared_ptr<Module> > ModuleMapByName_t;
 
     void Init();
     void LoadDebugInfo();
@@ -48,17 +51,18 @@ public:
     void AddThreadId( DWORD a_ThreadId ) { m_ThreadIds.insert(a_ThreadId); }
     void RemoveThreadId( DWORD a_ThreadId ) { m_ThreadIds.erase(a_ThreadId); };
     void AddModule( std::shared_ptr<Module> & a_Module );
-    void FindPdbs( const std::vector< std::wstring > & a_SearchLocations );
+    void FindPdbs( const std::vector< fs::path > & a_SearchLocations );
 
     static bool IsElevated( HANDLE a_Process );
     static bool SetPrivilege( LPCTSTR a_Name, bool a_Enable );
 
     ModuleMap_t& GetModules() { return m_Modules; }
     ModuleMapByName_t& GetNameToModulesMap() { return m_NameToModuleMap; }
-    std::shared_ptr<Module> FindModule( const std::wstring & a_ModuleName );
+    std::shared_ptr<Module> FindModule( const fs::path& a_ModuleName );
 
-    const std::wstring & GetName() const { return m_Name; }
-    const std::wstring & GetFullName() const { return m_FullName; }
+    const fs::path& GetName() const { return m_Name; }
+    const fs::path& GetFullName() const { return m_FullName; }
+
     DWORD GetID() const { return m_ID; }
     double GetCpuUsage() const { return m_CpuUsage; }
     HANDLE GetHandle() const { return m_Handle; }
@@ -95,8 +99,8 @@ public:
 
     void FindCoreFunctions();
 
-    std::wstring     m_Name;
-    std::wstring     m_FullName;
+    fs::path     m_Name;
+    fs::path     m_FullName;
 
     ORBIT_SERIALIZABLE;
 

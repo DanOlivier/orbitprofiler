@@ -22,7 +22,7 @@ public:
     virtual void OnContextMenu( int a_Index, std::vector<int> & a_ItemIndices ) override;
     virtual void OnTimer() override;
     virtual bool WantsDisplayColor() override { return true; }
-    virtual bool GetDisplayColor(int /*a_Row*/, int /*a_Column*/, unsigned char& /*r*/, unsigned char& /*g*/, unsigned char& /*b*/);
+    virtual bool GetDisplayColor(int /*a_Row*/, int /*a_Column*/, unsigned char& /*r*/, unsigned char& /*g*/, unsigned char& /*b*/) override;
     virtual std::wstring GetLabel() override { return L"Modules"; }
 
     void SetProcess(std::shared_ptr<Process> a_Process);

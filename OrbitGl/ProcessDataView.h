@@ -21,7 +21,7 @@ public:
     void OnSelect(int a_Index) override;
     void OnTimer() override;
     void SetSelectedItem();
-    bool SelectProcess( const std::wstring & a_ProcessName );
+    bool SelectProcess( const fs::path& a_ProcessName );
     bool SelectProcess( DWORD a_ProcessId );
     void UpdateProcessList();
     void SetRemoteProcess( std::shared_ptr<Process> a_Process );

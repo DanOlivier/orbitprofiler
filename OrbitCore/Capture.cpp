@@ -176,7 +176,7 @@ bool Capture::StartCapture()
 {
     SCOPE_TIMER_LOG( L"Capture::StartCapture" );
 
-    if( GTargetProcess->GetName().size() == 0 )
+    if( GTargetProcess->GetName().empty() )
         return false;
 
     GCaptureTimer.Start();
@@ -405,7 +405,7 @@ void Capture::TestHooks()
 //-----------------------------------------------------------------------------
 void Capture::StartSampling()
 {
-    if( !GIsSampling && Capture::IsTrackingEvents() && GTargetProcess->GetName().size() )
+    if( !GIsSampling && Capture::IsTrackingEvents() && !GTargetProcess->GetName().empty() )
     {
         SCOPE_TIMER_LOG( L"Capture::StartSampling" );
 
@@ -484,7 +484,7 @@ void Capture::DisplayStats()
 }
 
 //-----------------------------------------------------------------------------
-void Capture::OpenCapture( const wstring &  )
+void Capture::OpenCapture( const fs::path &  )
 {
     LocalScopeTimer Timer( &GOpenCaptureTime );
     SCOPE_TIMER_LOG( L"OpenCapture" );
@@ -526,7 +526,7 @@ void Capture::LoadSession( const shared_ptr<Session> & a_Session )
 }
 
 //-----------------------------------------------------------------------------
-void Capture::SaveSession( const wstring & a_FileName )
+void Capture::SaveSession( const fs::path & a_FileName )
 {
     Session session;
     session.m_ProcessFullPath = GTargetProcess->GetFullName();
@@ -540,14 +540,14 @@ void Capture::SaveSession( const wstring & a_FileName )
         }
     }
 
-    wstring saveFileName = a_FileName;
-    if( !EndsWith( a_FileName, L".opr" ) )
+    fs::path saveFileName = a_FileName;
+    if( a_FileName.extension() != L".opr" )
     {
         saveFileName += L".opr";
     }
 
     SCOPE_TIMER_LOG( Format( L"Saving Orbit session in %s", saveFileName.c_str() ) );
-    ofstream file( ws2s(saveFileName), ios::binary );
+    ofstream file( saveFileName, ios::binary );
     cereal::BinaryOutputArchive archive(file);
     //archive( cereal::make_nvp("Session", session) );
 }
@@ -570,7 +570,7 @@ bool Capture::IsTrackingEvents()
     static bool yieldEvents = false;
     if( yieldEvents && IsOtherInstanceRunning() && GTargetProcess )
     {
-        if( Contains( GTargetProcess->GetName(), L"Orbit.exe" ) )
+        if( GTargetProcess->GetName().filename() == L"Orbit.exe" )
         {
             return false;
         }

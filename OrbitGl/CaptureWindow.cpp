@@ -114,7 +114,7 @@ void CaptureWindow::MouseMoved( int a_X, int a_Y, bool a_Left, bool a_Right, boo
         m_WorldTopLeftY = ::clamp( m_WorldTopLeftY, -FLT_MAX, m_WorldMaxY );
         UpdateSceneBox();
 
-        m_TimeGraph.PanTime(m_ScreenClickX, a_X, getWidth(), (double)m_RefTimeClick);
+        //XXX:m_TimeGraph.PanTime(m_ScreenClickX, a_X, getWidth(), m_RefTimeClick);
 
         NeedsUpdate();
     }
@@ -141,7 +141,7 @@ void CaptureWindow::LeftDown( int a_X, int a_Y )
     ScreenToWorld(a_X, a_Y, m_WorldClickX, m_WorldClickY);
     m_ScreenClickX = a_X;
     m_ScreenClickY = a_Y;
-    m_RefTimeClick = (EpochType)m_TimeGraph.GetTime((double)a_X / (double)getWidth());
+    //XXX:m_RefTimeClick = (EpochType)m_TimeGraph.GetTime((double)a_X / (double)getWidth());
 
     m_IsSelecting = false;
 
@@ -821,15 +821,15 @@ void CaptureWindow::RenderMemTracker()
     if( memTracker.NumAllocatedBytes() == 0 )
     {
         string str = VAR_TO_ANSI( memTracker.NumAllocatedBytes() ) + string( "            ");
-        ImGui::Text( str.c_str() );
-        ImGui::Text( VAR_TO_ANSI( memTracker.NumFreedBytes() ) );
-        ImGui::Text( VAR_TO_ANSI( memTracker.NumLiveBytes() ) );
+        ImGui::Text( "%s", str.c_str() );
+        ImGui::Text( "%s", VAR_TO_ANSI( memTracker.NumFreedBytes() ) );
+        ImGui::Text( "%s", VAR_TO_ANSI( memTracker.NumLiveBytes() ) );
     }
     else
     {
-        ImGui::Text( VAR_TO_ANSI( memTracker.NumAllocatedBytes() ) );
-        ImGui::Text( VAR_TO_ANSI( memTracker.NumFreedBytes() ) );
-        ImGui::Text( VAR_TO_ANSI( memTracker.NumLiveBytes() ) );
+        ImGui::Text( "%s", VAR_TO_ANSI( memTracker.NumAllocatedBytes() ) );
+        ImGui::Text( "%s", VAR_TO_ANSI( memTracker.NumFreedBytes() ) );
+        ImGui::Text( "%s", VAR_TO_ANSI( memTracker.NumLiveBytes() ) );
     }
 
     ImGui::End();

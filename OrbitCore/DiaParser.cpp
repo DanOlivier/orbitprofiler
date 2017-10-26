@@ -7,9 +7,6 @@
 #include "Utils.h"
 #include "OrbitType.h"
 #include "Pdb.h"
-#include "PrintVar.h"
-
-#include <dia2.h>
 
 using namespace std;
 
@@ -22,7 +19,6 @@ inline int myDebugBreak( int ){
 
 #define MAX_TYPE_IN_DETAIL 5
 #define MAX_RVA_LINES_BYTES_RANGE 0x100
-
 
 // Basic types
 const wchar_t * const rgBaseType[] =

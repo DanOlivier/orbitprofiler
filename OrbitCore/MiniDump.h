@@ -6,6 +6,9 @@
 #include "OrbitType.h"
 #include "OrbitModule.h"
 
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;    
+
 //-----------------------------------------------------------------------------
 namespace google_breakpad { class Minidump; }
 class Process;
@@ -14,7 +17,7 @@ class Process;
 class MiniDump
 {
 public:
-    MiniDump( std::wstring a_FileName );
+    MiniDump( const fs::path& a_FileName );
     ~MiniDump();
 
     std::shared_ptr<Process> ToOrbitProcess();

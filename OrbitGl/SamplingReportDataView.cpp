@@ -86,7 +86,10 @@ wstring SamplingReportDataView::GetValue( int a_Row, int a_Column )
 }
 
 //-----------------------------------------------------------------------------
-#define ORBIT_PROC_SORT( Member ) [&](int a, int b) { return OrbitUtils::Compare(functions[a].##Member, functions[b].##Member, ascending); }
+#define ORBIT_PROC_SORT(Member)                                                                    \
+    [&](int a, int b) {                                                                            \
+        return OrbitUtils::Compare(functions[a].Member, functions[b].Member, ascending);       \
+    }
 
 //-----------------------------------------------------------------------------
 void SamplingReportDataView::OnSort(int a_Column, bool a_Toggle)
@@ -112,6 +115,9 @@ void SamplingReportDataView::OnSort(int a_Column, bool a_Toggle)
         case SamplingColumn::SourceFile  : sorter = ORBIT_PROC_SORT(m_File);        break;
         case SamplingColumn::SourceLine  : sorter = ORBIT_PROC_SORT(m_Line);        break;
         case SamplingColumn::Address     : sorter = ORBIT_PROC_SORT(m_Address);     break;
+        case SamplingColumn::Index:
+        case SamplingColumn::NumColumns:
+            break;
     }
 
     if (sorter)

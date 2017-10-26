@@ -73,7 +73,7 @@ void ModuleManager::LoadPdbAsync( const shared_ptr<Module> & a_Module, function<
         bool loadExports = a_Module->IsDll() && !a_Module->m_FoundPdb;
         if( a_Module->m_FoundPdb || loadExports )
         {
-            wstring pdbName = loadExports ? a_Module->m_FullName : a_Module->m_PdbName;
+            fs::path pdbName = loadExports ? a_Module->m_FullName : a_Module->m_PdbName;
             m_UserCompletionCallback = a_CompletionCallback;
 
             GPdbDbg = a_Module->m_Pdb;
@@ -87,7 +87,7 @@ void ModuleManager::LoadPdbAsync( const shared_ptr<Module> & a_Module, function<
 }
 
 //-----------------------------------------------------------------------------
-void ModuleManager::LoadPdbAsync(const vector<wstring> a_Modules, function<void()> a_CompletionCallback)
+void ModuleManager::LoadPdbAsync(const vector<fs::path> a_Modules, function<void()> a_CompletionCallback)
 {
     m_UserCompletionCallback = a_CompletionCallback;
     m_ModulesQueue = a_Modules;
@@ -101,14 +101,14 @@ void ModuleManager::DequeueAndLoad()
     
     while( module == nullptr && !m_ModulesQueue.empty() )
     {
-        wstring pdbName = m_ModulesQueue.back();
+        fs::path pdbName = m_ModulesQueue.back();
         m_ModulesQueue.pop_back();
     
         module = Capture::GTargetProcess->FindModule( Path::GetFileName( pdbName ).wstring() );
         if( module )
         {
             GPdbDbg = module->m_Pdb;
-            if( module->m_PdbName == L"" )
+            if( module->m_PdbName.empty() )
             {
                 module->m_PdbName = module->m_FullName;
             }
