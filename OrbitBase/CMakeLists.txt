@@ -68,5 +68,5 @@ PUBLIC
     ${DIASDKDir}/include
 PRIVATE
     #${EXTERN_ROOT}/mintomic/include
-    ${BREAKPAD_INCLUDE_DIR}
+    ${BREAKPAD_INCLUDE_DIRS}
 )

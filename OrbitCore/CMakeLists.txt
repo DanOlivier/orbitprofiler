@@ -126,9 +126,9 @@ add_library(OrbitCore STATIC
 target_include_directories(OrbitCore
 PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CEREAL_INCLUDE_DIR}
+    ${CEREAL_INCLUDE_DISR}
 PRIVATE
-    ${BREAKPAD_INCLUDE_DIR}
+    ${BREAKPAD_INCLUDE_DIRS}
 )
 
 target_link_libraries(OrbitCore
