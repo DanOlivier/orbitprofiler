@@ -91,7 +91,7 @@ DWORD64 Function::GetVirtualAddress() const
 }
 
 //-----------------------------------------------------------------------------
-wstring Function::GetModuleName()
+fs::path Function::GetModuleName()
 {
     if( m_Pdb )
     {
@@ -100,7 +100,7 @@ wstring Function::GetModuleName()
     else
     {
         shared_ptr<Module> module = Capture::GTargetProcess->GetModuleFromAddress( m_Address );
-        return module ? module->m_Name : L"";
+        return module ? module->m_Name : fs::path();
     }
 }
 

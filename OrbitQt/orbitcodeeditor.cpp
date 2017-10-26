@@ -204,7 +204,7 @@ bool OrbitCodeEditor::loadCode( string a_Msg )
 //-----------------------------------------------------------------------------
 void OrbitCodeEditor::loadFileMap()
 {
-    QFile file( QString::fromStdWString(Path::GetFileMappingFileName()) );
+    QFile file( QString::fromStdString(Path::GetFileMappingFileName().string()) );
     bool success = file.open(QFile::ReadWrite | QFile::Text);
     if (success)
     {
@@ -316,7 +316,6 @@ bool OrbitCodeEditor::eventFilter( QObject *object, QEvent *event )
 //-----------------------------------------------------------------------------
 void OrbitCodeEditor::Find( const QString & a_String, bool a_BackWards )
 {
-    a_String;
     find( m_FindLineEdit->text(), a_BackWards ? QTextDocument::FindBackward : QTextDocument::FindFlag() );
 }
 
@@ -375,7 +374,7 @@ void OrbitCodeEditor::keyPressEvent( QKeyEvent *e )
 //-----------------------------------------------------------------------------
 void OrbitCodeEditor::saveFileMap()
 {
-    wstring fileName = Path::GetFileMappingFileName();
+    fs::path fileName = Path::GetFileMappingFileName();
     wofstream outFile( fileName );
     if (!outFile.fail())
     {

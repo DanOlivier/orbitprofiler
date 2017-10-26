@@ -15,6 +15,9 @@
 #include <winpr/tchar.h>
 #include <memory>
 
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+
 class Pdb;
 
 //-----------------------------------------------------------------------------
@@ -77,7 +80,7 @@ public:
     bool IsAlloc()     { return m_OrbitType == ALLOC; }
     bool IsFree()      { return m_OrbitType == FREE; }
     bool IsMemoryFunc(){ return IsFree() || IsAlloc() || IsRealloc(); }
-    std::wstring GetModuleName();
+    fs::path GetModuleName();
     class Type* GetParentType();
     void ResetStats();
     void GetDisassembly();

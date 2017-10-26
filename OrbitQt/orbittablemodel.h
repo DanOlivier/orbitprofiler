@@ -20,7 +20,7 @@ public:
     virtual int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     virtual QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
-    virtual void sort(int column, Qt::SortOrder order = Qt::AscendingOrder);
+    virtual void sort(int column, Qt::SortOrder order = Qt::AscendingOrder) override;
 
     int GetUpdatePeriodMs() { return m_DataViewModel->GetUpdatePeriodMs(); }
     int GetSelectedIndex() { return m_DataViewModel->GetSelectedIndex(); }

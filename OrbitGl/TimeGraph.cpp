@@ -216,6 +216,8 @@ void TimeGraph::ProcessTimer( Timer & a_Timer )
     case Timer::CORE_ACTIVITY:
         Capture::GHasContextSwitches = true;
         break;
+    default:
+        break;
     }
 
     if( a_Timer.m_FunctionAddress > 0 )

@@ -190,7 +190,10 @@ bool OrbitMainWindow::HideTab( QTabWidget* a_TabWidget, const char* a_TabName )
 //-----------------------------------------------------------------------------
 wstring OrbitMainWindow::FindFile( const wstring & a_Caption, const wstring & a_Dir, const wstring & a_Filter )
 {
-    QStringList list = QFileDialog::getOpenFileNames( this, ws2s(a_Caption).c_str(), ws2s(a_Dir).c_str(), ws2s(a_Filter).c_str() );
+    QStringList list = QFileDialog::getOpenFileNames( this, 
+            ws2s(a_Caption).c_str(), 
+            ws2s(a_Dir).c_str(), 
+            ws2s(a_Filter).c_str() );
     for( auto & file : list )
     {
         return file.toStdWString();
@@ -326,7 +329,7 @@ void OrbitMainWindow::OnReceiveMessage( const wstring & a_Message )
         pixMap.save( &file, "PNG" );
 
         wstring fileName = file.fileName().toStdWString();
-        ShellExecute(0, 0, fileName.c_str(), 0, 0 , SW_SHOW );
+        //XXX:ShellExecute(0, 0, fileName.c_str(), 0, 0 , SW_SHOW );
     }
     else if( StartsWith( a_Message, L"code" ) )
     {
@@ -342,7 +345,7 @@ void OrbitMainWindow::OnReceiveMessage( const wstring & a_Message )
     }
     else if( StartsWith( a_Message, L"tooltip:" ) )
     {
-        QToolTip::showText( QCursor::pos(), Replace( ws2s( a_Message), "tooltip:", "" ).c_str(), this );
+        QToolTip::showText( QCursor::pos(), Replace( ws2s(a_Message), "tooltip:", "" ).c_str(), this );
     }
     else if ( StartsWith(a_Message, L"output") )
     {
@@ -468,7 +471,8 @@ void OrbitMainWindow::OnHideSearch()
 //-----------------------------------------------------------------------------
 void OrbitMainWindow::on_actionOpen_Capture_triggered()
 {
-    QStringList list = QFileDialog::getOpenFileNames(this, "Select a file to open...", ws2s(Path::GetCapturePath()).c_str(), "*.hdb" );
+    QStringList list = QFileDialog::getOpenFileNames(this, "Select a file to open...", 
+        Path::GetCapturePath().c_str(), "*.hdb" );
     for( auto & file : list )
     {
         GOrbitApp->OnOpenCapture( file.toStdWString() );
@@ -479,8 +483,8 @@ void OrbitMainWindow::on_actionOpen_Capture_triggered()
 //-----------------------------------------------------------------------------
 void OrbitMainWindow::on_actionSave_Session_triggered()
 {
-    wstring sessionName = GOrbitApp->GetSessionFileName();
-    if( sessionName != L"" )
+    fs::path sessionName = GOrbitApp->GetSessionFileName();
+    if( !sessionName.empty() )
     {
         GOrbitApp->OnSaveSession( sessionName );
     }
@@ -493,7 +497,8 @@ void OrbitMainWindow::on_actionSave_Session_triggered()
 //-----------------------------------------------------------------------------
 void OrbitMainWindow::on_actionOpen_Session_triggered()
 {
-    QStringList list = QFileDialog::getOpenFileNames(this, "Select a file to open...", ws2s(Path::GetPresetPath()).c_str(), "*.opr");
+    QStringList list = QFileDialog::getOpenFileNames(this, "Select a file to open...", 
+        Path::GetPresetPath().c_str(), "*.opr");
     for (auto & file : list)
     {
         GOrbitApp->OnLoadSession( file.toStdWString() );
@@ -542,13 +547,13 @@ QPixmap QtGrab( OrbitMainWindow* a_Window )
 //-----------------------------------------------------------------------------
 void OrbitMainWindow::on_actionToogleDevMode_toggled(bool a_Toggle)
 {
-    a_Toggle;
 }
 
 //-----------------------------------------------------------------------------
 void OrbitMainWindow::on_actionSave_Session_As_triggered()
 {
-    QString file = QFileDialog::getSaveFileName( this, "Specify a file to save...", ws2s(Path::GetPresetPath()).c_str(), "*.opr" );
+    QString file = QFileDialog::getSaveFileName( this, "Specify a file to save...", 
+        Path::GetPresetPath().c_str(), "*.opr" );
     GOrbitApp->OnSaveSession( file.toStdWString() );
 }
 
@@ -596,20 +601,21 @@ void OrbitMainWindow::on_actionEnable_Sampling_triggered( bool checked )
 //-----------------------------------------------------------------------------
 void OrbitMainWindow::on_actionEnable_Sampling_toggled(bool arg1)
 {
-    arg1;
 }
 
 //-----------------------------------------------------------------------------
 void OrbitMainWindow::on_actionSave_Capture_triggered()
 {
-    QString file = QFileDialog::getSaveFileName( this, "Save capture...", ws2s( Path::GetCapturePath() + GOrbitApp->GetCaptureFileName() ).c_str() , "*.orbit" );
+    QString file = QFileDialog::getSaveFileName( this, "Save capture...", 
+        (Path::GetCapturePath() / GOrbitApp->GetCaptureFileName()).c_str(), "*.orbit" );
     GOrbitApp->OnSaveCapture( file.toStdWString() );
 }
 
 //-----------------------------------------------------------------------------
 void OrbitMainWindow::on_actionOpen_Capture_2_triggered()
 {
-    QStringList list = QFileDialog::getOpenFileNames( this, "Open capture...", ws2s( Path::GetCapturePath() ).c_str(), "*.orbit" );
+    QStringList list = QFileDialog::getOpenFileNames( this, "Open capture...", 
+        Path::GetCapturePath().c_str(), "*.orbit" );
     for( auto & file : list )
     {
         GOrbitApp->OnLoadCapture( file.toStdWString() );

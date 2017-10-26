@@ -16,7 +16,6 @@ OrbitTableModel::OrbitTableModel(DataViewType a_Type, QObject* parent)
     , m_DataViewModel(nullptr)
     , m_AlternateRowColor(true)
 {
-    a_Type;
     m_DataViewModel = shared_ptr<DataViewModel>(DataViewModel::Create(a_Type));
     
     if( a_Type == DataViewType::LOG )
