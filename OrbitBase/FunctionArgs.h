@@ -1,7 +1,7 @@
 #pragma once
 
 #include "OrbitDbgHelp.h"
-//#include "cvconst.h"
+#include <llvm/DebugInfo/CodeView/CodeView.h>
 #include "BaseTypes.h"
 
 #include <cstring>
@@ -12,7 +12,7 @@ struct Argument
 {
     Argument() { std::memset(this, 0, sizeof(*this)); }
     DWORD      m_Index;
-    //CV_HREG_e  m_Reg;
+    llvm::codeview::CallingConvention  m_Reg;
     DWORD      m_Offset;
     DWORD      m_NumBytes;
 };

@@ -99,13 +99,13 @@ void HomeWindow::RenderUI()
         m_DebugWindow.Draw("Debug", &m_DrawDebugDisplay);
     }
 
-    if (m_DrawLog)
+    /*XXX: if (m_DrawLog)
     {
         GLogger.GetLockedLog(OrbitLog::Global, [&](const vector<string> & a_Entries)
         {
             m_LogWindow.Draw("Log", a_Entries, &m_LogWindow.m_Open);
         });
-    }
+    }*/
 
     // Rendering
     glViewport(0, 0, getWidth(), getHeight());

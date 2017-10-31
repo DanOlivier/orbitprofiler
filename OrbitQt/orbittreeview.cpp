@@ -285,8 +285,10 @@ wstring OrbitTreeView::GetLabel()
 //-----------------------------------------------------------------------------
 void OrbitTreeView::columnResized( int /*column*/, int /*oldSize*/, int /*newSize*/ )
 {
+    /*XXX:
     if((GetKeyState(VK_LBUTTON) & 0x100) != 0)
     {
         m_AutoResize = false;
     }
+    */
 }

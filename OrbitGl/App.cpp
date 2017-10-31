@@ -655,7 +655,7 @@ void OrbitApp::GoToCode( DWORD64 a_Address )
 //-----------------------------------------------------------------------------
 void OrbitApp::OnOpenPdb( const fs::path& a_FileName )
 {
-    Capture::GTargetProcess = make_shared<Process>();
+    /*Capture::GTargetProcess = make_shared<Process>();
     shared_ptr<Module> mod = make_shared<Module>();
     
     mod->m_FullName = a_FileName;
@@ -673,7 +673,7 @@ void OrbitApp::OnOpenPdb( const fs::path& a_FileName )
     GOrbitApp->FireRefreshCallbacks();
 
     EnqueueModuleToLoad( mod );
-    LoadModules();
+    LoadModules();*/
 }
 
 //-----------------------------------------------------------------------------
@@ -1005,10 +1005,11 @@ void OrbitApp::OnMiniDump( const Message & a_Message )
     out.write( a_Message.m_Data, a_Message.m_Size );
     out.close();
 
-    MiniDump miniDump(o_File);
+    /*MiniDump miniDump(o_File);
     shared_ptr<Process> process = miniDump.ToOrbitProcess();
     process->SetID( (DWORD)a_Message.GetHeader().m_GenericHeader.m_Address );
     GOrbitApp->m_ProcessesDataView->SetRemoteProcess( process );
+    */
 }
 
 //-----------------------------------------------------------------------------

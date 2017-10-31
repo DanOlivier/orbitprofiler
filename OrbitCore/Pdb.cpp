@@ -458,7 +458,7 @@ bool Pdb::LoadPdb( const fs::path& a_PdbName )
     if( Path::GetExtension( a_PdbName ).string() == "dll" )
     {
         SCOPE_TIMER_LOG( L"LoadDll Exports" );
-        ParseDll( a_PdbName );
+        //ParseDll( a_PdbName );
     }
     else
     {
@@ -467,7 +467,7 @@ bool Pdb::LoadPdb( const fs::path& a_PdbName )
     }
 
     //ShowSymbolInfo( m_ModuleInfo );
-    ProcessData();
+    //ProcessData();
     GParams.AddToPdbHistory( a_PdbName );
 
     m_FinishedLoading = true;
@@ -479,11 +479,11 @@ bool Pdb::LoadPdb( const fs::path& a_PdbName )
 //-----------------------------------------------------------------------------
 bool Pdb::LoadDataFromPdb()
 {
-    DiaManager diaManager;
+    /*DiaManager diaManager;
     if( !diaManager.LoadDataFromPdb( m_FileName, m_DiaSession, m_DiaGlobalSymbol ) )
     {
         return false;
-    }
+    }*/
 
     return true;
 }
@@ -580,7 +580,7 @@ void Pdb::ApplyPresets()
 {
     SCOPE_TIMER_LOG( Format( L"Pdb::ApplyPresets - %s", m_Name.c_str() ) );
 
-    if (Capture::GSessionPresets)
+    /*if (Capture::GSessionPresets)
     {
         fs::path pdbName = Path::GetFileName( m_Name );
 
@@ -600,7 +600,7 @@ void Pdb::ApplyPresets()
                 }
             }
         }
-    }
+    }*/
 }
 
 //-----------------------------------------------------------------------------
@@ -695,7 +695,7 @@ unique_ptr<llvm::pdb::PDBSymbol> Pdb::GetDiaSymbolFromId( ULONG a_Id )
 }
 
 //-----------------------------------------------------------------------------
-void Pdb::ProcessData()
+/*void Pdb::ProcessData()
 {
     SCOPE_TIMER_LOG( Format( L"Pdb::ProcessData for %s", m_Name.c_str() ) );
 
@@ -734,7 +734,7 @@ void Pdb::ProcessData()
     PopulateFunctionMap();
     PopulateStringFunctionMap();
     // TODO: parallelize: PopulateStringFunctionMap();
-}
+}*/
 
 //-----------------------------------------------------------------------------
 void Pdb::Save()

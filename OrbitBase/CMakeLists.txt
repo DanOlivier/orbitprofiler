@@ -4,7 +4,7 @@ set(EXTERNAL_HEADERS
 
 set(EXTERNAL_SOURCES
     ${EXTERN_ROOT}/xxHash-r42/xxhash.c
-    ${EXTERN_ROOT}/xxHash-r42/xxhsum.c
+    #${EXTERN_ROOT}/xxHash-r42/xxhsum.c
 )
 
 source_group("External\\Header Files" FILES ${EXTERNAL_HEADERS})

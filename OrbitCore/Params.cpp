@@ -35,7 +35,7 @@ Params::Params() : m_LoadTypeInfo( true )
     
 }
 
-/*ORBIT_SERIALIZE( Params, 9 )
+ORBIT_SERIALIZE( Params, 9 )
 {
     ORBIT_NVP_VAL( 0, m_LoadTypeInfo );
     ORBIT_NVP_VAL( 0, m_SendCallStacks );
@@ -53,7 +53,7 @@ Params::Params() : m_LoadTypeInfo( true )
     ORBIT_NVP_VAL( 7, m_DiffArgs );
     ORBIT_NVP_VAL( 8, m_NumBytesAssembly );
     ORBIT_NVP_VAL( 9, m_HookOutputDebugString );
-}*/
+}
 
 //-----------------------------------------------------------------------------
 void Params::Save()

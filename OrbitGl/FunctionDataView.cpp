@@ -86,7 +86,7 @@ wstring FunctionsDataView::GetValue( int a_Row, int a_Column )
     case Function::SIZE:
         value = Format( L"%lu", function.m_Size ); break;
     case Function::CALL_CONV:
-        value = Function::GetCallingConventionString(function.m_CallConv); break;
+        value = Function::GetCallingConventionString((uint8_t)function.m_CallConv); break;
     default: break;
     }
 

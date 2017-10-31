@@ -11,36 +11,28 @@
 #include "OrbitType.h"
 #include "OrbitSession.h"
 #include "OrbitThread.h"
-//#include "Injection.h"
+#include "Injection.h"
 #include "ScopeTimer.h"
 #include "Serialization.h"
 
-//#include <tlhelp32.h>
+#include <llvm/DebugInfo/PDB/PDBSymbol.h>
+#include <proc/readproc.h>
 
 using namespace std;
 namespace fs = std::experimental::filesystem;
 
 //-----------------------------------------------------------------------------
-Process::Process() : m_ID(0)
-                   , m_Handle(0)
-                   , m_Is64Bit(false)
-                   , m_CpuUsage(0)
-                   , m_DebugInfoLoaded(false)
-                   , m_IsRemote(false)
-                   , m_IsElevated(false)
+Process::Process(DWORD a_ID, ProcHandle_t handle) : 
+    m_ID(a_ID), 
+    m_Handle(std::move(handle)), 
+    m_FullName(m_Handle->cmdline[0]), 
+    m_Name(m_Handle->cmd)
 {
-}
+    //m_Handle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, m_ID);
+    //m_Is64Bit = ProcessUtils::Is64Bit(m_Handle);
+    //m_IsElevated = IsElevated( m_Handle );
 
-//-----------------------------------------------------------------------------
-Process::Process(DWORD a_ID) : m_ID(a_ID)
-                             , m_LastUserTime({0})
-                             , m_LastKernTime({0})
-                             , m_CpuUsage(0.f)
-                             , m_Is64Bit(false)
-                             , m_DebugInfoLoaded(false)
-                             , m_IsElevated(false)
-{
-    Init();
+    m_UpdateCpuTimer.Start();
 }
 
 //-----------------------------------------------------------------------------
@@ -53,25 +45,14 @@ Process::~Process()
 }
 
 //-----------------------------------------------------------------------------
-void Process::Init()
-{
-    m_Handle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, m_ID);
-    m_Is64Bit = ProcessUtils::Is64Bit(m_Handle);
-    m_IsElevated = IsElevated( m_Handle );
-    
-    
-    m_UpdateCpuTimer.Start();
-}
-
-//-----------------------------------------------------------------------------
 void Process::LoadDebugInfo()
 {
     if( !m_DebugInfoLoaded )
     {
-        if( m_Handle == nullptr )
+        /*if( m_Handle == nullptr )
         {
             m_Handle = GetCurrentProcess();
-        }
+        }*/
 
         // Initialize dbghelp
         //SymInit(m_Handle);
@@ -87,25 +68,18 @@ void Process::LoadDebugInfo()
 }
 
 //-----------------------------------------------------------------------------
-void Process::SetID( DWORD a_ID )
-{
-    m_ID = a_ID;
-    Init();
-}
-
-//-----------------------------------------------------------------------------
 Process::ModuleMap_t Process::ListModules()
 {
     SCOPE_TIMER_LOG( L"ListModules" );
 
     ClearTransients();
-    m_Modules = SymUtils::ListModules(m_Handle);
+    //m_Modules = SymUtils::ListModules(m_Handle);
 
     for( auto & pair : m_Modules )
     {
-        shared_ptr<Module> & module = pair.second;
-        wstring name = ToLower( module->m_Name );
-        m_NameToModuleMap[name] = module;
+        shared_ptr<Module>& module = pair.second;
+        //wstring name = ToLower( module->m_Name );
+        m_NameToModuleMap[module->m_Name] = module;
         module->LoadDebugInfo();
     }
     return m_Modules;
@@ -128,7 +102,7 @@ void Process::EnumerateThreads()
     m_ThreadIds.clear();
 
     // https://blogs.msdn.microsoft.com/oldnewthing/20060223-14/?p=32173/
-    HANDLE h = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, m_ID);
+    /*HANDLE h = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, m_ID);
     if (h != INVALID_HANDLE_VALUE)
     {
         THREADENTRY32 te;
@@ -168,7 +142,7 @@ void Process::EnumerateThreads()
     for (shared_ptr<Thread> & thread : m_Threads)
     {
         m_ThreadIds.insert(thread->m_TID);
-    }
+    }*/
 }
 
 //-----------------------------------------------------------------------------
@@ -182,7 +156,7 @@ void Process::UpdateCpuTime()
     double elapsedMillis = m_UpdateCpuTimer.QueryMillis();
     m_UpdateCpuTimer.Start();
 
-    if( GetProcessTimes( m_Handle, &creationTime, &exitTime, &kernTime, &userTime ) )
+    /*if( GetProcessTimes( m_Handle, &creationTime, &exitTime, &kernTime, &userTime ) )
     {
         unsigned numCores = thread::hardware_concurrency();
         LONGLONG kernMs = FileTimeDiffInMillis( m_LastKernTime, kernTime );
@@ -190,17 +164,17 @@ void Process::UpdateCpuTime()
         m_LastKernTime = kernTime;
         m_LastUserTime = userTime;
         m_CpuUsage = ( 100.0 * double( kernMs + userMs ) / elapsedMillis ) / numCores;
-    }
+    }*/
 }
 
 //-----------------------------------------------------------------------------
-void Process::UpdateThreadUsage()
+/*void Process::UpdateThreadUsage()
 {
     for( auto & thread : m_Threads )
     {
         thread->UpdateUsage();
     }
-}
+}*/
 
 //-----------------------------------------------------------------------------
 void Process::SortThreadsByUsage()
@@ -225,14 +199,13 @@ void Process::SortThreadsById()
 }
 
 //-----------------------------------------------------------------------------
-shared_ptr<Module> Process::FindModule( const wstring & a_ModuleName )
+shared_ptr<Module> Process::FindModule( const fs::path& a_ModuleName )
 {
-    wstring moduleName = ToLower( Path::GetFileNameNoExt( a_ModuleName ).wstring() );
-
+    fs::path moduleName = Path::GetFileNameNoExt( a_ModuleName );
     for( auto & it : m_Modules )
     {
         shared_ptr<Module> & module = it.second;
-        if( ToLower( Path::GetFileNameNoExt( module->m_Name ) ) == moduleName )
+        if( Path::GetFileNameNoExt( module->m_Name ) == moduleName )
         {
             return module;
         }
@@ -245,7 +218,7 @@ shared_ptr<Module> Process::FindModule( const wstring & a_ModuleName )
 Function* Process::GetFunctionFromAddress( DWORD64 a_Address, bool a_IsExact )
 {
     DWORD64 address = (DWORD64)a_Address;
-    auto & it = m_Modules.upper_bound( address );
+    auto it = m_Modules.upper_bound( address );
     if( !m_Modules.empty() && it != m_Modules.begin() )
     {
         --it;
@@ -273,7 +246,7 @@ Function* Process::GetFunctionFromAddress( DWORD64 a_Address, bool a_IsExact )
 shared_ptr<Module> Process::GetModuleFromAddress( DWORD64 a_Address )
 {
 	DWORD64 address = (DWORD64)a_Address;
-	auto & it = m_Modules.upper_bound(address);
+	auto it = m_Modules.upper_bound(address);
 	if (!m_Modules.empty() && it != m_Modules.begin())
 	{
 		--it;
@@ -285,7 +258,7 @@ shared_ptr<Module> Process::GetModuleFromAddress( DWORD64 a_Address )
 }
 
 //-----------------------------------------------------------------------------
-IDiaSymbol * Process::SymbolFromAddress( DWORD64 a_Address )
+std::unique_ptr<llvm::pdb::PDBSymbol> Process::SymbolFromAddress( DWORD64 a_Address )
 {
     shared_ptr<Module> module = GetModuleFromAddress( a_Address );
     if( module && module->m_Pdb )
@@ -337,7 +310,7 @@ void Process::ClearWatchedVariables()
 //-----------------------------------------------------------------------------
 void Process::AddType(Type & a_Type)
 {
-    bool isPtr = a_Type.m_Name.find(L"Pointer to") != string::npos;
+    /*bool isPtr = a_Type.m_Name.find(L"Pointer to") != string::npos;
     if (!isPtr)
     {
         unsigned long long typeHash = a_Type.Hash();
@@ -346,7 +319,7 @@ void Process::AddType(Type & a_Type)
         {
             m_Types.push_back(&a_Type);
         }
-    }
+    }*/
 }
 
 //-----------------------------------------------------------------------------
@@ -355,19 +328,27 @@ void Process::AddModule( shared_ptr<Module> & a_Module )
     m_Modules[a_Module->m_AddressStart] = a_Module;
 }
 
-//-----------------------------------------------------------------------------
-void Process::FindPdbs( const vector< wstring > & a_SearchLocations )
+#include <llvm/DebugInfo/CodeView/GUID.h>
+std::string GuidToString(llvm::codeview::GUID guid)
 {
-    unordered_map< wstring, vector<wstring> > nameToPaths;
+    ostringstream os;
+    //os << guid;
+    return os.str();
+}
+
+//-----------------------------------------------------------------------------
+void Process::FindPdbs( const vector<  fs::path >& a_SearchLocations )
+{
+    unordered_map< wstring, vector<fs::path> > nameToPaths;
 
     // Populate list of all available pdb files
-    for( const wstring & dir : a_SearchLocations )
+    for( const fs::path& dir : a_SearchLocations )
     {
         vector<fs::path> pdbFiles = Path::ListFiles( dir, L".pdb" );
         for( const fs::path& pdb : pdbFiles )
         {
-            wstring pdbLower = Path::GetFileName( ToLower( pdb.wstring() ) ).wstring();
-            nameToPaths[pdbLower].push_back( pdb.wstring() );
+            wstring pdbLower = ToLower( Path::GetFileName( pdb ).wstring() );
+            nameToPaths[pdbLower].push_back( pdb );
         }
     }
 
@@ -378,14 +359,13 @@ void Process::FindPdbs( const vector< wstring > & a_SearchLocations )
 
         if( !module->m_FoundPdb )
         {
-            wstring moduleName = ToLower( module->m_Name );
+            fs::path moduleName = module->m_Name;
             wstring pdbName = Path::StripExtension( moduleName ).wstring() + L".pdb";
 
-            const vector< wstring > & pdbs = nameToPaths[pdbName];
+            const vector<fs::path>& pdbs = nameToPaths[pdbName];
 
-            for( const wstring & pdb : pdbs )
+            for( const fs::path& pdb : pdbs )
             {
-
                 module->m_PdbName = pdb;
                 module->m_FoundPdb = true;
                 module->LoadDebugInfo();
@@ -408,10 +388,10 @@ void Process::FindPdbs( const vector< wstring > & a_SearchLocations )
 }
 
 //-----------------------------------------------------------------------------
-bool Process::IsElevated( HANDLE a_Process )
+bool Process::IsElevated( ProcHandle_t a_Process )
 {
     bool fRet = false;
-    HANDLE hToken = NULL;
+    /*HANDLE hToken = NULL;
     if( OpenProcessToken( a_Process, TOKEN_QUERY, &hToken ) ) 
     {
         TOKEN_ELEVATION Elevation;
@@ -424,7 +404,7 @@ bool Process::IsElevated( HANDLE a_Process )
     if( hToken ) 
     {
         CloseHandle( hToken );
-    }
+    }*/
 
     return fRet;
 }
@@ -432,7 +412,7 @@ bool Process::IsElevated( HANDLE a_Process )
 //-----------------------------------------------------------------------------
 bool Process::SetPrivilege( LPCTSTR a_Name, bool a_Enable )
 {
-    HANDLE hToken;
+    /*HANDLE hToken;
     if( !OpenProcessToken( GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &hToken ) )
     {
         ORBIT_ERROR;
@@ -466,34 +446,36 @@ bool Process::SetPrivilege( LPCTSTR a_Name, bool a_Enable )
         PRINT( "The token does not have the specified privilege. \n" );
         return false;
     }
-
+    */
     return true;
 }
 
 //-----------------------------------------------------------------------------
 DWORD64 Process::GetOutputDebugStringAddress()
 {
-    auto it = m_NameToModuleMap.find( L"kernelbase.dll" );
+    /*auto it = m_NameToModuleMap.find( L"kernelbase.dll" );
     if( it != m_NameToModuleMap.end() )
     {
         shared_ptr<Module> module = it->second;
-        auto remoteAddr = Injection::GetRemoteProcAddress( GetHandle(), module->m_ModuleHandle, "OutputDebugStringA" );
+        auto remoteAddr = Injection::GetRemoteProcAddress( GetHandle(), 
+            module->m_ModuleHandle, "OutputDebugStringA" );
         return (DWORD64)remoteAddr;
     }
-
+    */
     return 0;
 }
 
 //-----------------------------------------------------------------------------
 DWORD64 Process::GetRaiseExceptionAddress()
 {
-    auto it = m_NameToModuleMap.find( L"kernelbase.dll" );
+    /*auto it = m_NameToModuleMap.find( L"kernelbase.dll" );
     if (it != m_NameToModuleMap.end())
     {
         shared_ptr<Module> module = it->second;
-        auto remoteAddr = Injection::GetRemoteProcAddress(GetHandle(), module->m_ModuleHandle, "RaiseException");
+        auto remoteAddr = Injection::GetRemoteProcAddress(GetHandle(), 
+            module->m_ModuleHandle, "RaiseException");
         return (DWORD64)remoteAddr;
-    }
+    }*/
 
     return 0;
 }

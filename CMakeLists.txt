@@ -53,6 +53,11 @@ include(CheckStructHasMember)
 #pkg_check_modules(QT5 Qt5Core REQUIRED)
 #find_package(Qt5Core)
 
+#find_package(PkgConfig)
+#pkg_check_modules(GTEST REQUIRED gtest>=1.7.0)
+find_package(GTest REQUIRED)
+PrintVars(GTEST)
+
 find_package(LLVM REQUIRED CONFIG)
 message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
 message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")

@@ -12,7 +12,7 @@ namespace llvm { namespace pdb {
 
 namespace OrbitDia
 {
-    void DiaDump( std::unique_ptr<llvm::pdb::PDBSymbol> a_Symbol );
+    void DiaDump( std::unique_ptr<llvm::pdb::PDBSymbol>& a_Symbol );
     void DiaDump( unsigned long a_SymbolId );
-    void DiaDump( std::unique_ptr<llvm::pdb::PDBSymbol> Symbol, std::ostream &OS, int Indent );
+    void DiaDump( std::unique_ptr<llvm::pdb::PDBSymbol>& Symbol, std::ostream &OS, int Indent );
 }

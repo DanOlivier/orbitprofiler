@@ -83,7 +83,8 @@ public:
 
     void LogError( const char* a_Function, int a_Line )
     {
-        std::string err = GetLastErrorAsString();
+        //std::string err = GetLastErrorAsString();
+        std::string err = strerror(errno);
         Log( OrbitLog::Global, Format("Error: %s (%i) LastError: %s", a_Function, a_Line, err.c_str() ) );
     }
 

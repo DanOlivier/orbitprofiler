@@ -20,6 +20,8 @@
 
 //#include <dia2.h>
 
+#include <llvm/DebugInfo/PDB/PDBSymbol.h>
+
 using namespace std;
 
 //-----------------------------------------------------------------------------
@@ -31,7 +33,7 @@ Function::~Function()
 //-----------------------------------------------------------------------------
 void Function::SetAsMainFrameFunction()
 {
-    Capture::GMainFrameFunction = (ULONG64)m_Pdb->GetHModule() + this->m_Address;
+    //Capture::GMainFrameFunction = (ULONG64)m_Pdb->GetHModule() + this->m_Address;
     m_Selected = true;
 }
 
@@ -59,8 +61,9 @@ bool Function::Hookable()
         return false;
     }
 
-    CV_call_e conv = (CV_call_e)m_CallConv;
-    return ( ( conv == CV_CALL_NEAR_C || CV_CALL_THISCALL ) && m_Size >= 5 )
+    llvm::codeview::CallingConvention conv = m_CallConv;
+    return ( ( conv == llvm::codeview::CallingConvention::NearC || 
+        conv == llvm::codeview::CallingConvention::ThisCall ) && m_Size >= 5 )
         || ( GParams.m_AllowUnsafeHooking && m_Size == 0 );
 }
 
@@ -68,14 +71,14 @@ bool Function::Hookable()
 void Function::PreHook()
 {
     // Unreal
-    if( Capture::GUnrealSupported )
+    /*if( Capture::GUnrealSupported )
     {
         Type* parent = GetParentType();
         if( parent && parent->IsA( L"UObject" ) )
         {
             m_OrbitType = Function::UNREAL_ACTOR;
         }
-    }
+    }*/
 
     // MemFunc
     if( IsMemoryFunc() )
@@ -97,11 +100,12 @@ fs::path Function::GetModuleName()
     {
         return m_Pdb->GetName();
     }
-    else
+    /*else
     {
         shared_ptr<Module> module = Capture::GTargetProcess->GetModuleFromAddress( m_Address );
         return module ? module->m_Name : fs::path();
-    }
+    }*/
+    return fs::path();
 }
 
 //-----------------------------------------------------------------------------
@@ -126,7 +130,7 @@ void Function::ResetStats()
 //-----------------------------------------------------------------------------
 void Function::GetDisassembly()
 {
-    if( m_Pdb && Capture::Connect() )
+    if( m_Pdb)// && Capture::Connect() )
     {
         Message msg( Msg_GetData );
         ULONG64 address = (ULONG64)m_Pdb->GetHModule() + (ULONG64)m_Address;
@@ -137,7 +141,7 @@ void Function::GetDisassembly()
         // dll
         if( m_Size == 0 )
         {
-            shared_ptr<Module> module = Capture::GTargetProcess->GetModuleFromAddress( address );
+            shared_ptr<Module> module;// = Capture::GTargetProcess->GetModuleFromAddress( address );
             if( module )
             {
                 DWORD64 maxSize = module->m_AddressEnd - address;
@@ -153,7 +157,7 @@ void Function::GetDisassembly()
 //-----------------------------------------------------------------------------
 const wchar_t* Function::GetCallingConventionString( int a_CallConv )
 {
-    const char* CallingConv[] = {
+    const wchar_t* CallingConv[] = {
         L"NEAR_C",      //CV_CALL_NEAR_C      = 0x00, // near right to left push, caller pops stack
         L"FAR_C",       //CV_CALL_FAR_C       = 0x01, // far right to left push, caller pops stack
         L"NEAR_PASCAL", //CV_CALL_NEAR_PASCAL = 0x02, // near left to right push, callee pops stack
@@ -235,9 +239,9 @@ void Function::ProcessArgumentInfo()
     {
         Argument arg;
         arg.m_Index = argIndex;
-        arg.m_Reg = (CV_HREG_e)param.m_SymbolInfo.Register;
-        arg.m_Offset = (DWORD)param.m_SymbolInfo.Address;
-        arg.m_NumBytes = param.m_SymbolInfo.Size;
+        //arg.m_Reg = param.m_SymbolInfo.Register;
+        //arg.m_Offset = (DWORD)param.m_SymbolInfo.Address;
+        //arg.m_NumBytes = param.m_SymbolInfo.Size;
         m_ArgInfo.push_back( arg );
 
         ++argIndex;
@@ -262,22 +266,22 @@ void Function::Print()
     std::unique_ptr<llvm::pdb::PDBSymbol> diaSymbol = m_Pdb->GetDiaSymbolFromId( this->m_Id );
     if( diaSymbol )
     {
-        OrbitDia::DiaDump( diaSymbol );
+        //OrbitDia::DiaDump( diaSymbol );
 
-        if( m_ParentId )
+        /*if( m_ParentId )
         {
             Type & type = m_Pdb->GetTypeFromId( m_ParentId );
             type.LoadDiaInfo();
             type.GenerateDiaHierarchy();
-        }
+        }*/
 
-        DiaParser parser;
-        parser.PrintFunctionType( diaSymbol );
-        ORBIT_VIZ( parser.m_Log );
+        //DiaParser parser;
+        //parser.PrintFunctionType( diaSymbol );
+        //ORBIT_VIZ( parser.m_Log );
     }
 
     LineInfo lineInfo;
-    SymUtils::GetLineInfo( m_Address + (DWORD64)m_Pdb->GetHModule(), lineInfo );
+    //SymUtils::GetLineInfo( m_Address + (DWORD64)m_Pdb->GetHModule(), lineInfo );
     ORBIT_VIZV( lineInfo.m_File );
     ORBIT_VIZV( lineInfo.m_Line );
     ORBIT_VIZV( lineInfo.m_Address );

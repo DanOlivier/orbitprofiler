@@ -141,22 +141,22 @@ void TcpServer::Receive( const Message & a_Message )
         m_NumTargetFlushedTcpPackets = *( (int*)a_Message.GetData() );
         break;
     case Msg_NumInstalledHooks:
-        Capture::GNumInstalledHooks = *((int*)a_Message.GetData());
+        //Capture::GNumInstalledHooks = *((int*)a_Message.GetData());
         break;
     case Msg_Callstack:
     {
-        CallStackPOD* callstackPOD = (CallStackPOD*)a_Message.GetData();
-        CallStack callstack(*callstackPOD);
-        Capture::AddCallstack( callstack );
+        //CallStackPOD* callstackPOD = (CallStackPOD*)a_Message.GetData();
+        //CallStack callstack(*callstackPOD);
+        //Capture::AddCallstack( callstack );
         break;
     }
     case Msg_OrbitZoneName:
     {
         OrbitZoneName* zoneName = (OrbitZoneName*)a_Message.GetData();
-        Capture::RegisterZoneName( zoneName->m_Address, zoneName->m_Data );
+        //Capture::RegisterZoneName( zoneName->m_Address, zoneName->m_Data );
         break;
     }
-    case Msg_OrbitUnrealObject:
+    /*case Msg_OrbitUnrealObject:
     {
         const UnrealObjectHeader & header = MessageHeader.m_UnrealObjectHeader;
         
@@ -171,7 +171,7 @@ void TcpServer::Receive( const Message & a_Message )
         }
         
         break;
-    }
+    }*/
     default:
     {
         MsgCallback & callback = m_Callbacks[a_Message.GetType()];
@@ -225,14 +225,14 @@ void TcpServer::MainThreadTick()
         m_StatTimer.Reset();
     }
 
-    if( Capture::GInjected && Capture::IsCapturing() )
+    /*if( Capture::GInjected && Capture::IsCapturing() )
     {
         TcpSocket* socket = GetSocket();
         if( socket == nullptr || !socket->m_Socket || !socket->m_Socket->is_open() )
         {
             Capture::StopCapture();
         }
-    }
+    }*/
 }
 
 //-----------------------------------------------------------------------------

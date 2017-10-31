@@ -29,7 +29,7 @@ using namespace std;
 
 bool        Capture::GInjected = false;
 bool        Capture::GIsConnected = false;
-string Capture::GInjectedProcess;
+string  Capture::GInjectedProcess;
 wstring Capture::GInjectedProcessW;
 double      Capture::GOpenCaptureTime;
 bool        Capture::GIsSampling = false;
@@ -45,37 +45,38 @@ ULONG64     Capture::GMainFrameFunction;
 ULONG64     Capture::GNumContextSwitches;
 ULONG64     Capture::GNumProfileEvents;
 int         Capture::GCapturePort = 0;
+
 wstring Capture::GCaptureHost = L"localhost";
 wstring Capture::GPresetToLoad = L"";
 wstring Capture::GProcessToInject = L"";
 
-map< ULONG64, Function* >          Capture::GSelectedFunctionsMap;
-map< ULONG64, Function* >          Capture::GVisibleFunctionsMap;
-unordered_map< ULONG64, ULONG64 >  Capture::GFunctionCountMap;
-shared_ptr<CallStack>              Capture::GSelectedCallstack;
-vector<ULONG64>                    Capture::GSelectedAddressesByType[Function::NUM_TYPES];
+map< ULONG64, Function* >           Capture::GSelectedFunctionsMap;
+map< ULONG64, Function* >           Capture::GVisibleFunctionsMap;
+unordered_map< ULONG64, ULONG64 >   Capture::GFunctionCountMap;
+shared_ptr<CallStack>               Capture::GSelectedCallstack;
+vector<ULONG64>                     Capture::GSelectedAddressesByType[Function::NUM_TYPES];
 unordered_map< DWORD64, shared_ptr<CallStack> > Capture::GCallstacks;
-Mutex                                                     Capture::GCallstackMutex;
-unordered_map< DWORD64, string >                Capture::GZoneNames;
+Mutex                               Capture::GCallstackMutex;
+unordered_map< DWORD64, string >    Capture::GZoneNames;
 TextBox*    Capture::GSelectedTextBox;
 ThreadID    Capture::GSelectedThreadId;
 Timer       Capture::GCaptureTimer;
-chrono::system_clock::time_point Capture::GCaptureTimePoint;
-Capture::LoadPdbAsyncFunc Capture::GLoadPdbAsync;
+chrono::system_clock::time_point    Capture::GCaptureTimePoint;
+Capture::LoadPdbAsyncFunc           Capture::GLoadPdbAsync;
 
 shared_ptr<SamplingProfiler> Capture::GSamplingProfiler = nullptr;
 shared_ptr<Process>          Capture::GTargetProcess    = nullptr;
 shared_ptr<Session>          Capture::GSessionPresets   = nullptr;
 
 void(*Capture::GClearCaptureDataFunc)();
-void(*Capture::GSamplingDoneCallback)( shared_ptr<SamplingProfiler> & a_SamplingProfiler );
+void(*Capture::GSamplingDoneCallback)( shared_ptr<SamplingProfiler>& a_SamplingProfiler );
 vector< shared_ptr<SamplingProfiler> > GOldSamplingProfilers;
 bool Capture::GUnrealSupported = false;
 
 //-----------------------------------------------------------------------------
 void Capture::Init()
 {
-    GTargetProcess = make_shared<Process>();
+    //GTargetProcess = make_shared<Process>();
     Capture::GCapturePort = GParams.m_Port;
 }
 

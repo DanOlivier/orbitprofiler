@@ -34,7 +34,7 @@ set(HEADERS
     Capture.h
     ContextSwitch.h
     CoreApp.h
-    cvconst.h
+    #cvconst.h
     DiaManager.h
     DiaParser.h
     Diff.h
@@ -76,7 +76,7 @@ set(HEADERS
 
 set(SOURCES
     #Callstack.cpp
-    Capture.cpp
+    #Capture.cpp
     #ContextSwitch.cpp
     CoreApp.cpp
     #DiaManager.cpp
@@ -90,20 +90,20 @@ set(SOURCES
     #Injection.cpp
     LogInterface.cpp
     MemoryTracker.cpp
-    MiniDump.cpp
+    #MiniDump.cpp
     ModuleManager.cpp
     #OrbitDia.cpp
-    #OrbitFunction.cpp
+    OrbitFunction.cpp
     OrbitModule.cpp
-    #OrbitProcess.cpp
+    OrbitProcess.cpp
     OrbitRule.cpp
     OrbitSession.cpp
     #OrbitThread.cpp
     #OrbitType.cpp
-    OrbitUnreal.cpp
+    #OrbitUnreal.cpp
     Params.cpp
     Pdb.cpp
-    #ProcessUtils.cpp
+    ProcessUtils.cpp
     #SamplingProfiler.cpp
     Serialization.cpp
     #SymbolUtils.cpp
@@ -126,7 +126,8 @@ add_library(OrbitCore STATIC
 target_include_directories(OrbitCore
 PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CEREAL_INCLUDE_DISR}
+    ${EXTERN_ROOT}/cereal/include
+    ${CEREAL_INCLUDE_DIRS}
 PRIVATE
     ${BREAKPAD_INCLUDE_DIRS}
 )
@@ -143,3 +144,5 @@ target_link_libraries(OrbitCore
     LLVMSupport
     ${BREAKPAD_LIBRARIES}
 )
+
+add_subdirectory(test)

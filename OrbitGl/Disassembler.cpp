@@ -47,16 +47,16 @@ void Disassembler::Disassemble( const unsigned char* a_MachineCode, int a_Size, 
     {
         size_t j;
 
-        for( j = 0; j < count; j++ ) 
+        /*XXX: for( j = 0; j < count; j++ ) 
         {
             LOGF( "0x%" PRIx64 ":\t%-12s %s\n"
                 , insn[j].address
                 , insn[j].mnemonic
                 , insn[j].op_str );
-        }
+        }*/
 
         // print out the next offset, after the last insn
-        LOGF( "0x%" PRIx64 ":\n", insn[j - 1].address + insn[j - 1].size );
+        //XXX: LOGF( "0x%" PRIx64 ":\n", insn[j - 1].address + insn[j - 1].size );
 
 
         // free memory allocated by cs_disasm()

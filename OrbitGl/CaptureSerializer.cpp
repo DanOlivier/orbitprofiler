@@ -147,7 +147,7 @@ void CaptureSerializer::Load( const fs::path& a_FileName )
         archive( Capture::GFunctionCountMap );
 
         // Process
-        archive( Capture::GTargetProcess );
+        //archive( Capture::GTargetProcess );
 
         // Callstacks
         archive( Capture::GCallstacks );

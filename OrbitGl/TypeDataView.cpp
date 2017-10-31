@@ -240,7 +240,7 @@ void TypesDataView::OnView( vector<int> & a_Items )
         Type & type = GetType( item );
         shared_ptr<Variable> var = type.GetTemplateVariable();
         var->PrintDetails();
-        OrbitDia::DiaDump( type.GetDiaSymbol() );
+        //OrbitDia::DiaDump( type.GetDiaSymbol() );
         GOrbitApp->SendToUiNow( L"output" );
     }
 }

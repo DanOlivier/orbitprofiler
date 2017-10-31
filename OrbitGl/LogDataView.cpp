@@ -50,6 +50,7 @@ wstring LogDataView::GetValue( int a_Row, int a_Column )
     {
     case LDV_Time:
     {
+        /*XXX:
         auto micros = PerfCounter::get_microseconds(Capture::GCaptureTimer.m_PerfCounter.get_start(), entry.m_Time);
         chrono::system_clock::time_point sysTime = Capture::GCaptureTimePoint + chrono::microseconds(micros);
         time_t now_c = chrono::system_clock::to_time_t(sysTime);
@@ -57,7 +58,7 @@ wstring LogDataView::GetValue( int a_Row, int a_Column )
         wchar_t buffer[256];
         wcsftime( buffer, sizeof( buffer ), L"%H:%M:%S", now_tm );
 
-        value = buffer;
+        value = buffer;*/
         break;
     }
     case LDV_Message:

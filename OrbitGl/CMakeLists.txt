@@ -86,7 +86,7 @@ set(SOURCES
     TextRenderer.cpp
     ThreadDataViewGl.cpp
     ThreadView.cpp
-    TimeGraph.cpp
+    #TimeGraph.cpp
     TimeGraphLayout.cpp
     TypeDataView.cpp
 )

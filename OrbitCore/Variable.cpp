@@ -8,10 +8,10 @@
 #include "Log.h"
 #include "TcpServer.h"
 #include "ScopeTimer.h"
-#include "Capture.h"
+//#include "Capture.h"
 #include "CoreApp.h"
 #include "Serialization.h"
-#include "DiaParser.h"
+//#include "DiaParser.h"
 
 #include <llvm/DebugInfo/PDB/PDBSymbol.h>
 
@@ -44,20 +44,20 @@ void Variable::SetType(const wstring & a_Type)
 //-----------------------------------------------------------------------------
 void Variable::SendValue()
 {
-    if( Capture::Connect() )
+    /*if( Capture::Connect() )
     {
         Message msg( Msg_SetData );
         msg.m_Header.m_DataTransferHeader.m_Address = (ULONG64)GPdbDbg->GetHModule() + (ULONG64)m_Address;
         msg.m_Header.m_DataTransferHeader.m_Type = DataTransferHeader::Data;
         msg.m_Size = m_Size;
         GTcpServer->Send(msg, (void*)&m_Data);
-    }
+    }*/
 }
 
 //-----------------------------------------------------------------------------
 void Variable::SyncValue()
 {
-    if( Capture::Connect() )
+    /*if( Capture::Connect() )
     {
         Message msg( Msg_GetData );
         ULONG64 address = (ULONG64)m_Pdb->GetHModule() + (ULONG64)m_Address;
@@ -66,7 +66,7 @@ void Variable::SyncValue()
         msg.m_Size = m_Size;
         m_SyncTimer->Start();
         GTcpServer->Send(msg);
-    }
+    }*/
 }
 
 //-----------------------------------------------------------------------------
@@ -184,7 +184,7 @@ void Variable::PrintHierarchy( int a_Indent )
 {
     if( Type* type = GetType() )
     {
-        type->LoadDiaInfo();
+        //type->LoadDiaInfo();
         ORBIT_VIZ( Format( L"%s%s\n", Indent( a_Indent ).c_str(), GetTypeName().c_str() ) );
 
         for( shared_ptr<Variable> var : m_Children )
@@ -200,14 +200,14 @@ void Variable::PrintHierarchy( int a_Indent )
 //-----------------------------------------------------------------------------
 void Variable::PrintDetails()
 {
-    if( Type* type = GetType() )
+    /*if( Type* type = GetType() )
     {
         DiaParser parser;
         type->LoadDiaInfo();
         parser.PrintTypeInDetail( type->GetDiaSymbol(), 0 );
         ORBIT_VIZ("\n\nDetails:\n");
         ORBIT_VIZ(parser.m_Log);
-    }
+    }*/
 }
 
 //-----------------------------------------------------------------------------
@@ -217,7 +217,7 @@ void Variable::Populate()
     {
         if( Type* type = GetType() )
         {
-            type->LoadDiaInfo();
+            /*type->LoadDiaInfo();
             const map<ULONG, Variable> & TypeMap = type->GetFullVariableMap();
             for( auto & pair : TypeMap )
             {
@@ -226,7 +226,7 @@ void Variable::Populate()
                 var->m_Address = this->m_Address + pair.first;
                 m_Children.push_back(var);
             }
-            m_Populated = true;
+            m_Populated = true;*/
         }
     }
 }

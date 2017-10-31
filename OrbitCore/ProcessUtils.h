@@ -7,12 +7,6 @@
 #include <unordered_map>
 
 //-----------------------------------------------------------------------------
-namespace ProcessUtils
-{
-    bool Is64Bit(HANDLE hProcess);
-}
-
-//-----------------------------------------------------------------------------
 struct ProcessList
 {
     ProcessList();

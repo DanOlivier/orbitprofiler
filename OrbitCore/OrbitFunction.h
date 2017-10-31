@@ -4,7 +4,8 @@
 #pragma once
 
 #include "OrbitDbgHelp.h"
-#include "cvconst.h"
+#include <llvm/DebugInfo/CodeView/CodeView.h>
+#include <llvm/DebugInfo/CodeView/SymbolRecord.h>
 #include "BaseTypes.h"
 #include "FunctionStats.h"
 #include "SerializationMacros.h"
@@ -28,7 +29,7 @@ struct FunctionParam
     std::wstring     m_ParamType;
     std::wstring     m_Type;
     std::wstring     m_Address;
-    //SYMBOL_INFO m_SymbolInfo;
+    //llvm::codeview::SymbolRecord m_SymbolInfo;
 
     bool InRegister( int a_Index );
     bool IsPointer() { return m_Type.find( L"*" ) != std::wstring::npos; }
@@ -45,7 +46,7 @@ public:
                , m_Line( 0 )
                , m_ModBase( 0 )
                , m_Selected( 0 )
-               , m_CallConv( -1 )
+               //, m_CallConv( -1 )
                , m_Id( 0 )
                , m_ParentId( 0 )
                , m_Pdb( nullptr )
@@ -127,7 +128,7 @@ public:
     std::wstring  m_File;
     int      m_Line;
     ULONG64  m_ModBase;
-    int      m_CallConv;
+    llvm::codeview::CallingConvention      m_CallConv;
     ULONG    m_Id;
     DWORD    m_ParentId;
     std::vector<FunctionParam> m_Params;

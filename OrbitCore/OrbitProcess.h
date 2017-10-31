@@ -27,18 +27,26 @@ namespace llvm { namespace pdb {
     class IPDBSession;
 }}
 
+//#include <proc/readproc.h>
+
+struct proc_t;
+extern "C" void freeproc(proc_t* p);
+
+struct ProcDeleter {
+    void operator()(proc_t* b) { freeproc(b); }
+};
+typedef std::unique_ptr<proc_t, ProcDeleter> ProcHandle_t;
+
 //-----------------------------------------------------------------------------
 class Process
 {
 public:
-    Process();
-    Process( DWORD a_ID );
+    Process(DWORD a_ID, ProcHandle_t handle);
     ~Process();
 
     typedef std::map< DWORD64, std::shared_ptr<Module> > ModuleMap_t;
     typedef std::map< fs::path, std::shared_ptr<Module> > ModuleMapByName_t;
 
-    void Init();
     void LoadDebugInfo();
     ModuleMap_t ListModules();
     void EnumerateThreads();
@@ -53,7 +61,7 @@ public:
     void AddModule( std::shared_ptr<Module> & a_Module );
     void FindPdbs( const std::vector< fs::path > & a_SearchLocations );
 
-    static bool IsElevated( HANDLE a_Process );
+    static bool IsElevated( ProcHandle_t a_Process );
     static bool SetPrivilege( LPCTSTR a_Name, bool a_Enable );
 
     ModuleMap_t& GetModules() { return m_Modules; }
@@ -65,7 +73,7 @@ public:
 
     DWORD GetID() const { return m_ID; }
     double GetCpuUsage() const { return m_CpuUsage; }
-    HANDLE GetHandle() const { return m_Handle; }
+    const ProcHandle_t& GetHandle() const { return m_Handle; }
     bool GetIs64Bit() const { return m_Is64Bit; }
     int NumModules() const { return (int)m_Modules.size(); }
     bool GetIsRemote() const { return m_IsRemote; }
@@ -76,7 +84,7 @@ public:
     std::unique_ptr<llvm::pdb::PDBSymbol> SymbolFromAddress( DWORD64 a_Address );
     bool LineInfoFromAddress( DWORD64 a_Address, struct LineInfo & o_LineInfo );
 
-    void LoadSession(const Session & a_Session);
+    void LoadSession(const Session& a_Session);
     void SaveSession();
 
     std::vector<Function*>& GetFunctions() { return m_Functions; }
@@ -90,17 +98,13 @@ public:
     void ClearWatchedVariables();
 
     void AddType( Type & a_Type );
-    void SetID( DWORD a_ID );
 
-    Mutex & GetDataMutex() { return m_DataMutex; }
+    Mutex& GetDataMutex() { return m_DataMutex; }
 
     DWORD64 GetOutputDebugStringAddress();
     DWORD64 GetRaiseExceptionAddress();
 
     void FindCoreFunctions();
-
-    fs::path     m_Name;
-    fs::path     m_FullName;
 
     ORBIT_SERIALIZABLE;
 
@@ -109,16 +113,18 @@ protected:
 
 private:
     DWORD       m_ID;
-    HANDLE      m_Handle;
-    bool        m_IsElevated;
+    ProcHandle_t m_Handle;
+    fs::path    m_Name;
+    fs::path    m_FullName;
+    bool        m_IsElevated = false;
 
-    FILETIME    m_LastUserTime;
-    FILETIME    m_LastKernTime;
-    double      m_CpuUsage;
+    FILETIME    m_LastUserTime = {0};
+    FILETIME    m_LastKernTime = {0};
+    double      m_CpuUsage = 0.0;
     Timer       m_UpdateCpuTimer;
-    bool        m_Is64Bit;
-    bool        m_DebugInfoLoaded;
-    bool        m_IsRemote;
+    bool        m_Is64Bit = false;
+    bool        m_DebugInfoLoaded = false;
+    bool        m_IsRemote = false;
     Mutex       m_DataMutex;
 
     ModuleMap_t m_Modules;

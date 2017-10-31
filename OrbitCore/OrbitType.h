@@ -8,14 +8,14 @@
 #include <map>
 #include <set>
 
-//#include "cvconst.h"
-
 #include "OrbitDbgHelp.h"
 #include "Variable.h"
 #include "FunctionStats.h"
 #include "SerializationMacros.h"
 #include "OrbitFunction.h"
 #include "TypeInfoStructs.h"
+
+#include <llvm/DebugInfo/PDB/PDBTypes.h>
 
 //-----------------------------------------------------------------------------
 struct Parent
@@ -103,7 +103,7 @@ public:
 
     std::vector<Function>   m_Functions;
     std::map<ULONG, Parent> m_ParentTypes;
-    UdtKind            m_Type;
+    llvm::pdb::PDB_UdtType m_Type;
     bool               m_Selected;
     TypeInfo           m_TypeInfo;
     Pdb*               m_Pdb;

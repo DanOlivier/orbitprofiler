@@ -67,13 +67,13 @@ wstring CallStackDataView::GetValue(int a_Row, int a_Column)
     case Function::FILE:
         value = function.m_File; break;
     case Function::MODULE:
-        value = function.GetModuleName(); break;
+        value = function.GetModuleName().wstring(); break;
     case Function::LINE:
         value = Format(L"%i", function.m_Line); break;
     case Function::SIZE:
         value = Format(L"%lu", function.m_Size); break;
     case Function::CALL_CONV:
-        value = Function::GetCallingConventionString(function.m_CallConv); break;
+        value = Function::GetCallingConventionString((uint8_t)function.m_CallConv); break;
     default: break;
     }
 

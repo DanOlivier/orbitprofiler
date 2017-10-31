@@ -6,7 +6,7 @@
 #include "Pdb.h"
 #include <tchar.h>
 //#define _NO_CVCONST_H
-#include "cvconst.h"
+//#include "cvconst.h"
 #include "OrbitDbgHelp.h"
 #include <stdio.h>
 #include <string>
