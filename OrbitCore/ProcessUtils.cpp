@@ -28,16 +28,21 @@ void ProcessList::Refresh()
     unordered_map< DWORD, shared_ptr< Process > > previousProcessesMap = m_ProcessesMap;
     m_ProcessesMap.clear();
 
-    PROCTAB* procTable = openproc(PROC_FILLCOM | PROC_FILLMEM | PROC_FILLSTAT | PROC_FILLSTATUS);
+    uid_t uids[2];
+    uids[0] = getuid();
+    uids[1] = 0;
+    PROCTAB* procTable = openproc(PROC_UID | PROC_FILLCOM | PROC_FILLMEM | PROC_FILLSTAT | PROC_FILLSTATUS,
+        uids, 1);
     while (1)
     {
-        unique_ptr<proc_t, ProcDeleter> p(readproc(procTable, 0));
+        ProcHandle_t p(readproc(procTable, 0));
         if(!p)
             break;
 
         if (p->tgid == getpid())
             continue;
 
+        auto tgid = p->tgid;
         auto it = previousProcessesMap.find( p->tgid );
         if( it != previousProcessesMap.end() )
         {
@@ -49,13 +54,12 @@ void ProcessList::Refresh()
             // Process was not there previously
             if(p->cmdline)
             {
-                auto process = make_shared<Process>(p->tgid, std::move(p));//, p->cmdline[0]);
+                auto process = make_shared<Process>(p->tgid, std::move(p));
                 m_Processes.push_back( process );
             }
         }
 
-        m_ProcessesMap[p->tgid] = m_Processes.back();
-        //freeproc(p);
+        m_ProcessesMap[tgid] = m_Processes.back();
     }
 
     SortByCPU();

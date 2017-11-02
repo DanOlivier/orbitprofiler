@@ -25,12 +25,17 @@ namespace fs = std::experimental::filesystem;
 Process::Process(DWORD a_ID, ProcHandle_t handle) : 
     m_ID(a_ID), 
     m_Handle(std::move(handle)), 
-    m_FullName(m_Handle->cmdline[0]), 
     m_Name(m_Handle->cmd)
 {
-    //m_Handle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, m_ID);
-    //m_Is64Bit = ProcessUtils::Is64Bit(m_Handle);
-    //m_IsElevated = IsElevated( m_Handle );
+    string buf = Format("/proc/%ld/exe", m_ID);
+    char buf2[PATH_MAX];
+    ssize_t len = readlink(buf.c_str(), buf2, sizeof(buf2)-1);
+    if (len >= 0) {
+        buf2[len] = 0;
+        m_FullName = buf2;
+    }
+    //m_Is64Bit = 
+    m_IsElevated = m_Handle->ruid < 0 || m_Handle->ruid != m_Handle->euid;
 
     m_UpdateCpuTimer.Start();
 }
@@ -101,48 +106,25 @@ void Process::EnumerateThreads()
     m_Threads.clear();
     m_ThreadIds.clear();
 
-    // https://blogs.msdn.microsoft.com/oldnewthing/20060223-14/?p=32173/
-    /*HANDLE h = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, m_ID);
-    if (h != INVALID_HANDLE_VALUE)
+    fs::path threadsDir = Format("/proc/%ld/task", m_ID);
+    if(!fs::exists(threadsDir))
+        return;
+    for (const auto& dirEnt : fs::directory_iterator{threadsDir})
     {
-        THREADENTRY32 te;
-        te.dwSize = sizeof(te);
-        if (Thread32First(h, &te))
+        if(fs::is_directory(dirEnt))
         {
-            do
-            {
-                if (te.dwSize >= FIELD_OFFSET(THREADENTRY32, th32OwnerProcessID) + sizeof(te.th32OwnerProcessID))
-                {
-                    HANDLE thandle;
-                    {
-                        thandle = OpenThread(THREAD_ALL_ACCESS, FALSE, te.th32ThreadID);
-                    }
-
-                    if (thandle == NULL)
-                    {
-                        //ORBIT_LOG(GetLastErrorAsString());
-                        continue;
-                    }
-
-                    if (te.th32OwnerProcessID == m_ID)
-                    {
-                        shared_ptr<Thread> thread = make_shared<Thread>();
-                        thread->m_Handle = thandle;
-                        thread->m_TID = te.th32ThreadID;
-                        m_Threads.push_back( thread );
-                    }
-                }
-                te.dwSize = sizeof(te);
-            } while (Thread32Next(h, &te));
+            int tid = std::stoi(dirEnt.path().filename());
+            shared_ptr<Thread> thread = make_shared<Thread>();
+            //thread->m_Handle = thandle;
+            //thread->m_TID = te.th32ThreadID;
+            m_Threads.push_back( thread );
         }
-
-        CloseHandle(h);
     }
 
     for (shared_ptr<Thread> & thread : m_Threads)
     {
         m_ThreadIds.insert(thread->m_TID);
-    }*/
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -385,28 +367,6 @@ void Process::FindPdbs( const vector<  fs::path >& a_SearchLocations )
             }
         }       
     }
-}
-
-//-----------------------------------------------------------------------------
-bool Process::IsElevated( ProcHandle_t a_Process )
-{
-    bool fRet = false;
-    /*HANDLE hToken = NULL;
-    if( OpenProcessToken( a_Process, TOKEN_QUERY, &hToken ) ) 
-    {
-        TOKEN_ELEVATION Elevation;
-        DWORD cbSize = sizeof( TOKEN_ELEVATION );
-        if( GetTokenInformation( hToken, TokenElevation, &Elevation, sizeof( Elevation ), &cbSize ) ) 
-        {
-            fRet = Elevation.TokenIsElevated != 0;
-        }
-    }
-    if( hToken ) 
-    {
-        CloseHandle( hToken );
-    }*/
-
-    return fRet;
 }
 
 //-----------------------------------------------------------------------------

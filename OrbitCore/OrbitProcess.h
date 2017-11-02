@@ -28,7 +28,6 @@ namespace llvm { namespace pdb {
 }}
 
 //#include <proc/readproc.h>
-
 struct proc_t;
 extern "C" void freeproc(proc_t* p);
 
@@ -61,7 +60,6 @@ public:
     void AddModule( std::shared_ptr<Module> & a_Module );
     void FindPdbs( const std::vector< fs::path > & a_SearchLocations );
 
-    static bool IsElevated( ProcHandle_t a_Process );
     static bool SetPrivilege( LPCTSTR a_Name, bool a_Enable );
 
     ModuleMap_t& GetModules() { return m_Modules; }

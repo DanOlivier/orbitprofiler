@@ -6,14 +6,22 @@
 #include "ScopeTimer.h"
 #include "RingBuffer.h"
 
+//#include <proc/readproc.h>
+struct proc_t;
+extern "C" void freeproc(proc_t* p);
+
+struct ProcDeleter {
+    void operator()(proc_t* b) { freeproc(b); }
+};
+typedef std::unique_ptr<proc_t, ProcDeleter> ProcHandle_t;
+
 //-----------------------------------------------------------------------------
 class Thread
 {
 public:
-    Thread() : m_TID(0)
-             , m_Handle(0)
-             , m_Init(false)
-             , counter( 0 )
+    Thread(DWORD a_ID, ProcHandle_t handle) :
+        m_ID(a_ID), 
+        m_Handle(std::move(handle))
     {
         m_Usage.Fill(0.f);
     }
@@ -21,13 +29,14 @@ public:
     float GetUsage();
     void  UpdateUsage();
 
-    DWORD       m_TID;
-    HANDLE      m_Handle;
-    bool        m_Init;
+//private:
+    DWORD       m_TID = 0;
+    ProcHandle_t m_Handle;
+    bool        m_Init = false;
     FILETIME    m_LastUserTime;
     FILETIME    m_LastKernTime;
     Timer       m_UpdateThreadTimer;
     RingBuffer< float, 32 > m_Usage;
-    int counter;
+    int counter = 0;
 };
 

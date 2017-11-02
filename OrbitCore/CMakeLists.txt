@@ -143,6 +143,8 @@ target_link_libraries(OrbitCore
     LLVMObjectYAML
     LLVMSupport
     ${BREAKPAD_LIBRARIES}
+    procps
+    stdc++fs
 )
 
 add_subdirectory(test)

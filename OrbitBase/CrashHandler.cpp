@@ -23,32 +23,34 @@ void SendDumpInternal( const wstring & a_Dir, const wstring & a_Id );
 google_breakpad::ExceptionHandler* GHandler;
 
 //-----------------------------------------------------------------------------
-bool DmpFilter( void* , EXCEPTION_POINTERS* , MDRawAssertionInfo* )
+bool DmpFilter( void* context )
 {
     return true;
 }
 
 //-----------------------------------------------------------------------------
-bool DmpCallback( const wchar_t*, const wchar_t*, void*, EXCEPTION_POINTERS*, MDRawAssertionInfo*, bool succeeded )
+bool DmpCallback( const google_breakpad::MinidumpDescriptor& descriptor, void* context, bool succeeded )
 {
     PRINT_FUNC;
 
-    wstring dir = Path::GetDumpPath();
-    wstring msg = L"A crash dump was generated in " + dir;
-    MessageBox(
+    wstring dir = Path::GetDumpPath().wstring();
+    wstring msg = succeeded ? 
+                  L"A crash dump was generated in " + dir :
+                  L"Failed to generate crash dump";
+    /*MessageBox(
         NULL,
-        succeeded ? msg.c_str() : L"Failed to generate crash dump",
+        msg.c_str(),
         L"Orbit Crash Handler: ",
         MB_ICONEXCLAMATION | MB_OK
-    );
-
+    );*/
+    printf("%S", msg.c_str());
     return false;
 }
 
 //-----------------------------------------------------------------------------
-bool OnDemandDmpCallback( const wchar_t* dump_path, const wchar_t* minidump_id, void* , EXCEPTION_POINTERS* , MDRawAssertionInfo* , bool  )
+bool OnDemandDmpCallback( const google_breakpad::MinidumpDescriptor& descriptor, void* context, bool succeeded )
 {
-    SendDumpInternal( dump_path, minidump_id );
+    //SendDumpInternal( dump_path, minidump_id );
     return false;
 }
 
@@ -65,13 +67,13 @@ CrashHandler::CrashHandler()
     assert( GHandler == nullptr );
 
     GHandler = new google_breakpad::ExceptionHandler(
-        Path::GetDumpPath().c_str(),
+        google_breakpad::MinidumpDescriptor(Path::GetDumpPath().c_str()),
         DmpFilter,
         DmpCallback,
-        0,
-        google_breakpad::ExceptionHandler::HANDLER_ALL,
-        MiniDumpNormal,
-        L"",
+        0, // context
+        true, //google_breakpad::ExceptionHandler::HANDLER_ALL,
+        //MiniDumpNormal,
+        //L"",
         0 );
 }
 
