@@ -5,6 +5,9 @@
 #include "OrbitThread.h"
 #include "Utils.h"
 
+#include <proc/readproc.h>
+#include <proc/sysinfo.h> // uptime
+
 //-----------------------------------------------------------------------------
 void Thread::UpdateUsage()
 {
@@ -14,34 +17,18 @@ void Thread::UpdateUsage()
 //-----------------------------------------------------------------------------
 float Thread::GetUsage()
 {
-    if( m_Handle )
-    {
-        FILETIME CreationTime;
-        FILETIME ExitTime;
-        FILETIME KernelTime;
-        FILETIME UserTime;
+    static double uptime_sav;
+    double uptime_cur;
+    uptime(&uptime_cur, NULL);
+    float ellapsedTime = uptime_cur - uptime_sav;
+    if (ellapsedTime < 0.01) ellapsedTime = 0.005;
+    uptime_sav = uptime_cur;
 
-        if( GetThreadTimes(m_Handle, &CreationTime, &ExitTime, &KernelTime, &UserTime) )
-        {
-            double elapsedMillis = m_UpdateThreadTimer.QueryMillis();
-            m_UpdateThreadTimer.Start();
+    long Hertz = sysconf(_SC_CLK_TCK);
 
-            LONGLONG kernMs = FileTimeDiffInMillis(m_LastKernTime, KernelTime);
-            LONGLONG userMs = FileTimeDiffInMillis(m_LastUserTime, UserTime);
-
-            m_LastKernTime = KernelTime;
-            m_LastUserTime = UserTime;
-
-            double threadUsage = 0.f;
-            if( m_Init )
-            {
-                threadUsage = (100.0 * double(kernMs + userMs) / elapsedMillis);
-            }
-
-            m_Init = true;
-            return (float)threadUsage;
-        }
-    }
-
-    return -1.f;
+    unsigned long long total_time = m_Handle->utime + m_Handle->stime;
+    //total_time += (m_Handle->cutime + m_Handle->cstime);
+    unsigned int seconds = uptime_cur - (double(m_Handle->start_time) / Hertz);
+    double cpuUsage = 100 * ((double(total_time) / Hertz) / seconds);
+    return cpuUsage;
 }

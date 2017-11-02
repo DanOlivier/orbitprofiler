@@ -6,10 +6,10 @@
 #include <SymbolUtils.h>
 
 #include <gtest/gtest.h>
-//#include <shellapi.h>
 
 #include <stdio.h>
 #include <thread>
+#include <proc/readproc.h>
 
 using namespace std;
 
@@ -31,29 +31,29 @@ namespace UnitTest2
 
     TEST_F(InjectionTest, InjectNotepad) 
     {
-        //ShellExecute(0, nullptr, L"C:\\WINDOWS\\system32\\notepad.exe", L"", 0, SW_HIDE);
-
         ProcessList processList;
-        processList.SortByName();
-        /*for (const auto& p : processList.m_Processes)
-        {
-            if(p->GetFullName().empty())
-                continue;
-            //printf("%S\n", p->GetFullName().wstring().c_str()); 
-            if(!fs::exists(p->GetFullName()))
-            {
-                printf("%S, %S, %ld, %s, %zd\n", p->GetName().wstring().c_str(), 
-                    p->GetFullName().wstring().c_str(), p->GetID(),
-                    p->GetIs64Bit() ? "64" : "32", p->GetThreads().size());
-            }
-        }*/
+
+        processList.UpdateCpuTimes();
+        processList.SortByCPU();
 
         for (const auto& p : processList.m_Processes)
         {
-            printf("%S, %S, %ld, %s, %zd\n", p->GetName().wstring().c_str(), 
-                p->GetFullName().wstring().c_str(), p->GetID(),
-                p->GetIs64Bit() ? "64" : "32", p->GetThreads().size());
             p->EnumerateThreads();
+            printf("%-15S, %6ld, %2s, %3zd, %*.3lf\n", 
+                p->GetName().wstring().c_str(), 
+                p->GetID(),
+                p->GetIs64Bit() ? "64" : "32", 
+                p->GetThreads().size(),
+                6, p->GetCpuUsage()
+            );
+            
+            /*for (const auto& orbthr : p->GetThreads())
+            {
+                auto& t = orbthr->m_Handle;
+                printf("\t%d\n", t->tid);
+            }*/
         }
+        this_thread::sleep_for(chrono::seconds(1));
+        processList.Refresh();
     }
 }

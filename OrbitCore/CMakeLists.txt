@@ -98,7 +98,7 @@ set(SOURCES
     OrbitProcess.cpp
     OrbitRule.cpp
     OrbitSession.cpp
-    #OrbitThread.cpp
+    OrbitThread.cpp
     #OrbitType.cpp
     #OrbitUnreal.cpp
     Params.cpp

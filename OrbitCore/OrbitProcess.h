@@ -6,6 +6,7 @@
 #include "BaseTypes.h"
 #include "SerializationMacros.h"
 #include "Threading.h"
+#include "OrbitThread.h"
 
 #include <set>
 #include <unordered_set>
@@ -18,7 +19,7 @@ namespace fs = std::experimental::filesystem;
 class Function;
 class Type;
 class Variable;
-class Thread;
+//class Thread;
 class Session;
 struct Module;
 
@@ -28,13 +29,14 @@ namespace llvm { namespace pdb {
 }}
 
 //#include <proc/readproc.h>
-struct proc_t;
+/*struct proc_t;
 extern "C" void freeproc(proc_t* p);
 
 struct ProcDeleter {
     void operator()(proc_t* b) { freeproc(b); }
 };
 typedef std::unique_ptr<proc_t, ProcDeleter> ProcHandle_t;
+*/
 
 //-----------------------------------------------------------------------------
 class Process
@@ -116,8 +118,8 @@ private:
     fs::path    m_FullName;
     bool        m_IsElevated = false;
 
-    FILETIME    m_LastUserTime = {0};
-    FILETIME    m_LastKernTime = {0};
+    //FILETIME    m_LastUserTime = {0};
+    //FILETIME    m_LastKernTime = {0};
     double      m_CpuUsage = 0.0;
     Timer       m_UpdateCpuTimer;
     bool        m_Is64Bit = false;

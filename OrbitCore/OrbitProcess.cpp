@@ -16,7 +16,9 @@
 #include "Serialization.h"
 
 #include <llvm/DebugInfo/PDB/PDBSymbol.h>
+
 #include <proc/readproc.h>
+#include <proc/sysinfo.h> // uptime
 
 using namespace std;
 namespace fs = std::experimental::filesystem;
@@ -63,11 +65,11 @@ void Process::LoadDebugInfo()
         //SymInit(m_Handle);
 
         // Load module information
-        /*wstring symbolPath = Path::GetDirectory(this->GetFullName()).c_str();
-        SymSetSearchPath(m_Handle, symbolPath.c_str());*/
+        //wstring symbolPath = Path::GetDirectory(this->GetFullName()).c_str();
+        //SymSetSearchPath(m_Handle, symbolPath.c_str());
 
         // List threads
-        //EnumerateThreads();
+        EnumerateThreads();
         m_DebugInfoLoaded = true;
     }
 }
@@ -106,21 +108,24 @@ void Process::EnumerateThreads()
     m_Threads.clear();
     m_ThreadIds.clear();
 
-    fs::path threadsDir = Format("/proc/%ld/task", m_ID);
-    if(!fs::exists(threadsDir))
-        return;
-    for (const auto& dirEnt : fs::directory_iterator{threadsDir})
+    uid_t pids[2];
+    pids[0] = m_ID;
+    pids[1] = 0;
+    PROCTAB* procTable = openproc(PROC_PID | PROC_FILLMEM | PROC_FILLSTAT | PROC_FILLSTATUS | PROC_LOOSE_TASKS,
+        pids, 1);
+
+    while (1)
     {
-        if(fs::is_directory(dirEnt))
-        {
-            int tid = std::stoi(dirEnt.path().filename());
-            shared_ptr<Thread> thread = make_shared<Thread>();
-            //thread->m_Handle = thandle;
-            //thread->m_TID = te.th32ThreadID;
-            m_Threads.push_back( thread );
-        }
+        ProcHandle_t p(readeither(procTable, 0));
+        if(!p)
+            break;
+
+        auto thread = make_shared<Thread>(p->tid, std::move(p));
+        m_Threads.push_back( thread );
     }
 
+    closeproc(procTable);
+    
     for (shared_ptr<Thread> & thread : m_Threads)
     {
         m_ThreadIds.insert(thread->m_TID);
@@ -130,54 +135,48 @@ void Process::EnumerateThreads()
 //-----------------------------------------------------------------------------
 void Process::UpdateCpuTime()
 {
-    FILETIME creationTime;
-    FILETIME exitTime;
-    FILETIME kernTime;
-    FILETIME userTime;
+    static double uptime_sav;
+    double uptime_cur;
+    uptime(&uptime_cur, NULL);
+    float ellapsedTime = uptime_cur - uptime_sav;
+    if (ellapsedTime < 0.01) ellapsedTime = 0.005;
+    uptime_sav = uptime_cur;
 
-    double elapsedMillis = m_UpdateCpuTimer.QueryMillis();
-    m_UpdateCpuTimer.Start();
+    long Hertz = sysconf(_SC_CLK_TCK);
 
-    /*if( GetProcessTimes( m_Handle, &creationTime, &exitTime, &kernTime, &userTime ) )
-    {
-        unsigned numCores = thread::hardware_concurrency();
-        LONGLONG kernMs = FileTimeDiffInMillis( m_LastKernTime, kernTime );
-        LONGLONG userMs = FileTimeDiffInMillis( m_LastUserTime, userTime );
-        m_LastKernTime = kernTime;
-        m_LastUserTime = userTime;
-        m_CpuUsage = ( 100.0 * double( kernMs + userMs ) / elapsedMillis ) / numCores;
-    }*/
+    unsigned long long total_time = m_Handle->utime + m_Handle->stime;
+    //total_time += (m_Handle->cutime + m_Handle->cstime);
+    unsigned int seconds = uptime_cur - (double(m_Handle->start_time) / Hertz);
+    m_CpuUsage = 100 * ((double(total_time) / Hertz) / seconds);
 }
 
 //-----------------------------------------------------------------------------
-/*void Process::UpdateThreadUsage()
+void Process::UpdateThreadUsage()
 {
     for( auto & thread : m_Threads )
     {
         thread->UpdateUsage();
     }
-}*/
+}
 
 //-----------------------------------------------------------------------------
 void Process::SortThreadsByUsage()
 {
-    sort( m_Threads.begin()
-             , m_Threads.end()
-             , [](shared_ptr<Thread> & a_T0, shared_ptr<Thread> & a_T1)
-             { 
-                 return a_T1->m_Usage.Latest() < a_T0->m_Usage.Latest(); 
-             } );
+    sort( m_Threads.begin(), m_Threads.end(),
+        [](shared_ptr<Thread> & a_T0, shared_ptr<Thread> & a_T1)
+        { 
+            return a_T1->m_Usage.Latest() < a_T0->m_Usage.Latest(); 
+        } );
 }
 
 //-----------------------------------------------------------------------------
 void Process::SortThreadsById()
 {
-    sort( m_Threads.begin()
-             , m_Threads.end()
-             , [](shared_ptr<Thread> & a_T1, shared_ptr<Thread> & a_T0)
-             { 
-                 return a_T1->m_TID < a_T0->m_TID; 
-             } );
+    sort( m_Threads.begin(), m_Threads.end(),
+        [](shared_ptr<Thread> & a_T1, shared_ptr<Thread> & a_T0)
+        { 
+            return a_T1->m_TID < a_T0->m_TID; 
+        } );
 }
 
 //-----------------------------------------------------------------------------
@@ -227,16 +226,16 @@ Function* Process::GetFunctionFromAddress( DWORD64 a_Address, bool a_IsExact )
 //-----------------------------------------------------------------------------
 shared_ptr<Module> Process::GetModuleFromAddress( DWORD64 a_Address )
 {
-	DWORD64 address = (DWORD64)a_Address;
-	auto it = m_Modules.upper_bound(address);
-	if (!m_Modules.empty() && it != m_Modules.begin())
-	{
-		--it;
-		shared_ptr<Module> & module = it->second;
-		return module;
-	}
+    DWORD64 address = (DWORD64)a_Address;
+    auto it = m_Modules.upper_bound(address);
+    if (!m_Modules.empty() && it != m_Modules.begin())
+    {
+        --it;
+        shared_ptr<Module> & module = it->second;
+        return module;
+    }
 
-	return nullptr;
+    return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -271,7 +270,7 @@ void Process::LoadSession( const Session& )
 //-----------------------------------------------------------------------------
 void Process::SaveSession()
 {
-    
+
 }
 
 //-----------------------------------------------------------------------------
@@ -443,7 +442,7 @@ DWORD64 Process::GetRaiseExceptionAddress()
 //-----------------------------------------------------------------------------
 void Process::FindCoreFunctions()
 {
-	return;
+    return;
 #if 0 // XXX: Unreachable code
     SCOPE_TIMER_LOG(L"FindCoreFunctions");
 
@@ -482,7 +481,7 @@ ORBIT_SERIALIZE( Process, 0 )
     ORBIT_NVP_VAL( 0, m_FullName );
     ORBIT_NVP_VAL( 0, m_ID );
     ORBIT_NVP_VAL( 0, m_IsElevated );
-    ORBIT_NVP_VAL( 0, m_CpuUsage );
+    //ORBIT_NVP_VAL( 0, m_CpuUsage );
     ORBIT_NVP_VAL( 0, m_Is64Bit );
     ORBIT_NVP_VAL( 0, m_DebugInfoLoaded );
     ORBIT_NVP_VAL( 0, m_IsRemote );

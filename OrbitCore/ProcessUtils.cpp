@@ -52,11 +52,8 @@ void ProcessList::Refresh()
         else
         {
             // Process was not there previously
-            if(p->cmdline)
-            {
-                auto process = make_shared<Process>(p->tgid, std::move(p));
-                m_Processes.push_back( process );
-            }
+            auto process = make_shared<Process>(p->tgid, std::move(p));
+            m_Processes.push_back( process );
         }
 
         m_ProcessesMap[tgid] = m_Processes.back();
@@ -69,25 +66,31 @@ void ProcessList::Refresh()
 //-----------------------------------------------------------------------------
 void ProcessList::SortByID()
 {
-    sort( m_Processes.begin(), m_Processes.end(), []( shared_ptr<Process> & a_P1, shared_ptr<Process> & a_P2 )
-    { 
-        return a_P1->GetID() < a_P2->GetID();
-    } );
+    sort( m_Processes.begin(), m_Processes.end(), 
+        []( shared_ptr<Process> & a_P1, shared_ptr<Process> & a_P2 )
+        { 
+            return a_P1->GetID() < a_P2->GetID();
+        } );
 }
 
 //-----------------------------------------------------------------------------
 void ProcessList::SortByName()
 {
-    sort( m_Processes.begin(), m_Processes.end(), []( shared_ptr<Process> & a_P1, shared_ptr<Process> & a_P2 )
-    { 
-        return a_P1->GetName() < a_P2->GetName(); 
-    } );
+    sort( m_Processes.begin(), m_Processes.end(), 
+        []( shared_ptr<Process> & a_P1, shared_ptr<Process> & a_P2 )
+        { 
+            return a_P1->GetName() < a_P2->GetName(); 
+        } );
 }
 
 //-----------------------------------------------------------------------------
 void ProcessList::SortByCPU()
 {
-    sort(m_Processes.begin(), m_Processes.end(), []( shared_ptr<Process> & a_P1, shared_ptr<Process> & a_P2 ){ return a_P1->GetCpuUsage() < a_P2->GetCpuUsage(); });
+    sort(m_Processes.begin(), m_Processes.end(), 
+        []( shared_ptr<Process> & a_P1, shared_ptr<Process> & a_P2 )
+        { 
+            return a_P1->GetCpuUsage() > a_P2->GetCpuUsage(); 
+        } );
 }
 
 //-----------------------------------------------------------------------------
