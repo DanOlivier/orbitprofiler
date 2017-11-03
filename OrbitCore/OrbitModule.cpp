@@ -51,16 +51,16 @@ bool Module::LoadDebugInfo()
 //-----------------------------------------------------------------------------
 ORBIT_SERIALIZE( Module, 0 )
 {
-    //XXX: ORBIT_NVP_VAL( 0, m_Name );
-    //XXX: ORBIT_NVP_VAL( 0, m_FullName );
-    //XXX: ORBIT_NVP_VAL( 0, m_PdbName );
-    //XXX: ORBIT_NVP_VAL( 0, m_Directory );
+    ORBIT_NVP_VAL( 0, m_Name );
+    ORBIT_NVP_VAL( 0, m_FullName );
+    ORBIT_NVP_VAL( 0, m_PdbName );
+    ORBIT_NVP_VAL( 0, m_Directory );
     ORBIT_NVP_VAL( 0, m_PrettyName );
     ORBIT_NVP_VAL( 0, m_AddressRange );
     ORBIT_NVP_VAL( 0, m_DebugSignature );
     ORBIT_NVP_VAL( 0, m_AddressStart );
     ORBIT_NVP_VAL( 0, m_AddressEnd );
-    ORBIT_NVP_VAL( 0, m_EntryPoint );
+    //ORBIT_NVP_VAL( 0, m_EntryPoint );
     ORBIT_NVP_VAL( 0, m_FoundPdb );
     ORBIT_NVP_VAL( 0, m_Selected );
     ORBIT_NVP_VAL( 0, m_Loaded );

@@ -281,7 +281,11 @@ void Function::Print()
     }
 
     LineInfo lineInfo;
-    //SymUtils::GetLineInfo( m_Address + (DWORD64)m_Pdb->GetHModule(), lineInfo );
+    /*if(Capture::GTargetProcess)
+    {
+        Capture::GTargetProcess->LineInfoFromAddress( m_Address + (DWORD64)m_Pdb->GetHModule(), lineInfo );
+    }*/
+
     ORBIT_VIZV( lineInfo.m_File );
     ORBIT_VIZV( lineInfo.m_Line );
     ORBIT_VIZV( lineInfo.m_Address );

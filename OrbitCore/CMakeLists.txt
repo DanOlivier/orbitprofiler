@@ -106,7 +106,7 @@ set(SOURCES
     ProcessUtils.cpp
     #SamplingProfiler.cpp
     Serialization.cpp
-    #SymbolUtils.cpp
+    SymbolUtils.cpp
     Tcp.cpp
     TcpServer.cpp
     #TypeInfo.cpp
@@ -145,6 +145,7 @@ target_link_libraries(OrbitCore
     ${BREAKPAD_LIBRARIES}
     procps
     stdc++fs
+    magic
 )
 
 add_subdirectory(test)

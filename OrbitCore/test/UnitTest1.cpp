@@ -4,6 +4,7 @@
 #include <TcpServer.h>
 #include <Log.h>
 #include <SymbolUtils.h>
+#include <OrbitModule.h>
 
 #include <gtest/gtest.h>
 
@@ -55,5 +56,15 @@ namespace UnitTest2
         }
         this_thread::sleep_for(chrono::seconds(1));
         processList.Refresh();
+
+        for (const auto& p : processList.m_Processes)
+        {
+            SymUtils::ModuleMap_t modules = SymUtils::ListModules(p->GetID());
+            for (const auto& m : modules)
+            {
+                printf("%s\n", m.second->m_FullName.c_str());
+            }
+            printf("\n");
+        }
     }
 }

@@ -80,7 +80,7 @@ Process::ModuleMap_t Process::ListModules()
     SCOPE_TIMER_LOG( L"ListModules" );
 
     ClearTransients();
-    //m_Modules = SymUtils::ListModules(m_Handle);
+    m_Modules = SymUtils::ListModules(m_ID);
 
     for( auto & pair : m_Modules )
     {
@@ -481,7 +481,7 @@ ORBIT_SERIALIZE( Process, 0 )
     ORBIT_NVP_VAL( 0, m_FullName );
     ORBIT_NVP_VAL( 0, m_ID );
     ORBIT_NVP_VAL( 0, m_IsElevated );
-    //ORBIT_NVP_VAL( 0, m_CpuUsage );
+    ORBIT_NVP_VAL( 0, m_CpuUsage );
     ORBIT_NVP_VAL( 0, m_Is64Bit );
     ORBIT_NVP_VAL( 0, m_DebugInfoLoaded );
     ORBIT_NVP_VAL( 0, m_IsRemote );

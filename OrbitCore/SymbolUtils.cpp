@@ -4,116 +4,153 @@
 
 #include "SymbolUtils.h"
 #include "OrbitDbgHelp.h"
-#include "Capture.h"
-#include "dia2.h" // #includes rpcndr.h -->  error C2872: 'byte': ambiguous symbol, if <cstddef> was #included first
 #include "OrbitDia.h"
 #include "OrbitModule.h"
 #include "PrintVar.h"
 #include "Path.h"
 
-#include <tlhelp32.h>
-#include <psapi.h>
+#include <magic.h>
+
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 using namespace std;
+namespace fs = std::experimental::filesystem;
+
+class MagicDB
+{
+public:
+    magic_t cookie = 0;
+    MagicDB() {
+        cookie = ::magic_open(MAGIC_NO_CHECK_ELF);
+        magic_load(cookie, NULL);
+    }
+    ~MagicDB() { magic_close(cookie); }
+};
+
+
 //-----------------------------------------------------------------------------
-SymUtils::ModuleMap_t SymUtils::ListModules( HANDLE a_ProcessHandle)
+// faulty read_symlink when dealing with pseudo-files in /proc (truncated files)
+fs::path my_read_symlink(const fs::path& p, error_code& ec) 
+{
+    // struct ::stat st;
+    // if (::lstat(p.c_str(), &st)) 
+    // {
+    //     ec.assign(errno, generic_category());
+    //     return {};
+    // }
+    string buf(PATH_MAX, '\0');
+    ssize_t len = ::readlink(p.c_str(), &buf.front(), buf.size());
+    if (len == -1) 
+    {
+        ec.assign(errno, generic_category());
+        return {};
+    }
+    ec.clear();
+    return fs::path{buf.data(), buf.data() + len};
+}
+
+//-----------------------------------------------------------------------------
+SymUtils::ModuleMap_t SymUtils::ListModules( DWORD pid )
 {
     SCOPE_TIMER_LOG( L"SymUtils::ListModules" );
 
-    const DWORD ModuleArraySize = 1024;
-    DWORD NumModules = 0;
-    TCHAR ModuleNameBuffer[MAX_PATH] = { 0 };
-    TCHAR ModuleFullNameBuffer[MAX_PATH] = { 0 };
-    HMODULE ModuleArray[1024];
+    static MagicDB magicDB;
+
+    // Alternatively, we could cat /proc/$pid/maps, and filter out all but the 
+    // executable segments (and filter out [vdso] and [vsyscall])
+    // cat /proc/8606/maps | grep 'r\-xp' | tr -s ' ' | cut -d' ' -f6
+    fs::path map_files = Format("/proc/%ld/map_files", pid);
     ModuleMap_t o_ModuleMap;
+    
+    struct AddressRange { long long start, end; };
+    map<fs::path, AddressRange> moduleAddresses;
+    static set<fs::path> inexistentPaths;
+    
+    fs::file_status s = status(map_files);
+    printf("%o\n",s.permissions());
 
-    /* Get handles to all the modules in the target process */
-    SetLastError(NO_ERROR);
-    if (!::EnumProcessModulesEx(a_ProcessHandle, &ModuleArray[0], ModuleArraySize * sizeof(HMODULE), &NumModules, LIST_MODULES_ALL))
+    if(0 != access(map_files.c_str(), R_OK))
     {
-        string EnumProcessModulesExError = GetLastErrorAsString();
-        PRINT_VAR(EnumProcessModulesExError);
+        printf("Error: don't have access to %s\n", map_files.c_str());
         return o_ModuleMap;
     }
-
-    NumModules /= sizeof(HMODULE);
-    if (NumModules > ModuleArraySize)
+    for(auto& p: fs::directory_iterator(map_files))
     {
-        PRINT_VAR("NumModules > ModuleArraySize");
-        return o_ModuleMap;
+        long long start, end;
+        if(2 != sscanf(p.path().filename().string().c_str(), "%llx-%llx", &start, &end))
+        {
+            // XXX: develop better error handling
+            throw std::runtime_error(Format("unable to parse: %s").c_str());
+        }
+
+        error_code ec;
+        fs::path linkp = my_read_symlink(p, ec);
+        if(ec)
+        {
+            printf("Warning: Error reading link: %s\n", linkp.string().c_str());
+            continue;
+        }
+        if(linkp.empty()) continue;
+        if(!fs::exists(linkp) && inexistentPaths.find(linkp) == inexistentPaths.end())
+        {
+            inexistentPaths.insert(linkp);
+            printf("Warning: %s doesn't exist!\n", linkp.string().c_str());
+            continue;
+        }
+        /*printf("%llx-%llx -> %s\n", 
+            //p.path().filename().string().c_str(), 
+            start, end,
+            linkp.string().c_str());*/
+        
+        // This will include all mapped segments in the final range
+        // whereas perhaps only the executable (code) segment is required
+        const auto& key = moduleAddresses.find(linkp);
+        if(key != moduleAddresses.end())
+        {
+            auto& range = key->second;
+            range.start = min(start, range.start);
+            range.end = max(start, range.start);
+        }
+        else
+            moduleAddresses[linkp] = AddressRange{start, end};
     }
 
-    for (DWORD i = 0; i <= NumModules; ++i)
+    for(auto& m: moduleAddresses)
     {
-        HMODULE hModule = ModuleArray[i];
-        GetModuleBaseName(a_ProcessHandle, hModule, ModuleNameBuffer, sizeof(ModuleNameBuffer));
-        GetModuleFileNameEx(a_ProcessHandle, hModule, ModuleFullNameBuffer, sizeof(ModuleFullNameBuffer));
+        auto& fullpath = m.first;
+        auto& range = m.second;
 
-        MODULEINFO moduleInfo;
-        memset(&moduleInfo, 0, sizeof(moduleInfo));
-        GetModuleInformation(a_ProcessHandle, hModule, &moduleInfo, sizeof(MODULEINFO));
-
+        // Filter-out anything that isn't recognized as an ELF
+        const string filetype = magic_file(magicDB.cookie, fullpath.string().c_str());
+        const string ELF = "ELF";
+        bool isELF = (filetype.compare(0, ELF.length(), ELF) == 0);
+        if(!isELF)
+        {
+            string msg = Format("%llx-%llx -> %s", 
+                range.start, range.end,
+                fullpath.string().c_str());
+            if(!isELF) msg += Format(" (%s)", filetype.c_str());
+            msg += "\n";
+            //printf("%s", msg.c_str());
+            continue;
+        }
         shared_ptr<Module> module = make_shared<Module>();
-        module->m_Name = ModuleNameBuffer;
-        module->m_FullName = ModuleFullNameBuffer;
-        module->m_Directory = Path::GetDirectory( module->m_FullName );
-        module->m_AddressStart = (DWORD64)moduleInfo.lpBaseOfDll;
-        module->m_AddressEnd = (DWORD64)moduleInfo.lpBaseOfDll + moduleInfo.SizeOfImage;
-        module->m_EntryPoint = (DWORD64)moduleInfo.EntryPoint;
+        module->m_Name = fullpath.filename();
+        module->m_FullName = fullpath;
+        module->m_Directory = Path::GetDirectory( fullpath );
+        module->m_AddressStart = range.start;
+        module->m_AddressEnd = range.end;
 
-        fs::path filePath = module->m_FullName;
-        filePath.replace_extension( ".pdb" );
-        if( fs::exists( filePath ) )
+        if( module->m_AddressStart == 0 )
         {
-            module->m_FoundPdb = true;
-            module->m_PdbSize = ::fs::file_size( filePath );
-            module->m_PdbName = filePath.wstring();
+            throw std::runtime_error(Format("Unexpected: modules %s starts at address 0", 
+                fullpath.string().c_str()).c_str());
         }
-        else if( Contains( module->m_FullName, L"qt" ) )
-        {
-            wstring pdbName = Path::GetFileName( filePath.wstring() );
-            filePath = wstring( L"C:\\Qt\\5.8\\msvc2015_64\\bin\\" ) + pdbName;
-            if( fs::exists( filePath ) )
-            {
-                module->m_FoundPdb = true;
-                module->m_PdbSize = ::fs::file_size( filePath );
-                module->m_PdbName = filePath.wstring();
-            }
-        }
-
-        module->m_ModuleHandle = hModule;
-
-        if( module->m_AddressStart != 0 )
-        {
-            o_ModuleMap[module->m_AddressStart] = module;
-        }
+        o_ModuleMap[module->m_AddressStart] = module;
     }
+
     return o_ModuleMap;
-}
-
-//-----------------------------------------------------------------------------
-bool SymUtils::GetLineInfo( DWORD64 a_Address, LineInfo & o_LineInfo )
-{
-    shared_ptr<Process> process = Capture::GTargetProcess;
-
-    if( process )
-    {
-        return process->LineInfoFromAddress( a_Address, o_LineInfo );
-    }
-
-    return false;
-}
-
-//-----------------------------------------------------------------------------
-ScopeSymCleanup::ScopeSymCleanup( HANDLE a_Handle ) : m_Handle( a_Handle )
-{
-}
-
-//-----------------------------------------------------------------------------
-ScopeSymCleanup::~ScopeSymCleanup()
-{
-    if (!SymCleanup( m_Handle ) )
-    {
-        ORBIT_ERROR;
-    }
 }

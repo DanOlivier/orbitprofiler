@@ -30,10 +30,10 @@ struct Module
     std::wstring  m_PrettyName;
     std::wstring  m_AddressRange;
     std::wstring  m_DebugSignature;
-    HMODULE       m_ModuleHandle;
+    //HMODULE       m_ModuleHandle;
     DWORD64       m_AddressStart;
     DWORD64       m_AddressEnd;
-    DWORD64       m_EntryPoint;
+    //DWORD64       m_EntryPoint;
     bool          m_FoundPdb;
     bool          m_Selected;
     bool          m_Loaded;

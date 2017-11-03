@@ -257,8 +257,8 @@ void CaptureWindow::FindCode( DWORD64 address )
     SCOPE_TIMER_LOG( L"FindCode" );
 
     LineInfo lineInfo;
-    
-    if( SymUtils::GetLineInfo( address, lineInfo ) || ( Capture::GSamplingProfiler && Capture::GSamplingProfiler->GetLineInfo( address, lineInfo ) ) )
+    if( (Capture::GTargetProcess && Capture::GTargetProcess->LineInfoFromAddress( a_Address, o_LineInfo ))
+        || (Capture::GSamplingProfiler && Capture::GSamplingProfiler->GetLineInfo( address, lineInfo )) )
     {
         --lineInfo.m_Line;
 

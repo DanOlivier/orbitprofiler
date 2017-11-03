@@ -14,17 +14,9 @@
 struct SymUtils
 {
     typedef std::map< DWORD64, std::shared_ptr<Module> > ModuleMap_t;
-    static ModuleMap_t ListModules( HANDLE a_ProcessHandle);
-    static bool GetLineInfo( DWORD64 a_Address, LineInfo & o_LineInfo );
+    static ModuleMap_t ListModules( DWORD pid );
 };
 
-//-----------------------------------------------------------------------------
-struct ScopeSymCleanup
-{
-    ScopeSymCleanup( HANDLE a_Handle );
-    ~ScopeSymCleanup();
-    HANDLE m_Handle;
-};
 
 //-----------------------------------------------------------------------------
 inline bool SymInit( HANDLE /*a_Handle*/ )

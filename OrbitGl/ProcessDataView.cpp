@@ -28,7 +28,7 @@ vector<float> ProcessesDataView::s_HeaderRatios;
 //-----------------------------------------------------------------------------
 const vector<wstring>& ProcessesDataView::GetColumnHeaders()
 {
-	static vector<wstring> Columns;
+    static vector<wstring> Columns;
     if( Columns.size() == 0 )
     { 
         Columns.push_back( L"PID" );   s_HeaderRatios.push_back( 0 );
@@ -37,7 +37,7 @@ const vector<wstring>& ProcessesDataView::GetColumnHeaders()
         Columns.push_back( L"Type" );  s_HeaderRatios.push_back( 0 );
     };
 
-	return Columns;
+    return Columns;
 }
 
 //-----------------------------------------------------------------------------
@@ -50,7 +50,7 @@ const vector<float>& ProcessesDataView::GetColumnHeadersRatios()
 wstring ProcessesDataView::GetValue( int row, int col )
 {
     const Process & process = *GetProcess(row);
-	wstring value;
+    wstring value;
 
     switch (col)
     {
@@ -68,7 +68,7 @@ wstring ProcessesDataView::GetValue( int row, int col )
     default:                                                break;
     }
 
-	return value;
+    return value;
 }
 
 //-----------------------------------------------------------------------------
@@ -134,19 +134,19 @@ void ProcessesDataView::OnSort(int a_Column, bool a_Toggle)
 //-----------------------------------------------------------------------------
 void ProcessesDataView::OnSelect( int a_Index )
 {
-	m_SelectedProcess = GetProcess( a_Index );
+    m_SelectedProcess = GetProcess( a_Index );
 
-	if( m_ModulesDataView )
-	{
+    if( m_ModulesDataView )
+    {
         if( !m_SelectedProcess->GetIsRemote() )
         {
-		    m_SelectedProcess->ListModules();
+            m_SelectedProcess->ListModules();
         }
 
-		m_ModulesDataView->SetProcess( m_SelectedProcess );
-		Capture::SetTargetProcess( m_SelectedProcess );
+        m_ModulesDataView->SetProcess( m_SelectedProcess );
+        Capture::SetTargetProcess( m_SelectedProcess );
         GOrbitApp->FireRefreshCallbacks();
-	}
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -212,16 +212,16 @@ void ProcessesDataView::SetSelectedItem()
 //-----------------------------------------------------------------------------
 bool ProcessesDataView::SelectProcess( const fs::path& a_ProcessName )
 {
-	for( int i = 0; i < GetNumElements(); ++i )
-	{
-		Process & process = *GetProcess(i);
-		if ( process.GetFullName().filename() == a_ProcessName )
-		{
-			OnSelect(i);
+    for( int i = 0; i < GetNumElements(); ++i )
+    {
+        Process & process = *GetProcess(i);
+        if ( process.GetFullName().filename() == a_ProcessName )
+        {
+            OnSelect(i);
             Capture::GPresetToLoad = L"";
             return true;
-		}
-	}
+        }
+    }
 
     return false;
 }

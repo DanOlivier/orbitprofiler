@@ -454,7 +454,8 @@ void SamplingProfiler::AddAddress( DWORD64 a_Address )
     m_AddressToSymbol[symbol_info->Address] = symName;    
 
     LineInfo lineInfo;
-    if( SymUtils::GetLineInfo( a_Address, lineInfo ) )
+    if(Capture::GTargetProcess &&
+        Capture::GTargetProcess->LineInfoFromAddress( a_Address, lineInfo ) )
     {
         DWORD64 hash = StringHash(lineInfo.m_File);
         lineInfo.m_FileNameHash = hash;
