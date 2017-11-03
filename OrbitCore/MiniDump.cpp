@@ -53,14 +53,14 @@ shared_ptr<Process> MiniDump::ToOrbitProcess()
             shared_ptr<Module> mod = make_shared<Module>();
             
             mod->m_FullName = fullName;
-            mod->m_Name = Path::GetFileName( fullName );
+            mod->m_Name = fullName.filename();
             
             if( mod->m_Name.extension() == L".exe" )
             {
                 process->m_Name = mod->m_Name;
             }
 
-            mod->m_Directory = Path::GetDirectory( fullName );
+            mod->m_Directory = fullName.parent_path();
             mod->m_AddressStart = module->base_address();
             mod->m_AddressEnd =   module->base_address() + module->size();
             mod->m_DebugSignature = s2ws( module->debug_identifier() );

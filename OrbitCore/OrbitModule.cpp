@@ -31,7 +31,7 @@ const wstring & Module::GetPrettyName()
 //-----------------------------------------------------------------------------
 bool Module::IsDll() const
 {
-    return ToLower( Path::GetExtension( m_FullName ).wstring() ) == wstring( L".dll" );
+    return ToLower( m_FullName.extension().wstring() ) == wstring( L".dll" );
 }
 
 //-----------------------------------------------------------------------------

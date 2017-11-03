@@ -140,7 +140,7 @@ SymUtils::ModuleMap_t SymUtils::ListModules( DWORD pid )
         shared_ptr<Module> module = make_shared<Module>();
         module->m_Name = fullpath.filename();
         module->m_FullName = fullpath;
-        module->m_Directory = Path::GetDirectory( fullpath );
+        module->m_Directory = fullpath.parent_path();
         module->m_AddressStart = range.start;
         module->m_AddressEnd = range.end;
 

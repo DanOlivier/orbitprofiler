@@ -29,13 +29,8 @@ Process::Process(DWORD a_ID, ProcHandle_t handle) :
     m_Handle(std::move(handle)), 
     m_Name(m_Handle->cmd)
 {
-    string buf = Format("/proc/%ld/exe", m_ID);
-    char buf2[PATH_MAX];
-    ssize_t len = readlink(buf.c_str(), buf2, sizeof(buf2)-1);
-    if (len >= 0) {
-        buf2[len] = 0;
-        m_FullName = buf2;
-    }
+    m_FullName = Path::GetExecutableName();
+
     //m_Is64Bit = 
     m_IsElevated = m_Handle->ruid < 0 || m_Handle->ruid != m_Handle->euid;
 
@@ -65,7 +60,7 @@ void Process::LoadDebugInfo()
         //SymInit(m_Handle);
 
         // Load module information
-        //wstring symbolPath = Path::GetDirectory(this->GetFullName()).c_str();
+        //wstring symbolPath = this->GetFullName().parent_path().c_str();
         //SymSetSearchPath(m_Handle, symbolPath.c_str());
 
         // List threads
@@ -182,11 +177,11 @@ void Process::SortThreadsById()
 //-----------------------------------------------------------------------------
 shared_ptr<Module> Process::FindModule( const fs::path& a_ModuleName )
 {
-    fs::path moduleName = Path::GetFileNameNoExt( a_ModuleName );
+    fs::path moduleName = a_ModuleName.stem();
     for( auto & it : m_Modules )
     {
         shared_ptr<Module> & module = it.second;
-        if( Path::GetFileNameNoExt( module->m_Name ) == moduleName )
+        if( module->m_Name.stem() == moduleName )
         {
             return module;
         }
@@ -328,7 +323,7 @@ void Process::FindPdbs( const vector<  fs::path >& a_SearchLocations )
         vector<fs::path> pdbFiles = Path::ListFiles( dir, L".pdb" );
         for( const fs::path& pdb : pdbFiles )
         {
-            wstring pdbLower = ToLower( Path::GetFileName( pdb ).wstring() );
+            wstring pdbLower = ToLower( pdb.filename().wstring() );
             nameToPaths[pdbLower].push_back( pdb );
         }
     }

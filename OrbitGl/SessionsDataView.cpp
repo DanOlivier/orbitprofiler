@@ -68,9 +68,9 @@ wstring SessionsDataView::GetValue( int row, int col )
     switch (col)
     {
     case SDV_SessionName:
-        value = Path::GetFileName( session->m_FileName ).wstring(); break;
+        value = session->m_FileName.filename().wstring(); break;
     case SDV_ProcessName:
-        value = Path::GetFileName( session->m_ProcessFullPath ).wstring(); break;
+        value = session->m_ProcessFullPath.filename().wstring(); break;
     /*case SDV_LastUsed:
         value = "LastUsed"; break;*/
         break;
@@ -131,7 +131,7 @@ void SessionsDataView::OnContextMenu( int a_Index, vector<int> & a_ItemIndices )
         for( int index : a_ItemIndices )
         {
             const shared_ptr<Session> & session = GetSession( index );
-            if( GOrbitApp->SelectProcess( Path::GetFileName( session->m_ProcessFullPath ) ) )
+            if( GOrbitApp->SelectProcess( session->m_ProcessFullPath.filename() ) )
             {
                 Capture::LoadSession( session );
             }
@@ -154,7 +154,7 @@ void SessionsDataView::OnFilter( const wstring & a_Filter )
     for (int i = 0; i < (int)m_Sessions.size(); ++i)
     {
         const Session & session = *m_Sessions[i];
-        fs::path name = Path::GetFileName( session.m_FileName ); // XXX: ToLower? or implement case-insensitive compare?
+        fs::path name = session.m_FileName.filename(); // XXX: ToLower? or implement case-insensitive compare?
         fs::path path = session.m_ProcessFullPath;
 
         bool match = true;

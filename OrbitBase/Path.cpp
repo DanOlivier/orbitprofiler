@@ -5,13 +5,15 @@
 #include "Path.h"
 #include "Utils.h"
 
+#include <limits.h> // PATH_MAX
+#include <unistd.h> // readlink
+
 #if _WIN32||_WIN64
 #include <direct.h>
 #include <Shlobj.h>
 #endif
 
 using namespace std;
-//using namespace std::experimental::filesystem::v1;
 namespace fs = std::experimental::filesystem;
 
 namespace Path {
@@ -37,8 +39,15 @@ fs::path GetExecutableName()
     exeFullName = buffer;
 
     replace(exeFullName.begin(), exeFullName.end(), '\\', '/');
+    return exeFullName;
+#else
+    char buf2[PATH_MAX];
+    ssize_t len = readlink("/proc/self/exe", buf2, sizeof(buf2)-1);
+    if (len == 0) {
+        // Error
+    }
+    return fs::path(buf2);
 #endif
-    return fs::path();
 }
 
 //-----------------------------------------------------------------------------
@@ -46,20 +55,6 @@ fs::path GetExecutablePath()
 {
     fs::path fullPath = GetExecutableName();
     return fullPath.parent_path();
-}
-
-//-----------------------------------------------------------------------------
-bool FileExists(const fs::path& a_File)
-{
-    error_code ec;
-    return fs::exists(a_File, ec);
-}
-
-//-----------------------------------------------------------------------------
-bool DirExists( const fs::path& a_Dir )
-{
-    error_code ec;
-    return fs::exists(a_Dir) && fs::is_directory(a_Dir);
 }
 
 //-----------------------------------------------------------------------------
@@ -77,17 +72,11 @@ fs::path GetBasePath()
         basePath /= p;
     }
     m_BasePath = basePath;
-    m_IsPackaged = DirExists( GetBasePath() / "text" );
+    m_IsPackaged = fs::is_directory(m_BasePath / "text" );
 
     return m_BasePath;
 }
  
-//-----------------------------------------------------------------------------
-fs::path GetOrbitAppPdb()
-{
-    return GetBasePath() / "bin" / "Win32" / "Debug" / "OrbitApp.pdb";
-}
-
 //-----------------------------------------------------------------------------
 fs::path GetDllPath( bool a_Is64Bit )
 {
@@ -203,51 +192,15 @@ fs::path GetTmpPath()
 }
 
 //-----------------------------------------------------------------------------
-fs::path GetFileName( const fs::path & a_FullName )
-{
-    return a_FullName.filename();
-}
-
-//-----------------------------------------------------------------------------
-fs::path GetFileNameNoExt( const fs::path & a_FullName )
-{
-    return a_FullName.stem();
-}
-
-//-----------------------------------------------------------------------------
 fs::path StripExtension( const fs::path & a_FullName )
 {
     return a_FullName.parent_path() / a_FullName.stem();
 }
 
 //-----------------------------------------------------------------------------
-fs::path GetExtension( const fs::path& a_FullName )
-{
-    return a_FullName.extension();
-}
-
-//-----------------------------------------------------------------------------
-fs::path GetDirectory( const fs::path& a_FullName )
-{
-    return a_FullName.parent_path();
-}
-
-//-----------------------------------------------------------------------------
-fs::path GetProgramFilesPath()
-{
-    /*TCHAR pf[MAX_PATH] = {0};
-    SHGetSpecialFolderPath(
-        0,
-        pf,
-        CSIDL_PROGRAM_FILES,
-        FALSE );
-    return wstring(pf) / "\\OrbitProfiler\\";*/
-}
-
-//-----------------------------------------------------------------------------
 fs::path GetAppDataPath()
 {
-    fs::path appData = GetEnvVar( "APPDATA" );
+    fs::path appData = GetEnvVar( "APPDATA" ); // XXX: fallback?
     fs::path path = appData / "OrbitProfiler";
     error_code ec;
     fs::create_directory( path, ec );
@@ -255,15 +208,9 @@ fs::path GetAppDataPath()
 }
 
 //-----------------------------------------------------------------------------
-fs::path GetMainDrive()
-{
-    return fs::path( GetEnvVar("SystemDrive") );
-}
-
-//-----------------------------------------------------------------------------
 bool IsSourceFile( const fs::path& a_File )
 {
-    fs::path ext = GetExtension( a_File );
+    fs::path ext = a_File.extension();
     return ext == ".c" || ext == ".cpp" || ext == ".h" || ext == ".hpp" || ext == ".inl" || ext == ".cxx";
 }
 
@@ -289,7 +236,9 @@ vector<fs::path> ListFiles( const fs::path & a_Dir, function< bool(const fs::pat
 //-----------------------------------------------------------------------------
 vector<fs::path> ListFiles( const fs::path & a_Dir, const fs::path & a_Filter )
 {
-    return ListFiles( a_Dir, [&]( const fs::path & a_Name ){ return Contains( a_Name, a_Filter ); } );
+    return ListFiles( a_Dir, [&]( const fs::path & a_Name ){ 
+        return Contains( a_Name, a_Filter ); 
+    } );
 }
 
 }

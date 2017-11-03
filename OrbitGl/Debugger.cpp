@@ -158,7 +158,7 @@ void Debugger::DebuggerThread( const fs::path& a_ProcessName, const fs::path& a_
     si.cb = sizeof( si );
     ZeroMemory( &pi, sizeof( pi ) );
 
-    fs::path dir = a_WorkingDir.empty() ? a_WorkingDir : Path::GetDirectory( a_ProcessName );
+    fs::path dir = a_WorkingDir.empty() ? a_WorkingDir : a_ProcessName.parent_path();
     wstring args = a_ProcessName + L" " + a_Args;
     TCHAR commandline[MAX_PATH + 1];
     int numChars = (int)min( (size_t)MAX_PATH, args.size() );

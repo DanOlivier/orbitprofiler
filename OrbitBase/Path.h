@@ -19,7 +19,6 @@ namespace Path
     fs::path GetExecutableName();
     fs::path GetExecutablePath();
     fs::path GetBasePath();
-    fs::path GetOrbitAppPdb( bool a_Is64Bit );
     fs::path GetDllPath( bool a_Is64Bit );
     fs::path GetDllName( bool a_Is64Bit );
     fs::path GetParamsFileName();
@@ -32,18 +31,11 @@ namespace Path
     fs::path GetCapturePath();
     fs::path GetDumpPath();
     fs::path GetTmpPath();
-    fs::path GetFileName( const fs::path& a_FullName );
-    fs::path GetFileNameNoExt( const fs::path& a_FullName );
     fs::path StripExtension( const fs::path& a_FullName );
-    fs::path GetExtension( const fs::path& a_FullName );
-    fs::path GetDirectory( const fs::path& a_FullName );
-    fs::path GetProgramFilesPath();
     fs::path GetAppDataPath();
-    fs::path GetMainDrive();
 
-    bool FileExists( const fs::path& a_File );
     bool DirExists( const fs::path& a_Dir );
-    bool IsSourceFile( const fs::path& a_File );
+    //bool IsSourceFile( const fs::path& a_File );
     //bool IsPackaged() { return m_IsPackaged; }
 
     std::vector<fs::path> ListFiles( const fs::path& a_Dir, std::function< bool(const fs::path&)> a_Filter = [](const fs::path&){ return true; });

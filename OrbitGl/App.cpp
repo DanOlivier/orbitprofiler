@@ -199,7 +199,7 @@ void OrbitApp::LoadFileMapping()
 {
     m_FileMapping.clear();
     fs::path fileName = Path::GetFileMappingFileName();
-    if ( !Path::FileExists( fileName ) )
+    if ( !fs::exists( fileName ) )
     {
         ofstream outfile( fileName );
         outfile << "//-------------------" << endl
@@ -257,7 +257,7 @@ void OrbitApp::LoadSymbolsFile()
     m_SymbolLocations.clear();
 
     fs::path fileName = Path::GetSymbolsFileName();
-    if( !Path::FileExists( fileName ) )
+    if( !fs::exists( fileName ) )
     {
         ofstream outfile( fileName );
         outfile << "//-------------------" << endl
@@ -282,7 +282,7 @@ void OrbitApp::LoadSymbolsFile()
                 continue;
 
             wstring dir = line;
-            if( Path::DirExists( dir ) )
+            if( fs::is_directory(dir) )
             {
                 m_SymbolLocations.push_back( dir );
             }
@@ -659,8 +659,8 @@ void OrbitApp::OnOpenPdb( const fs::path& a_FileName )
     shared_ptr<Module> mod = make_shared<Module>();
     
     mod->m_FullName = a_FileName;
-    mod->m_Name = Path::GetFileName( mod->m_FullName );
-    mod->m_Directory = Path::GetDirectory( mod->m_FullName );
+    mod->m_Name = mod->m_FullName.filename();
+    mod->m_Directory = mod->m_FullName.parent_path();
     mod->m_PdbName = a_FileName;
     mod->m_FoundPdb = true;
     mod->LoadDebugInfo();
@@ -707,7 +707,7 @@ void OrbitApp::OnLoadSession( const fs::path& a_FileName )
 {
     shared_ptr<Session> session = make_shared<Session>();
 
-    fs::path fileName = Path::GetDirectory( a_FileName ).empty() ? 
+    fs::path fileName = a_FileName.parent_path().empty() ? 
         Path::GetPresetPath() / a_FileName : a_FileName; 
 
     ifstream file( fileName.c_str() );
@@ -715,7 +715,7 @@ void OrbitApp::OnLoadSession( const fs::path& a_FileName )
     {
         cereal::BinaryInputArchive archive( file );
         //archive(*session); XXX: implement serialization of fs::path
-        if( SelectProcess( Path::GetFileName( session->m_ProcessFullPath ) ) )
+        if( SelectProcess( session->m_ProcessFullPath.filename() ) )
         {
             session->m_FileName = fileName;
             Capture::LoadSession( session );

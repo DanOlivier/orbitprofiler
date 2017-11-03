@@ -52,7 +52,7 @@ Pdb::Pdb( const fs::path& a_PdbName ) : m_FileName( a_PdbName )
                                      , m_DiaSession(nullptr)
                                      , m_DiaGlobalSymbol(nullptr)
 {
-    m_Name = Path::GetFileName( m_FileName );
+    m_Name = m_FileName.filename();
     //memset( &m_ModuleInfo, 0, sizeof(IMAGEHLP_MODULE64) );
     //m_ModuleInfo.SizeOfStruct = sizeof(IMAGEHLP_MODULE64);
     m_LoadTimer = new Timer();
@@ -227,7 +227,7 @@ void Pdb::PrintGlobals() const
 //-----------------------------------------------------------------------------
 wstring Pdb::GetCachedName()
 {
-    fs::path pdbName = Path::GetFileName( m_FileName );
+    fs::path pdbName = m_FileName.filename();
     fs::path fileName;
     //fileName += GuidToString( m_ModuleInfo.PdbSig70 );
     //fileName += "-" + ToHexString( m_ModuleInfo.PdbAge );
@@ -455,7 +455,7 @@ bool Pdb::LoadPdb( const fs::path& a_PdbName )
     string msg = string("pdb:") + a_PdbName.string();
     GTcpServer->SendToUiAsync( msg );
 
-    if( Path::GetExtension( a_PdbName ).string() == "dll" )
+    if( a_PdbName.extension().string() == "dll" )
     {
         SCOPE_TIMER_LOG( L"LoadDll Exports" );
         //ParseDll( a_PdbName );
@@ -510,7 +510,7 @@ bool Pdb::LoadPdbDia()
 void Pdb::LoadPdbAsync( const fs::path& a_PdbName, function<void()> a_CompletionCallback )
 {
     m_FileName = a_PdbName;
-    m_Name = Path::GetFileName( m_FileName );
+    m_Name = m_FileName.filename();
 
     m_LoadingCompleteCallback = a_CompletionCallback;
     m_LoadingThread = make_unique<thread>( &Pdb::LoadPdb, this, m_FileName.c_str() );
@@ -582,7 +582,7 @@ void Pdb::ApplyPresets()
 
     /*if (Capture::GSessionPresets)
     {
-        fs::path pdbName = Path::GetFileName( m_Name );
+        fs::path pdbName = m_Name.filename();
 
         auto it = Capture::GSessionPresets->m_Modules.find(pdbName);
         if (it != Capture::GSessionPresets->m_Modules.end())
