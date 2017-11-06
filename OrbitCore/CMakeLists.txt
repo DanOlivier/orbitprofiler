@@ -109,7 +109,6 @@ set(SOURCES
     SymbolUtils.cpp
     Tcp.cpp
     TcpServer.cpp
-    #TypeInfo.cpp
     Variable.cpp
     VariableTracing.cpp
     Version.cpp
