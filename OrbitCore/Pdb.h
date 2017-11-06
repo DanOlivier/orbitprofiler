@@ -105,21 +105,21 @@ protected:
 protected:
     // State
     std::unique_ptr<std::thread>        m_LoadingThread;
-    std::atomic<bool>                   m_FinishedLoading;
-    std::atomic<bool>                   m_IsLoading;
-    std::atomic<bool>                   m_IsPopulatingFunctionMap;
-    std::atomic<bool>                   m_IsPopulatingFunctionStringMap;
+    std::atomic<bool>                   m_FinishedLoading = {false};
+    std::atomic<bool>                   m_IsLoading = {false};
+    std::atomic<bool>                   m_IsPopulatingFunctionMap = {false};
+    std::atomic<bool>                   m_IsPopulatingFunctionStringMap = {false};
     std::function<void()>               m_LoadingCompleteCallback;
-    HMODULE                             m_MainModule;
-    float                               m_LastLoadTime;
-    bool                                m_LoadedFromCache;
+    HMODULE                             m_MainModule = 0;
+    float                               m_LastLoadTime = 0.0;
+    bool                                m_LoadedFromCache = false;
     std::vector< Variable >             m_WatchedVariables;
     std::set<std::string>               m_ArgumentRegisters;
     std::map<std::string, std::vector< std::string > >  m_RegFunctionsMap;
 
     // Data
-    fs::path                        m_Name;
-    fs::path                        m_FileName;
+    fs::path                            m_Name;
+    fs::path                            m_FileName;
     std::vector<Function>               m_Functions;
     std::vector<Type>                   m_Types;
     std::vector<Variable>               m_Globals;

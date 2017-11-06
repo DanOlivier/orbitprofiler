@@ -42,15 +42,6 @@ shared_ptr<Pdb> GPdbDbg;
 
 //-----------------------------------------------------------------------------
 Pdb::Pdb( const fs::path& a_PdbName ) : m_FileName( a_PdbName )
-                                     , m_MainModule(0)
-                                     , m_LastLoadTime(0)
-                                     , m_LoadedFromCache(false)
-                                     , m_FinishedLoading(false)
-                                     , m_IsLoading(false)
-                                     , m_IsPopulatingFunctionMap(false)
-                                     , m_IsPopulatingFunctionStringMap(false)
-                                     , m_DiaSession(nullptr)
-                                     , m_DiaGlobalSymbol(nullptr)
 {
     m_Name = m_FileName.filename();
     //memset( &m_ModuleInfo, 0, sizeof(IMAGEHLP_MODULE64) );
@@ -61,15 +52,6 @@ Pdb::Pdb( const fs::path& a_PdbName ) : m_FileName( a_PdbName )
 //-----------------------------------------------------------------------------
 Pdb::~Pdb()
 {
-    /*if( m_DiaSession )
-    {
-        m_DiaSession->Release();
-    }
-
-    if( m_DiaGlobalSymbol )
-    {
-        m_DiaGlobalSymbol->Release();
-    }*/
 }
 
 //-----------------------------------------------------------------------------
@@ -494,6 +476,9 @@ bool Pdb::LoadPdbDia()
     if( m_DiaGlobalSymbol )
     {
         Reserve();
+        // DumpAllFunctions, DumpTypes, HookDumpAllGlobals from dia2dump.cpp
+        // These eventually call GPdbDbg->AddFunction, GPdbDbg->AddType, and 
+        // GPdbDbg->AddGlobal, respectively
         auto group = oqpi_tk::make_parallel_group<oqpi::task_type::waitable>( "Fork" );
         //group->addTask( oqpi_tk::make_task_item( "DumpAllFunctions"  , DumpAllFunctions  , m_DiaGlobalSymbol ) );
         //group->addTask( oqpi_tk::make_task_item( "DumpTypes"         , DumpTypes         , m_DiaGlobalSymbol ) );
