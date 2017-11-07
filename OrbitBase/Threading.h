@@ -24,27 +24,6 @@ using LockFreeQueue = moodycamel::ConcurrentQueue<T>;
 using oqpi_tk       = oqpi::default_helpers;
 
 //-----------------------------------------------------------------------------
-class ConditionalLock
-{
-public:
-    ConditionalLock( Mutex & a_Mutex ) : m_Mutex(&a_Mutex), m_Locked(false) {}
-    ~ConditionalLock() { if( m_Locked ) m_Mutex->unlock(); }
-    void Lock() 
-    { 
-        {
-            m_Locked=true;
-            m_Mutex->lock();
-        }
-        
-        m_Timer.Start("Critical Section");
-    }
-
-private:
-    ConditionalScopeTimer m_Timer;
-    Mutex*                m_Mutex;
-    bool                  m_Locked;
-};
-
 const DWORD MS_VC_EXCEPTION = 0x406D1388;
 
 #pragma pack(push,8)
@@ -57,7 +36,6 @@ typedef struct tagTHREADNAME_INFO
 } THREADNAME_INFO;
 #pragma pack(pop)
 
-//-----------------------------------------------------------------------------
 inline void SetThreadName( DWORD dwThreadID, const char* threadName )
 {
     THREADNAME_INFO info;

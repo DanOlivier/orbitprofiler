@@ -138,22 +138,6 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-class ConditionalScopeTimer
-{
-public:
-    ConditionalScopeTimer() : m_Active(false) {}
-    ~ConditionalScopeTimer();
-    void Start( const char* a_Name );
-
-protected:
-    enum { NameSize = 64 };
-
-    Timer m_Timer;
-    bool      m_Active;
-    char      m_Name[NameSize];
-};
-
-//-----------------------------------------------------------------------------
 inline double Timer::ElapsedMillis() const
 {
     IntervalType elapsedMicros = PerfCounter::get_microseconds(m_PerfCounter.get_start(), m_PerfCounter.get_end());

@@ -90,20 +90,3 @@ LocalScopeTimer::~LocalScopeTimer()
         PRINT( Format( L"%s%s took %f ms.\n", tabs.c_str(), m_Msg.c_str(), m_Timer.ElapsedMillis() ) );
     }
 }
-
-//-----------------------------------------------------------------------------
-void ConditionalScopeTimer::Start( const char* a_Name )
-{
-    strncpy(m_Name, a_Name, NameSize);
-    m_Timer.Start();
-    m_Active = true;
-}
-
-//-----------------------------------------------------------------------------
-ConditionalScopeTimer::~ConditionalScopeTimer()
-{
-    if( m_Active )
-    {
-        m_Timer.Stop();
-    }
-}
