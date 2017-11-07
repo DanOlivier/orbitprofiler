@@ -1,7 +1,7 @@
 #include <Injection.h>
 #include <Path.h>
 #include <Log.h>
-#include <PTM/SymbolUtils.h>
+#include <PTM/ModuleUtils.h>
 #include <PTM/OrbitModule.h>
 #include <PTM/OrbitProcess.h>
 #include <PTM/ProcessUtils.h>
@@ -59,7 +59,7 @@ namespace UnitTest1
 
         for (const auto& p : processList.m_Processes)
         {
-            SymUtils::ModuleMap_t modules = SymUtils::ListModules(p->GetID());
+            ModuleUtils::ModuleMap_t modules = ModuleUtils::ListModules(p->GetID());
             for (const auto& m : modules)
             {
                 printf("%s\n", m.second->m_FullName.c_str());

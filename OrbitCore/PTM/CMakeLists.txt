@@ -4,13 +4,13 @@ set(PTM_SOURCES
     OrbitProcess.h
     OrbitThread.h
     ProcessUtils.h
-    SymbolUtils.h
+    ModuleUtils.h
     
     OrbitModule.cpp
     OrbitProcess.cpp
     OrbitThread.cpp
     ProcessUtils.cpp
-    SymbolUtils.cpp
+    ModuleUtils.cpp
 )
 
 add_library(OrbitPTM STATIC

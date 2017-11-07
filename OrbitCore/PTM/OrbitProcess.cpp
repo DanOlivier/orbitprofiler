@@ -4,7 +4,7 @@
 
 #include "PTM/OrbitProcess.h"
 #include "PTM/OrbitModule.h"
-#include "PTM/SymbolUtils.h"
+#include "PTM/ModuleUtils.h"
 #include "Path.h"
 #include "PTM/OrbitThread.h"
 #include "ScopeTimer.h"
@@ -41,7 +41,7 @@ void Process::PopulateModules()
     SCOPE_TIMER_LOG( L"Process::ListModules" );
 
     //ClearTransients();
-    m_Modules = SymUtils::ListModules(m_ID);
+    m_Modules = ModuleUtils::ListModules(m_ID);
 
     for( auto & pair : m_Modules )
     {

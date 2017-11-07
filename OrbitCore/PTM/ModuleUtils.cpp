@@ -2,7 +2,7 @@
 // Copyright Pierric Gimmig 2013-2017
 //-----------------------------------
 
-#include "PTM/SymbolUtils.h"
+#include "PTM/ModuleUtils.h"
 #include "PTM/OrbitModule.h"
 
 #include "PrintVar.h"
@@ -20,6 +20,9 @@
 
 using namespace std;
 namespace fs = std::experimental::filesystem;
+
+namespace ModuleUtils
+{
 
 class MagicDB
 {
@@ -55,9 +58,9 @@ fs::path my_read_symlink(const fs::path& p, error_code& ec)
 }
 
 //-----------------------------------------------------------------------------
-SymUtils::ModuleMap_t SymUtils::ListModules( DWORD pid )
+ModuleMap_t ListModules( DWORD pid )
 {
-    SCOPE_TIMER_LOG( L"SymUtils::ListModules" );
+    SCOPE_TIMER_LOG( L"ModuleUtils::ListModules" );
 
     static MagicDB magicDB;
 
@@ -155,4 +158,6 @@ SymUtils::ModuleMap_t SymUtils::ListModules( DWORD pid )
     }
 
     return o_ModuleMap;
+}
+
 }

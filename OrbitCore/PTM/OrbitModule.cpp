@@ -35,20 +35,6 @@ bool Module::IsDll() const
 }
 
 //-----------------------------------------------------------------------------
-/*bool Module::LoadDebugInfo()
-{
-    m_Pdb = make_shared<Pdb>( m_PdbName.c_str() );
-    m_Pdb->SetMainModule( (HMODULE)m_AddressStart );
-
-    if( m_FoundPdb )
-    {
-        return m_Pdb->LoadDataFromPdb();
-    }
-
-    return false;
-}*/
-
-//-----------------------------------------------------------------------------
 ORBIT_SERIALIZE( Module, 0 )
 {
     ORBIT_NVP_VAL( 0, m_Name );

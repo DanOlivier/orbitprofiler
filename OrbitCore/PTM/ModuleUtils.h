@@ -11,7 +11,7 @@
 class Module;
 
 //-----------------------------------------------------------------------------
-namespace SymUtils
+namespace ModuleUtils
 {
     typedef std::map< DWORD64, std::shared_ptr<Module> > ModuleMap_t;
     ModuleMap_t ListModules( DWORD pid );
