@@ -394,7 +394,7 @@ void* Hijacking::Epilog()
     timer.Stop();
     
     // Send timer
-    GTimerManager->Add( timer );
+    GClientTimerManager->Add( timer );
 
     // Pop timer
     TlsData->m_Timers.pop_back();
@@ -458,7 +458,7 @@ void* Hijacking::EpilogZoneStop()
         }
 
         // Send timer
-        GTimerManager->Add( timer );
+        GClientTimerManager->Add( timer );
 
         // Pop timer
         TlsData->m_Timers.pop_back();
@@ -496,7 +496,7 @@ void* Hijacking::EpilogAlloc()
     timer.m_Type = Timer::ALLOC;
 
     // Send timer
-    GTimerManager->Add( timer );
+    GClientTimerManager->Add( timer );
 
     // Pop timer
     TlsData->m_Timers.pop_back();
@@ -611,7 +611,7 @@ inline void Hijacking::SendContext( Context* a_Context, EpilogContext* a_EpilogC
         }
     }
 
-    if ( GTimerManager )
+    if ( GTcpClient )
     {
         GTcpClient->Send(msg, (void*)messageData.data());
     }

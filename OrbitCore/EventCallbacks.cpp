@@ -2,7 +2,6 @@
 // Copyright Pierric Gimmig 2013-2017
 //-----------------------------------
 
-#include "EventTracer.h"
 #include "EventCallbacks.h"
 #include "EventTracer.h"
 #include "EventClasses.h"
@@ -60,7 +59,7 @@ void EventTracing::Init()
 //-----------------------------------------------------------------------------
 void EventTracing::Callback( PEVENT_RECORD a_EventRecord )
 {
-    if( Capture::GTargetProcess && Capture::IsCapturing() )
+    if( GCapture->m_TargetProcess && GCapture->IsCapturing() )
     {
         ULONG64 idHash = EventGuid::Hash( a_EventRecord->EventHeader.ProviderId );
         ++GEventCountByProviderId[idHash];
@@ -178,7 +177,7 @@ void EventTracing::CallbackPerfInfo( PEVENT_RECORD a_EventRecord, UCHAR a_Opcode
 {
     if( a_Opcode == PerfInfo_SampledProfile::OPCODE )
     {
-        ++Capture::GNumProfileEvents;
+        ++GCapture->m_NumProfileEvents;
         if( GEventTracer.IsTracing() )
         {
             ProcessProfileEvent( a_EventRecord );
@@ -218,7 +217,7 @@ void EventTracing::CallbackThread( PEVENT_RECORD a_EventRecord, UCHAR a_Opcode )
         {
             Thread_TypeGroup1* event = (Thread_TypeGroup1*)a_EventRecord->UserData;
 
-            //if( event->ProcessId == Capture::GTargetProcess->GetID() )
+            //if( event->ProcessId == GCapture->m_TargetProcess->GetID() )
             {
                 // Thread started
                 if( a_Opcode == Thread_TypeGroup1::OPCODE_START || a_Opcode == Thread_TypeGroup1::OPCODE_DC_START )
@@ -252,7 +251,7 @@ void EventTracing::CallbackStackWalk( PEVENT_RECORD a_EventRecord, UCHAR a_Opcod
     {
         StackWalk_Event* event = (StackWalk_Event*)a_EventRecord->UserData;
 
-        if( event->StackProcess == Capture::GTargetProcess->GetID() )
+        if( event->StackProcess == GCapture->m_TargetProcess->GetID() )
         {
             int stackDepth = ( a_EventRecord->UserDataLength - (sizeof(StackWalk_Event) - sizeof(event->Stack1)) )/sizeof(ptr_type);
             
@@ -263,7 +262,7 @@ void EventTracing::CallbackStackWalk( PEVENT_RECORD a_EventRecord, UCHAR a_Opcod
             CS.m_Data.resize(stackDepth);
             memcpy(CS.m_Data.data(), &event->Stack1, numBytes );
 
-            Capture::GSamplingProfiler->AddCallStack( CS );
+            GCapture->m_SamplingProfiler->AddCallStack( CS );
             GEventTracer.GetEventBuffer().AddCallstackEvent( a_EventRecord->EventHeader.TimeStamp.QuadPart, CS );
         }
     }
@@ -279,7 +278,7 @@ void EventTracing::Reset()
 //-----------------------------------------------------------------------------
 inline bool IsTargetProcessThread( uint32_t a_ThreadId )
 {
-    return GThreadToProcessMap[a_ThreadId] == Capture::GTargetProcess->GetID();
+    return GThreadToProcessMap[a_ThreadId] == GCapture->m_TargetProcess->GetID();
 }
 
 //-----------------------------------------------------------------------------
@@ -292,8 +291,8 @@ inline void ProcessContextSwitch( PEVENT_RECORD a_EventRecord )
     LONGLONG CycleTime = Header.TimeStamp.QuadPart;
     CSwitch* switchEvent = (CSwitch*)a_EventRecord->UserData;
 
-    ++Capture::GNumContextSwitches;
-    DWORD processId = Capture::GTargetProcess->GetID();
+    ++GCapture->m_NumContextSwitches;
+    DWORD processId = GCapture->m_TargetProcess->GetID();
     if( GThreadToProcessMap[switchEvent->NewThreadId] == processId )
     {
         ContextSwitch CS( ContextSwitch::In );
@@ -301,7 +300,7 @@ inline void ProcessContextSwitch( PEVENT_RECORD a_EventRecord )
         CS.m_Time = CycleTime;
         CS.m_ProcessorIndex = ProcessorIndex;
         CS.m_ProcessorNumber = ProcessorNumber;
-        GTimerManager->Add( CS );
+        GServerTimerManager->Add( CS );
     }
 
     if( GThreadToProcessMap[switchEvent->OldThreadId] == processId )
@@ -311,7 +310,7 @@ inline void ProcessContextSwitch( PEVENT_RECORD a_EventRecord )
         CS.m_Time = CycleTime;
         CS.m_ProcessorIndex = ProcessorIndex;
         CS.m_ProcessorNumber = ProcessorNumber;
-        GTimerManager->Add( CS );
+        GServerTimerManager->Add( CS );
     }
 }
 
@@ -325,11 +324,11 @@ inline void ProcessProfileEvent( PEVENT_RECORD a_EventRecord )
     //LONGLONG CycleTime = Header.TimeStamp.QuadPart;
     PerfInfo_SampledProfile* sampleEvent = (PerfInfo_SampledProfile*)a_EventRecord->UserData;
 
-    if( Capture::GTargetProcess->HasThread( sampleEvent->ThreadId ) && Capture::IsCapturing() )
+    if( GCapture->m_TargetProcess->HasThread( sampleEvent->ThreadId ) && GCapture->IsCapturing() )
     {
         /*CallStack CS;
         CS.m_ThreadId = ThreadID;
         CS.m_Data[CS.m_Depth++] = sampleEvent->InstructionPointer;
-        Capture::GSamplingProfiler->AddCallStack( CS );*/
+        GCapture->m_SamplingProfiler->AddCallStack( CS );*/
     }
 }

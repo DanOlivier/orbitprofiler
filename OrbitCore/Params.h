@@ -37,7 +37,7 @@ public:
     DWORD64 m_NumBytesAssembly;
     std::string m_DiffExe;
     std::string m_DiffArgs;
-    std::vector< fs::path > m_PdbHistory;
+    std::vector<fs::path> m_PdbHistory;
 
     //namespace fs = std::experimental::filesystem;
     std::unordered_map< std::string, std::experimental::filesystem::path > m_CachedPdbsMap;

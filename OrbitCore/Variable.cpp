@@ -9,7 +9,7 @@
 #include "TcpServer.h"
 #include "ScopeTimer.h"
 //#include "Capture.h"
-#include "CoreApp.h"
+//#include "CoreApp.h"
 #include "Serialization.h"
 //#include "DiaParser.h"
 
@@ -44,7 +44,7 @@ void Variable::SetType(const wstring & a_Type)
 //-----------------------------------------------------------------------------
 void Variable::SendValue()
 {
-    /*if( Capture::Connect() )
+    /*if( GCapture->Connect() )
     {
         Message msg( Msg_SetData );
         msg.m_Header.m_DataTransferHeader.m_Address = (ULONG64)GPdbDbg->GetHModule() + (ULONG64)m_Address;
@@ -57,7 +57,7 @@ void Variable::SendValue()
 //-----------------------------------------------------------------------------
 void Variable::SyncValue()
 {
-    /*if( Capture::Connect() )
+    /*if( GCapture->Connect() )
     {
         Message msg( Msg_GetData );
         ULONG64 address = (ULONG64)m_Pdb->GetHModule() + (ULONG64)m_Address;
@@ -83,7 +83,7 @@ void Variable::ReceiveValue( const Message & a_Msg )
         if( IsBasicType() )
         {
             memcpy( &m_Data, a_Msg.GetData(), m_Size );
-            GCoreApp->UpdateVariable( this );
+            //GCoreApp->UpdateVariable( this );
         }
         else
         {
@@ -108,7 +108,7 @@ void Variable::UpdateFromRaw( const vector< char > & a_RawData, DWORD64 a_BaseAd
                 memcpy( &var->m_Data, a_RawData.data() + offset, size );
             }
 
-            GCoreApp->UpdateVariable( this );
+            //GCoreApp->UpdateVariable( this );
         }
         else
         {

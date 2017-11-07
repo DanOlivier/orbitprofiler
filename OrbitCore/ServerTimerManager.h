@@ -56,5 +56,5 @@ public:
     }
 };
 
-extern ServerTimerManager* GTimerManager;
+extern ServerTimerManager* GServerTimerManager;
 

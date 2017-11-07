@@ -17,7 +17,7 @@ vector<float> LogDataView::s_HeaderRatios;
 LogDataView::LogDataView()
 {
     GOrbitApp->RegisterOutputLog( this );
-    GTcpServer->SetCallback( Msg_OrbitLog, [=]( const Message & a_Msg ){ this->OnReceiveMessage(a_Msg); } );
+
     m_UpdatePeriodMs = 100;
 }
 
@@ -51,8 +51,8 @@ wstring LogDataView::GetValue( int a_Row, int a_Column )
     case LDV_Time:
     {
         /*XXX:
-        auto micros = PerfCounter::get_microseconds(Capture::GCaptureTimer.m_PerfCounter.get_start(), entry.m_Time);
-        chrono::system_clock::time_point sysTime = Capture::GCaptureTimePoint + chrono::microseconds(micros);
+        auto micros = PerfCounter::get_microseconds(GCapture->m_CaptureTimer.m_PerfCounter.get_start(), entry.m_Time);
+        chrono::system_clock::time_point sysTime = GCapture->m_CaptureTimePoint + chrono::microseconds(micros);
         time_t now_c = chrono::system_clock::to_time_t(sysTime);
         tm* now_tm = localtime(&now_c);
         wchar_t buffer[256];
@@ -86,7 +86,7 @@ bool LogDataView::ScrollToBottom()
 //-----------------------------------------------------------------------------
 bool LogDataView::SkipTimer()
 {
-    return !Capture::IsCapturing();
+    return !GCapture->IsCapturing();
 }
 
 //-----------------------------------------------------------------------------
@@ -103,7 +103,7 @@ void LogDataView::OnDataChanged()
 //-----------------------------------------------------------------------------
 void LogDataView::OnFilter( const wstring & a_Filter )
 {
-    vector< string > tokens = Tokenize( ToLower( ws2s( a_Filter ) ) );
+    vector<string> tokens = Tokenize( ToLower( ws2s( a_Filter ) ) );
     vector<int> indices;
 
     for( int i = 0; i < (int)m_Entries.size(); ++i )
@@ -143,7 +143,7 @@ enum LDV_ContextMenu
 const vector<wstring>& LogDataView::GetContextMenu( int a_Index )
 {
     const OrbitLogEntry & entry = LogDataView::GetEntry( a_Index );
-    m_SelectedCallstack = Capture::GetCallstack( entry.m_CallstackHash );
+    m_SelectedCallstack = GCapture->GetCallstack( entry.m_CallstackHash );
     static vector<wstring> menu;
     menu.clear();
     if( m_SelectedCallstack )
@@ -151,7 +151,7 @@ const vector<wstring>& LogDataView::GetContextMenu( int a_Index )
         for( int i = 0; i < m_SelectedCallstack->m_Depth; ++i )
         {
             DWORD64 addr = m_SelectedCallstack->m_Data[i];
-            menu.push_back( Capture::GSamplingProfiler->GetSymbolFromAddress(addr) );
+            menu.push_back( GCapture->m_SamplingProfiler->GetSymbolFromAddress(addr) );
         }
     }
     return menu;

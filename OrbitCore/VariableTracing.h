@@ -19,7 +19,7 @@ class VariableTracing
 public:
     static VariableTracing& Get();
 
-    typedef std::function< void( std::vector< std::string > & ) > TraceCallback;
+    typedef std::function< void( std::vector<std::string> & ) > TraceCallback;
     static void AddCallback( TraceCallback a_Callback );
 
     static void Trace( const char* a_Msg );
@@ -30,7 +30,7 @@ protected:
 
 protected:
     Mutex m_Mutex;
-    std::vector< std::string > m_Entries;
+    std::vector<std::string> m_Entries;
     std::vector< TraceCallback > m_Callbacks;
 };
 

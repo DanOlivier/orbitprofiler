@@ -155,26 +155,26 @@ void ThreadViewWindow::DrawLive(const char* title, bool* p_opened, ImVec2* a_Siz
         ImGui::Begin(title, p_opened, WindowFlags);
     }
 
-    if( Capture::GTargetProcess )
+    if( GCapture->m_TargetProcess )
     {
-        if( !Capture::GIsSampling )
+        if( !GCapture->m_IsSampling )
         {
             if( ImGui::Button("Start Sampling") )
             {
-                Capture::StartSampling();
+                GCapture->StartSampling();
             }
         }
         else
         {
             if( ImGui::Button("Stop Sampling") )
             {
-                Capture::StopSampling();
+                GCapture->StopSampling();
             }
         }
     }
 
-    ImGui::Text("Num Ticks: %i", Capture::GNumSamplingTicks);
-    ImGui::Text("Num Samples: %i", Capture::GNumSamples);
+    ImGui::Text("Num Ticks: %i", GCapture->m_NumSamplingTicks);
+    ImGui::Text("Num Samples: %i", GCapture->m_NumSamples);
 
     ImGui::Columns(2, "ThreadViewColumns");
     ImGui::Separator();
@@ -190,19 +190,19 @@ void ThreadViewWindow::DrawLive(const char* title, bool* p_opened, ImVec2* a_Siz
     ImGui::SetColumnOffset( 1, (float)GThreadViewColumnOffset );
 
     int i = 0;
-    if (Capture::GTargetProcess)
+    if (GCapture->m_TargetProcess)
     {
         if (sortByThread)
         {
-            Capture::GTargetProcess->SortThreadsById();
+            GCapture->m_TargetProcess->SortThreadsById();
         }
 
         if (sortByUsage)
         {
-            Capture::GTargetProcess->SortThreadsByUsage();
+            GCapture->m_TargetProcess->SortThreadsByUsage();
         }
 
-        for( auto & thread : Capture::GTargetProcess->GetThreads() )
+        for( auto & thread : GCapture->m_TargetProcess->GetThreads() )
         {
             char label[32];
             sprintf(label, "%*i", GThreadViewColWidth, (int)thread->m_TID);

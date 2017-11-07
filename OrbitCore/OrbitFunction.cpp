@@ -33,7 +33,7 @@ Function::~Function()
 //-----------------------------------------------------------------------------
 void Function::SetAsMainFrameFunction()
 {
-    //Capture::GMainFrameFunction = (ULONG64)m_Pdb->GetHModule() + this->m_Address;
+    //GCapture->m_MainFrameFunction = (ULONG64)m_Pdb->GetHModule() + this->m_Address;
     m_Selected = true;
 }
 
@@ -71,7 +71,7 @@ bool Function::Hookable()
 void Function::PreHook()
 {
     // Unreal
-    /*if( Capture::GUnrealSupported )
+    /*if( GCapture->m_UnrealSupported )
     {
         Type* parent = GetParentType();
         if( parent && parent->IsA( L"UObject" ) )
@@ -102,7 +102,7 @@ fs::path Function::GetModuleName()
     }
     /*else
     {
-        shared_ptr<Module> module = Capture::GTargetProcess->GetModuleFromAddress( m_Address );
+        shared_ptr<Module> module = GCapture->m_TargetProcess->GetModuleFromAddress( m_Address );
         return module ? module->m_Name : fs::path();
     }*/
     return fs::path();
@@ -130,7 +130,7 @@ void Function::ResetStats()
 //-----------------------------------------------------------------------------
 void Function::GetDisassembly()
 {
-    if( m_Pdb)// && Capture::Connect() )
+    if( m_Pdb)// && GCapture->Connect() )
     {
         Message msg( Msg_GetData );
         ULONG64 address = (ULONG64)m_Pdb->GetHModule() + (ULONG64)m_Address;
@@ -141,7 +141,7 @@ void Function::GetDisassembly()
         // dll
         if( m_Size == 0 )
         {
-            shared_ptr<Module> module;// = Capture::GTargetProcess->GetModuleFromAddress( address );
+            shared_ptr<Module> module;// = GCapture->m_TargetProcess->GetModuleFromAddress( address );
             if( module )
             {
                 DWORD64 maxSize = module->m_AddressEnd - address;
@@ -281,9 +281,9 @@ void Function::Print()
     }
 
     LineInfo lineInfo;
-    /*if(Capture::GTargetProcess)
+    /*if(GCapture->m_TargetProcess)
     {
-        Capture::GTargetProcess->LineInfoFromAddress( m_Address + (DWORD64)m_Pdb->GetHModule(), lineInfo );
+        GCapture->m_TargetProcess->LineInfoFromAddress( m_Address + (DWORD64)m_Pdb->GetHModule(), lineInfo );
     }*/
 
     ORBIT_VIZV( lineInfo.m_File );

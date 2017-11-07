@@ -24,7 +24,6 @@
 #include "Serialization.h"
 #include "CaptureWindow.h"
 #include "LogDataView.h"
-#include "DiaManager.h"
 #include "MiniDump.h"
 #include "CaptureSerializer.h"
 #include "Disassembler.h"
@@ -32,7 +31,6 @@
 #include "RuleEditor.h"
 
 #include "Pdb.h"
-#include "ModuleManager.h"
 #include "TcpServer.h"
 #include "ServerTimerManager.h"
 #include "Injection.h"
@@ -53,24 +51,21 @@
 
 using namespace std;
 
-class OrbitApp* GOrbitApp;
-ServerTimerManager* GTimerManager;
-float GFontSize;
+OrbitApp* GOrbitApp;
+ServerTimerManager* GServerTimerManager;
 
 //-----------------------------------------------------------------------------
 OrbitApp::OrbitApp() : m_FindFileCallback(nullptr)
                      , m_RuleEditor(nullptr)
                      , m_CallStackDataView(nullptr)
 {
-    m_Debugger = new Debugger();
+    m_Debugger.reset(new Debugger());
 }
 
 //-----------------------------------------------------------------------------
 OrbitApp::~OrbitApp()
 {
     oqpi_tk::stop_scheduler();
-    delete m_Debugger;
-    GOrbitApp = nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -85,38 +80,37 @@ wstring OrbitApp::FindFile( const wstring & a_Caption, const wstring & a_Dir, co
 }
 
 //-----------------------------------------------------------------------------
-void OrbitApp::SetCommandLineArguments(const vector< string > & a_Args)
+void OrbitApp::SetCommandLineArguments(const vector<string> & a_Args)
 { 
-    m_Arguments = a_Args;
     bool inject = false;
 
     for( string arg : a_Args )
     {
         if( Contains( arg, "host:" )  )
         { 
-            vector< string > vec = Tokenize( arg, ":" );
+            vector<string> vec = Tokenize( arg, ":" );
             if( vec.size() > 1 )
             {
                 string & host = vec[1];
-                Capture::GCaptureHost = s2ws(host);
+                GCapture->m_CaptureHost = s2ws(host);
             }
         }
         else if( Contains( arg, "preset:" ) )
         {
-            vector< string > vec = Tokenize( arg, ":" );
+            vector<string> vec = Tokenize( arg, ":" );
             if( vec.size() > 1 )
             {
                 string & preset = vec[1];
-                Capture::GPresetToLoad = s2ws( preset );
+                GCapture->m_PresetToLoad = s2ws( preset );
             }
         }
         else if( Contains( arg, "inject:" ) )
         {
-            vector< string > vec = Tokenize( arg, ":" );
+            vector<string> vec = Tokenize( arg, ":" );
             if( vec.size() > 1 )
             {
                 string & preset = vec[1];
-                Capture::GProcessToInject = s2ws( preset );
+                GCapture->m_ProcessToInject = s2ws( preset );
             }
             inject = true;
         }
@@ -143,24 +137,18 @@ void GetDesktopResolution(int& horizontal, int& vertical)
 }
 
 //-----------------------------------------------------------------------------
-void GLoadPdbAsync( const vector<fs::path> & a_Modules )
-{
-    GModuleManager.LoadPdbAsync( a_Modules, [](){ GOrbitApp->OnPdbLoaded(); } );
-}
-
-//-----------------------------------------------------------------------------
 bool OrbitApp::Init()
 {
     GOrbitApp = new OrbitApp();
-    GCoreApp = GOrbitApp;
-    GTimerManager = new ServerTimerManager();
+    GServerTimerManager = new ServerTimerManager();
     GTcpServer = new TcpServer();
 
-    DiaManager::InitMsDiaDll();
-    GModuleManager.Init();
-    Capture::Init();
-    Capture::GSamplingDoneCallback = &OrbitApp::AddSamplingReport;
-    Capture::SetLoadPdbAsyncFunc( GLoadPdbAsync );
+    GCapture.reset(new Capture());
+    GCapture->m_SamplingDoneCallback = &OrbitApp::AddSamplingReport;
+    /*GCapture->SetLoadPdbAsyncFunc( [this](){
+        this->m_ModuleManager.LoadPdbAsync();
+        this->OnPdbLoaded();
+    } );*/
     oqpi_tk::start_default_scheduler();
     GPluginManager.Initialize();
 
@@ -169,16 +157,20 @@ bool OrbitApp::Init()
     glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH );
     GetDesktopResolution(GOrbitApp->m_ScreenRes[0], GOrbitApp->m_ScreenRes[1]);
 
-    if( Capture::IsOtherInstanceRunning() )
+    if( GCapture->IsOtherInstanceRunning() )
     {
-        ++Capture::GCapturePort;
+        ++GCapture->m_CapturePort;
     }
 
-    GTcpServer->SetCallback( Msg_MiniDump, [=](const Message & a_Msg){ GOrbitApp->OnMiniDump(a_Msg); });
-    GTcpServer->Start(Capture::GCapturePort);
+    GTcpServer->SetCallback(Msg_SetData, [=](const Message & a_Msg){ 
+        GOrbitApp->m_ModuleManager.OnReceiveMessage(a_Msg); 
+    });
+    GTcpServer->SetCallback(Msg_MiniDump, [=](const Message & a_Msg){ 
+        GOrbitApp->OnMiniDump(a_Msg); 
+    });
+    GTcpServer->Start(GCapture->m_CapturePort);
 
     GParams.Load();
-    GFontSize = GParams.m_FontSize;
     GOrbitApp->LoadFileMapping();
     GOrbitApp->LoadSymbolsFile();
 
@@ -293,8 +285,8 @@ void OrbitApp::LoadSymbolsFile()
 //-----------------------------------------------------------------------------
 void OrbitApp::ListSessions()
 {
-    vector< fs::path > sessionFileNames = Path::ListFiles( Path::GetPresetPath(), L".opr" );
-    vector< shared_ptr< Session > > sessions;
+    vector<fs::path> sessionFileNames = Path::ListFiles( Path::GetPresetPath(), L".opr" );
+    vector< shared_ptr<Session> > sessions;
     for( auto& fileName : sessionFileNames )
     {
         shared_ptr<Session> session = make_shared<Session>();
@@ -346,16 +338,16 @@ void OrbitApp::UpdateVariable( Variable * a_Variable )
 //-----------------------------------------------------------------------------
 void OrbitApp::ClearWatchedVariables()
 {
-    if( Capture::GTargetProcess )
+    if( GCapture->m_TargetProcess )
     {
-        Capture::GTargetProcess->ClearWatchedVariables();
+        GCapture->m_TargetProcess->ClearWatchedVariables();
     }
 }
 
 //-----------------------------------------------------------------------------
 void OrbitApp::RefreshWatch()
 {
-    Capture::GTargetProcess->RefreshWatchedVariables();
+    GCapture->m_TargetProcess->RefreshWatchedVariables();
 }
 
 //-----------------------------------------------------------------------------
@@ -364,14 +356,8 @@ void OrbitApp::Disassemble( Function * a_Function, const char * a_MachineCode, i
     Disassembler disasm;
     disasm.LOGF( "asm: /* %s */\n", a_Function->PrettyNameStr().c_str() );
     const unsigned char* code = (const unsigned char*)a_MachineCode;
-    disasm.Disassemble( code, a_Size, a_Function->GetVirtualAddress(), Capture::GTargetProcess->GetIs64Bit() );
+    disasm.Disassemble( code, a_Size, a_Function->GetVirtualAddress(), GCapture->m_TargetProcess->GetIs64Bit() );
     SendToUiAsync(disasm.GetResult());
-}
-
-//-----------------------------------------------------------------------------
-const unordered_map<DWORD64, shared_ptr<class Rule> > * OrbitApp::GetRules()
-{
-    return &m_RuleEditor->GetRules();
 }
 
 //-----------------------------------------------------------------------------
@@ -466,9 +452,12 @@ int OrbitApp::OnExit()
 {
     GParams.Save();
     delete GOrbitApp;
-	delete GTimerManager;
-    GTcpServer->Stop();
-    delete GTcpServer;
+    delete GServerTimerManager;
+    if(GTcpServer)
+    {
+        GTcpServer->Stop();
+        delete GTcpServer;
+    }
     Orbit_ImGui_Shutdown();
     return 0;
 }
@@ -482,36 +471,34 @@ bool DoZoom = false;
 void OrbitApp::MainTick()
 {
     TRACE_VAR( GMainTimer.QueryMillis() );
-
     GMainTimer.Reset();
-    Capture::Update();
+
+    GCapture->Update();
     GTcpServer->MainThreadTick();
 
-    if( Capture::GPresetToLoad != L"" )
+    if( GCapture->m_PresetToLoad != L"" )
     {
-        GOrbitApp->OnLoadSession( Capture::GPresetToLoad );
+        OnLoadSession( GCapture->m_PresetToLoad );
     }
     
-    if( Capture::GProcessToInject != L"" )
+    if( GCapture->m_ProcessToInject != L"" )
     {
-        cout << "Injecting into " << Capture::GTargetProcess->GetFullName() << endl;
-        cout << "Orbit host: " << ws2s(Capture::GCaptureHost) << endl;
-        GOrbitApp->SelectProcess(Capture::GProcessToInject);
-        Capture::InjectRemote();
+        cout << "Injecting into " << GCapture->m_TargetProcess->GetFullName() << endl;
+        cout << "Orbit host: " << ws2s(GCapture->m_CaptureHost) << endl;
+        SelectProcess(GCapture->m_ProcessToInject);
+        GCapture->InjectRemote();
         exit(0);
     }
 
-    GOrbitApp->m_Debugger->MainTick();
-    GOrbitApp->CheckForUpdate();
+    m_Debugger->MainTick();
+    CheckForUpdate();
 
-    ++GOrbitApp->m_NumTicks;
+    ++m_NumTicks;
 
     if( DoZoom )
     {
-        GCurrentTimeGraph->UpdateThreadIds();
-        GCurrentTimeGraph->m_Layout.CalculateOffsets();
-        GOrbitApp->m_CaptureWindow->ZoomAll();
-        GOrbitApp->NeedsRedraw();
+        m_CaptureWindow->DoZoom();
+        //NeedsRedraw();
         DoZoom = false;
     }
 }
@@ -604,6 +591,9 @@ void OrbitApp::RegisterOutputLog( LogDataView * a_Log )
 {
     assert( m_Log == nullptr );
     m_Log = a_Log;
+    GTcpServer->SetCallback( Msg_OrbitLog, [=]( const Message & a_Msg ){ 
+        m_Log->OnReceiveMessage(a_Msg); 
+    } );
 }
 
 //-----------------------------------------------------------------------------
@@ -611,6 +601,9 @@ void OrbitApp::RegisterRuleEditor( RuleEditor* a_RuleEditor )
 {
     assert( m_RuleEditor == nullptr );
     m_RuleEditor = a_RuleEditor;
+    GTcpServer->SetCallback( Msg_SavedContext, [=]( const Message & a_Msg ){ 
+        m_RuleEditor->OnReceiveMessage(a_Msg); 
+    } );
 }
 
 //-----------------------------------------------------------------------------
@@ -653,9 +646,18 @@ void OrbitApp::GoToCode( DWORD64 a_Address )
 }
 
 //-----------------------------------------------------------------------------
+// Originally configured to run from GlCanvas ctor, after
+void OrbitApp::ClearCaptureData()
+{
+    m_CaptureWindow->ClearCaptureData();
+
+    FireRefreshCallbacks( DataViewType::LIVEFUNCTIONS );
+}
+
+//-----------------------------------------------------------------------------
 void OrbitApp::OnOpenPdb( const fs::path& a_FileName )
 {
-    /*Capture::GTargetProcess = make_shared<Process>();
+    /*GCapture->m_TargetProcess = make_shared<Process>();
     shared_ptr<Module> mod = make_shared<Module>();
     
     mod->m_FullName = a_FileName;
@@ -665,12 +667,12 @@ void OrbitApp::OnOpenPdb( const fs::path& a_FileName )
     mod->m_FoundPdb = true;
     mod->LoadDebugInfo();
 
-    Capture::GTargetProcess->m_Name = Path::StripExtension( mod->m_Name );
-    Capture::GTargetProcess->AddModule( mod );
+    GCapture->m_TargetProcess->m_Name = Path::StripExtension( mod->m_Name );
+    GCapture->m_TargetProcess->AddModule( mod );
 
-    m_ModulesDataView->SetProcess( Capture::GTargetProcess );
-    Capture::SetTargetProcess( Capture::GTargetProcess );
-    GOrbitApp->FireRefreshCallbacks();
+    m_ModulesDataView->SetProcess( GCapture->m_TargetProcess );
+    GCapture->SetTargetProcess( GCapture->m_TargetProcess );
+    FireRefreshCallbacks();
 
     EnqueueModuleToLoad( mod );
     LoadModules();*/
@@ -685,19 +687,19 @@ void OrbitApp::OnLaunchProcess( const fs::path& a_ProcessName, const fs::path& a
 //-----------------------------------------------------------------------------
 fs::path OrbitApp::GetCaptureFileName()
 {
-    return Path::StripExtension( Capture::GTargetProcess->GetName() ) / L"_" / OrbitUtils::GetTimeStampW() / L".orbit";
+    return Path::StripExtension( GCapture->m_TargetProcess->GetName() ) / L"_" / OrbitUtils::GetTimeStampW() / L".orbit";
 }
 
 //-----------------------------------------------------------------------------
 fs::path OrbitApp::GetSessionFileName()
 {
-    return Capture::GSessionPresets ? Capture::GSessionPresets->m_FileName : L"";
+    return GCapture->m_SessionPresets ? GCapture->m_SessionPresets->m_FileName : L"";
 }
 
 //-----------------------------------------------------------------------------
 void OrbitApp::OnSaveSession( const fs::path& a_FileName )
 {
-    Capture::SaveSession( a_FileName );
+    GCapture->SaveSession( a_FileName );
     ListSessions();
     Refresh( DataViewType::SESSIONS );
 }
@@ -718,8 +720,8 @@ void OrbitApp::OnLoadSession( const fs::path& a_FileName )
         if( SelectProcess( session->m_ProcessFullPath.filename() ) )
         {
             session->m_FileName = fileName;
-            Capture::LoadSession( session );
-            Capture::GPresetToLoad = L"";
+            GCapture->LoadSession( session );
+            GCapture->m_PresetToLoad = L"";
         }
 
         file.close();
@@ -730,7 +732,7 @@ void OrbitApp::OnLoadSession( const fs::path& a_FileName )
 void OrbitApp::OnSaveCapture( const fs::path& a_FileName )
 {
     CaptureSerializer ar;
-    ar.m_TimeGraph = GCurrentTimeGraph;
+    ar.m_TimeGraph = &m_CaptureWindow->m_TimeGraph;
     ar.Save( a_FileName );
 }
 
@@ -738,30 +740,21 @@ void OrbitApp::OnSaveCapture( const fs::path& a_FileName )
 void OrbitApp::OnLoadCapture( const fs::path& a_FileName )
 {
     StopCapture();
-    Capture::ClearCaptureData();
-    GCurrentTimeGraph->Clear();
-    if( Capture::GClearCaptureDataFunc )
-    {
-        Capture::GClearCaptureDataFunc();
-    }
+    GCapture->ClearCaptureData();
+    m_CaptureWindow->m_TimeGraph.Clear();
+    ClearCaptureData();
 
     CaptureSerializer ar;
-    ar.m_TimeGraph = GCurrentTimeGraph;
+    ar.m_TimeGraph = &m_CaptureWindow->m_TimeGraph;
     ar.Load( a_FileName );
     StopCapture();
     DoZoom = true; //TODO: remove global, review logic
 }
 
 //-----------------------------------------------------------------------------
-void GLoadPdbAsync( const shared_ptr<Module> & a_Module )
-{
-    GModuleManager.LoadPdbAsync( a_Module, [](){ GOrbitApp->OnPdbLoaded(); } );
-}
-
-//-----------------------------------------------------------------------------
 void OrbitApp::OnOpenCapture( const fs::path& a_FileName )
 {
-    Capture::OpenCapture( a_FileName );
+    GCapture->OpenCapture( a_FileName );
     OnPdbLoaded();
 }
 
@@ -820,7 +813,7 @@ void OrbitApp::AddUiMessageCallback( function< void( const wstring & ) > a_Callb
 //-----------------------------------------------------------------------------
 void OrbitApp::StartCapture()
 {
-    Capture::StartCapture();
+    GCapture->StartCapture();
     
     if( m_NeedsThawing )
     {
@@ -832,16 +825,16 @@ void OrbitApp::StartCapture()
 //-----------------------------------------------------------------------------
 void OrbitApp::StopCapture()
 {   
-    GCurrentTimeGraph->m_MemTracker.DumpReport();
-    Capture::StopCapture();
+    m_CaptureWindow->m_TimeGraph.m_MemTracker.DumpReport();
+    GCapture->StopCapture();
 }
 
 //-----------------------------------------------------------------------------
 void OrbitApp::ToggleCapture()
 {
-    if( GTimerManager )
+    if( GServerTimerManager )
     {
-        if( GTimerManager->m_IsRecording )
+        if( GServerTimerManager->m_IsRecording )
             StopCapture();
         else
             StartCapture();
@@ -887,7 +880,7 @@ bool OrbitApp::Inject( unsigned long a_ProcessId )
 {
     if( SelectProcess( a_ProcessId ) )
     {
-        return Capture::Inject();
+        return GCapture->Inject();
     }
 
     return false;
@@ -923,16 +916,10 @@ void OrbitApp::LoadModules()
 {
     if( m_ModulesToLoad.size() > 0 )
     {
-        shared_ptr< Module > module = m_ModulesToLoad.front();
+        shared_ptr<Module> module = m_ModulesToLoad.front();
         m_ModulesToLoad.pop();
-        GLoadPdbAsync( module );
+        //GLoadPdbAsync( module );
     }
-}
-
-//-----------------------------------------------------------------------------
-bool OrbitApp::IsLoading()
-{
-    return GPdbDbg->IsLoading();
 }
 
 //-----------------------------------------------------------------------------
@@ -1006,7 +993,7 @@ void OrbitApp::OnMiniDump( const Message & a_Message )
     out.close();
 
     /*MiniDump miniDump(o_File);
-    shared_ptr<Process> process = miniDump.ToOrbitProcess();
+    shared_ptr<Process> process = miniDump.ToOrbitProcess(m_SymbolLocations);
     process->SetID( (DWORD)a_Message.GetHeader().m_GenericHeader.m_Address );
     GOrbitApp->m_ProcessesDataView->SetRemoteProcess( process );
     */

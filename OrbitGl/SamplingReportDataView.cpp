@@ -150,7 +150,7 @@ void SamplingReportDataView::OnContextMenu( int a_MenuIndex, vector<int> & a_Ite
     {
     case MODULES_LOAD: 
     {
-        if (Capture::GTargetProcess)
+        if (GCapture->m_TargetProcess)
         {
             set< wstring > moduleNames;
 
@@ -160,7 +160,7 @@ void SamplingReportDataView::OnContextMenu( int a_MenuIndex, vector<int> & a_Ite
                 moduleNames.insert(sampledFunc.m_Module);
             }
 
-            auto & moduleMap = Capture::GTargetProcess->GetNameToModulesMap();
+            auto & moduleMap = GCapture->m_TargetProcess->GetNameToModulesMap();
             for (const wstring & moduleName : moduleNames)
             {
                 shared_ptr<Module> module = moduleMap[ToLower(moduleName)];
@@ -179,7 +179,7 @@ void SamplingReportDataView::OnContextMenu( int a_MenuIndex, vector<int> & a_Ite
     {
         bool unhook = a_MenuIndex == DESELECT;
 
-        if( Capture::GTargetProcess )
+        if( GCapture->m_TargetProcess )
         {
             for( int i = 0; i < a_ItemIndices.size(); ++i )
             {
@@ -187,7 +187,7 @@ void SamplingReportDataView::OnContextMenu( int a_MenuIndex, vector<int> & a_Ite
                 SampledFunction & sampledFunc = GetFunction( a_ItemIndices[i] );
                 if( sampledFunc.m_Function == nullptr )
                 {
-                    func = Capture::GTargetProcess->GetFunctionFromAddress( sampledFunc.m_Address, false );
+                    func = GCapture->m_TargetProcess->GetFunctionFromAddress( sampledFunc.m_Address, false );
                     sampledFunc.m_Function = func;
                 }
                 else

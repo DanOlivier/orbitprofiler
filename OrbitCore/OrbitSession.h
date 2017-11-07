@@ -14,14 +14,15 @@ struct SessionModule
 {
     fs::path                    m_Name;
     std::vector< uint64_t >     m_FunctionHashes;
-    std::vector< std::wstring > m_WatchedVariables;
+    //std::vector< std::wstring > m_WatchedVariables;
 
     template <class Archive>
     void serialize( Archive & a_Archive, std::uint32_t const a_Version )
     {
         a_Archive( CEREAL_NVP( m_Name )
                  , CEREAL_NVP( m_FunctionHashes )
-                 , CEREAL_NVP( m_WatchedVariables ) );
+                 //, CEREAL_NVP( m_WatchedVariables ) 
+                );
     }
 };
 

@@ -8,13 +8,11 @@
 #include "TcpServer.h"
 #include "Capture.h"
 #include "OrbitProcess.h"
-#include "CoreApp.h"
+//#include "CoreApp.h"
 #include "Path.h"
 #include "Pdb.h"
 
 using namespace std;
-
-ModuleManager GModuleManager;
 
 //-----------------------------------------------------------------------------
 ModuleManager::ModuleManager()
@@ -29,12 +27,6 @@ ModuleManager::~ModuleManager()
 }
 
 //-----------------------------------------------------------------------------
-void ModuleManager::Init()
-{
-    GTcpServer->SetCallback(Msg_SetData, [=](const Message & a_Msg){ this->OnReceiveMessage(a_Msg); });
-}
-
-//-----------------------------------------------------------------------------
 void ModuleManager::OnReceiveMessage( const Message & a_Msg )
 {
     if (a_Msg.GetType() == Msg_SetData)
@@ -46,7 +38,7 @@ void ModuleManager::OnReceiveMessage( const Message & a_Msg )
         if( dataType == DataTransferHeader::Data )
         {
             // TODO: make access to watched vars thread safe
-            for (shared_ptr<Variable> var : Capture::GTargetProcess->GetWatchedVariables())
+            for (shared_ptr<Variable> var : GCapture->m_TargetProcess->GetWatchedVariables())
             {
                 if (var->m_Address == address)
                 {
@@ -55,13 +47,13 @@ void ModuleManager::OnReceiveMessage( const Message & a_Msg )
                 }
             }
         }
-        else if( dataType == DataTransferHeader::Code )
+        /*else if( dataType == DataTransferHeader::Code )
         {
-            if( Function* func = Capture::GTargetProcess->GetFunctionFromAddress( header.m_Address, true ) )
+            if( Function* func = GCapture->m_TargetProcess->GetFunctionFromAddress( header.m_Address, true ) )
             {
                 GCoreApp->Disassemble( func, a_Msg.GetData(), a_Msg.m_Size );
             }
-        }
+        }*/
     }
 }
 
@@ -104,7 +96,7 @@ void ModuleManager::DequeueAndLoad()
         fs::path pdbName = m_ModulesQueue.back();
         m_ModulesQueue.pop_back();
     
-        module = Capture::GTargetProcess->FindModule( pdbName.filename().wstring() );
+        module = GCapture->m_TargetProcess->FindModule( pdbName.filename().wstring() );
         if( module )
         {
             GPdbDbg = module->m_Pdb;
@@ -146,7 +138,7 @@ void ModuleManager::OnPdbLoaded()
 //-----------------------------------------------------------------------------
 void ModuleManager::AddPdb( const shared_ptr<Pdb> & a_Pdb )
 { 
-    Process::ModuleMap_t& modules = Capture::GTargetProcess->GetModules();
+    Process::ModuleMap_t& modules = GCapture->m_TargetProcess->GetModules();
 
     auto it = modules.find( (DWORD64)a_Pdb->GetHModule() );
     if( it != modules.end() )

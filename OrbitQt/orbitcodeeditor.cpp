@@ -176,7 +176,7 @@ int OrbitCodeEditor::lineNumberAreaWidth()
 //-----------------------------------------------------------------------------
 bool OrbitCodeEditor::loadCode( string a_Msg )
 {
-    vector< string > tokens = Tokenize( a_Msg, "^" );
+    vector<string> tokens = Tokenize( a_Msg, "^" );
 
     if( tokens.size() == 3 )
     {
@@ -245,7 +245,7 @@ void OrbitCodeEditor::OnTimer()
 {
     if( m_IsOutput && isVisible() )
     {
-        vector< string > outputEntries = LogInterface::GetOutput();
+        vector<string> outputEntries = LogInterface::GetOutput();
         for( string & line : outputEntries )
         {
             QTextCursor prev_cursor = textCursor();
@@ -351,7 +351,8 @@ void OrbitCodeEditor::keyPressEvent( QKeyEvent *e )
         }
         textCursor().clearSelection();
     }
-    else if ( m_Type == OrbitCodeEditor::FILE_MAPPING && e->key() == Qt::Key_S && e->modifiers() == Qt::ControlModifier )
+    else if ( m_Type == OrbitCodeEditor::FILE_MAPPING && 
+        e->key() == Qt::Key_S && e->modifiers() == Qt::ControlModifier )
     {
         saveFileMap();
         GOrbitApp->LoadFileMapping();

@@ -40,11 +40,11 @@ wstring CallStack::GetString()
 {
     wstring callstackString;
     
-    ScopeLock lock( Capture::GTargetProcess->GetDataMutex() );
+    ScopeLock lock( GCapture->m_TargetProcess->GetDataMutex() );
     for( int i = 0; i < m_Depth; ++i )
     {
         DWORD64 addr = m_Data[i];
-        Function* func = Capture::GTargetProcess->GetFunctionFromAddress( addr, false );
+        Function* func = GCapture->m_TargetProcess->GetFunctionFromAddress( addr, false );
 
         if( func )
         {

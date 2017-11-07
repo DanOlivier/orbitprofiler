@@ -133,7 +133,7 @@ void SessionsDataView::OnContextMenu( int a_Index, vector<int> & a_ItemIndices )
             const shared_ptr<Session> & session = GetSession( index );
             if( GOrbitApp->SelectProcess( session->m_ProcessFullPath.filename() ) )
             {
-                Capture::LoadSession( session );
+                GCapture->LoadSession( session );
             }
         }
 
@@ -199,7 +199,7 @@ void SessionsDataView::OnDataChanged()
 }
 
 //-----------------------------------------------------------------------------
-void SessionsDataView::SetSessions( const vector< shared_ptr< Session > > & a_Sessions )
+void SessionsDataView::SetSessions( const vector< shared_ptr<Session> > & a_Sessions )
 {
     m_Sessions = a_Sessions;
     OnDataChanged();

@@ -13,12 +13,13 @@
 #include "Batcher.h"
 #include "TextRenderer.h"
 #include "MemoryTracker.h"
+
 #include <unordered_map>
 
 class TimeGraph
 {
 public:
-    TimeGraph();
+    TimeGraph(GlCanvas*, TextRenderer*, PickingManager*);
 
     void Draw( bool a_Picking = false );
     void DrawMainFrame( TextBox & a_Box );
@@ -46,7 +47,6 @@ public:
     int GetThreadDepthTotal() const;
     float GetThreadTotalHeight();
     float GetTextBoxHeight() const { return m_Layout.m_TextBoxHeight; }
-    int GetMarginInPixels() const { return m_Margin; }
     float GetWorldFromRawTimeStamp( IntervalType a_Time ) const;
     float GetWorldFromUs( double a_Micros ) const;
     IntervalType GetRawTimeStampFromWorld( float a_WorldX );
@@ -72,39 +72,38 @@ public:
     int GetNumDrawnTextBoxes(){ return m_NumDrawnTextBoxes; }
     void AddTextBox( const TextBox& a_TextBox );
     void AddContextSwitch( const ContextSwitch & a_CS );
-    void SetPickingManager( class PickingManager* a_Manager ){ m_PickingManager = a_Manager; }
-    void SetCanvas( GlCanvas* a_Canvas );
+    //void SetPickingManager( class PickingManager* a_Manager ){ m_PickingManager = a_Manager; }
+    //void SetCanvas( GlCanvas* a_Canvas );
     
-public:
+private:
     TextRenderer                    m_TextRendererStatic;
-    TextRenderer*                   m_TextRenderer;
-    GlCanvas*                       m_Canvas;
+    TextRenderer*                   m_TextRenderer = nullptr;
+    GlCanvas*                       m_Canvas = nullptr;
     TextBox                         m_SceneBox;
+public:
     BlockChain<TextBox, 65536>      m_TextBoxes;
-    int                             m_NumDrawnTextBoxes;
+private:
+    int                             m_NumDrawnTextBoxes = 0;
     
-    double                          m_RefEpochTimeUs;
-    double                          m_MinEpochTimeUs;
-    double                          m_MaxEpochTimeUs;
-    IntervalType                    m_SessionMinCounter;
-    IntervalType                    m_SessionMaxCounter;
+    double                          m_RefEpochTimeUs = 0;
+public:
+    double                          m_MinEpochTimeUs = 0;
+    double                          m_MaxEpochTimeUs = 0;
+private:
+    IntervalType                    m_SessionMinCounter;// = _I64_MAX;
+    IntervalType                    m_SessionMaxCounter;// = _I64_MIN;
     std::map< ThreadID, int >       m_ThreadDepths;
     std::map< ThreadID, uint32_t >  m_EventCount;
-    double                          m_TimeWindowUs;
-    float                           m_WorldStartX;
-    float                           m_WorldWidth;
-    int                             m_Margin;
+    double                          m_TimeWindowUs = 0;
+    float                           m_WorldStartX = 0;
+    float                           m_WorldWidth = 0;
 
-    double                          m_ZoomValue;
-    double                          m_MouseRatio;
-    double                          m_TimeLeft;
-    double                          m_TimeRight;
-    double                          m_CurrentTimeWindow;
-    double                          m_Scale;
-    unsigned int                    m_MainFrameCounter;
-    unsigned char                   m_TrackAlpha;
+    unsigned int                    m_MainFrameCounter = 0;
+    unsigned char                   m_TrackAlpha = 255;
 
+public:
     TimeGraphLayout                 m_Layout;
+private:
     std::map< ThreadID, class EventTrack* > m_EventTracks;
 
     std::map< DWORD/*ThreadId*/, std::map< long long, ContextSwitch > > m_ContextSwitchesMap;
@@ -113,16 +112,18 @@ public:
     std::map< ThreadID, uint32_t >  m_ThreadCountMap;
 
     std::vector< CallstackEvent >   m_SelectedCallstackEvents;
-    bool                            m_NeedsUpdatePrimitives;
-    bool                            m_DrawText;
-    bool                            m_NeedsRedraw;
+    bool                            m_NeedsUpdatePrimitives = false;
+public:
+    bool                            m_DrawText = true;
+    bool                            m_NeedsRedraw = false;
+private:
     std::vector<TextBox*>           m_VisibleTextBoxes;
+public:
     Batcher                         m_Batcher;
+private:
     PickingManager*                 m_PickingManager;
     Mutex                           m_Mutex;
     Timer                           m_LastThreadReorder;
+public:
     MemoryTracker                   m_MemTracker;
 };
-
-extern TimeGraph* GCurrentTimeGraph;
-

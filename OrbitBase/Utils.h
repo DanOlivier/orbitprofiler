@@ -122,9 +122,9 @@ inline T ToLower( const T & a_Str )
 }
 
 //-----------------------------------------------------------------------------
-inline std::vector< std::string > Tokenize( std::string a_String, const char* a_Delimiters = " " )
+inline std::vector<std::string> Tokenize( std::string a_String, const char* a_Delimiters = " " )
 {
-    std::vector< std::string > tokens;
+    std::vector<std::string> tokens;
     char* token = &a_String[0];
     token = strtok( token, a_Delimiters );
     while (token != NULL)

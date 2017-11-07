@@ -14,8 +14,9 @@ public:
     CaptureWindow();
     virtual ~CaptureWindow();
     
+    void DoZoom();
     void ZoomAll();
-
+    
     void UpdateWheelMomentum( float a_DeltaTime ) override;
     void MouseMoved(int a_X, int a_Y, bool a_Left, bool a_Right, bool a_Middle) override;
     void LeftDown(int a_X, int a_Y) override;
@@ -50,22 +51,24 @@ public:
     void OnDrag( float a_Ratio );
     void NeedsUpdate();
     void ToggleSampling();
+    void ClearCaptureData();
     void OnCaptureStarted();
     float GetTopBarTextY();
 
-private:
+public:
     TimeGraph       m_TimeGraph;
+private:
     OutputWindow    m_StatsWindow;
     Timer           m_HoverTimer;
     std::wstring    m_ToolTip;
-    int             m_HoverDelayMs;
-    bool            m_IsHovering;
-    bool            m_CanHover;
-    bool            m_DrawHelp;
-    bool            m_DrawMemTracker;
-    bool            m_FirstHelpDraw;
-    bool            m_DrawStats;
+    int             m_HoverDelayMs = 300;
+    bool            m_IsHovering = false;
+    bool            m_CanHover = false;
+    bool            m_DrawHelp = false;
+    bool            m_DrawMemTracker = false;
+    bool            m_FirstHelpDraw = true;
+    bool            m_DrawStats = false;
     GlSlider        m_Slider;
-    int             m_ProcessX;
+    int             m_ProcessX = 0;
 };
 

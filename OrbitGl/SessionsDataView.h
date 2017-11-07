@@ -24,7 +24,7 @@ public:
     void OnSort( int a_Column, bool a_Toggle = true ) override;
     void OnContextMenu( int a_Index, std::vector<int> & a_ItemIndices ) override;
     
-    void SetSessions( const std::vector< std::shared_ptr< Session > > & a_Sessions );
+    void SetSessions( const std::vector< std::shared_ptr<Session> > & a_Sessions );
 
     enum SdvColumn
     {

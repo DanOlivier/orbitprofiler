@@ -13,10 +13,11 @@ namespace ftgl
     struct texture_font_t;
 }
 
+class GlCanvas;
+
 class TextRenderer
 {
 public:
-
     TextRenderer();
     ~TextRenderer();
 
@@ -28,7 +29,7 @@ public:
     void GetStringSize( const char* a_Text, int & a_Width, int & a_Height );
     int GetStringHeight( const char* a_Text );
     void Clear();
-    void SetCanvas( class GlCanvas * a_Canvas ){ m_Canvas = a_Canvas; }
+    void SetCanvas( GlCanvas * a_Canvas ){ m_Canvas = a_Canvas; }
     const GlCanvas* GetCanvas() const { return m_Canvas; }
     GlCanvas* GetCanvas(){ return m_Canvas; }
     const TextBox & GetSceneBox() const;

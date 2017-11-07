@@ -113,9 +113,9 @@ protected:
     HMODULE                             m_MainModule = 0;
     float                               m_LastLoadTime = 0.0;
     bool                                m_LoadedFromCache = false;
-    std::vector< Variable >             m_WatchedVariables;
+    //std::vector<Variable>               m_WatchedVariables;
     std::set<std::string>               m_ArgumentRegisters;
-    std::map<std::string, std::vector< std::string > >  m_RegFunctionsMap;
+    std::map<std::string, std::vector<std::string> >  m_RegFunctionsMap;
 
     // Data
     fs::path                            m_Name;

@@ -51,6 +51,6 @@ protected:
     int  m_WindowOffset[2];
     int  m_MainWindowWidth;
     int  m_MainWindowHeight;
-    bool m_NeedsRedraw;
+    bool m_NeedsRedraw = true;
 };
 

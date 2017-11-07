@@ -30,7 +30,7 @@ CaptureSerializer::CaptureSerializer()
 //-----------------------------------------------------------------------------
 void CaptureSerializer::Save( const fs::path& a_FileName )
 {
-    Capture::PreSave();
+    GCapture->PreSave();
 
     basic_ostream<char> Stream( &GStreamCounter );
     cereal::BinaryOutputArchive CountingArchive( Stream );
@@ -63,7 +63,7 @@ template <class T> void CaptureSerializer::Save( T & a_Archive )
     {
         ORBIT_SIZE_SCOPE( "Functions" );
         vector<Function> functions;
-        for( auto & pair : Capture::GSelectedFunctionsMap )
+        for( auto & pair : GCapture->m_SelectedFunctionsMap )
         {
             Function * func = pair.second;
             if( func )
@@ -77,24 +77,24 @@ template <class T> void CaptureSerializer::Save( T & a_Archive )
     }
 
     // Function Count
-    a_Archive( Capture::GFunctionCountMap );
+    a_Archive( GCapture->m_FunctionCountMap );
 
     // Process
     {
-        ORBIT_SIZE_SCOPE( "Capture::GTargetProcess" );
-        a_Archive( Capture::GTargetProcess );
+        ORBIT_SIZE_SCOPE( "GCapture->m_TargetProcess" );
+        a_Archive( GCapture->m_TargetProcess );
     }
 
     // Callstacks
     {
-        ORBIT_SIZE_SCOPE( "Capture::GCallstacks" );
-        a_Archive( Capture::GCallstacks );
+        ORBIT_SIZE_SCOPE( "GCapture->m_Callstacks" );
+        a_Archive( GCapture->m_Callstacks );
     }
 
     // Sampling profiler
     {
         ORBIT_SIZE_SCOPE( "SamplingProfiler" );
-        a_Archive( Capture::GSamplingProfiler );
+        a_Archive( GCapture->m_SamplingProfiler );
     }
 
     // Event buffer
@@ -131,32 +131,32 @@ void CaptureSerializer::Load( const fs::path& a_FileName )
 
         // functions
         shared_ptr<Module> module = make_shared<Module>();
-        Capture::GTargetProcess->AddModule(module);
+        GCapture->m_TargetProcess->AddModule(module);
         module->m_Pdb = make_shared<Pdb>( a_FileName.c_str() );
         archive( module->m_Pdb->GetFunctions() );
         module->m_Pdb->ProcessData();
         GPdbDbg = module->m_Pdb;
-        Capture::GSelectedFunctionsMap.clear();
+        GCapture->m_SelectedFunctionsMap.clear();
         for( Function & func : module->m_Pdb->GetFunctions() )
         {
-            Capture::GSelectedFunctionsMap[func.m_Address] = &func;
+            GCapture->m_SelectedFunctionsMap[func.m_Address] = &func;
         }
-        Capture::GVisibleFunctionsMap = Capture::GSelectedFunctionsMap;
+        GCapture->m_VisibleFunctionsMap = GCapture->m_SelectedFunctionsMap;
 
         // Function count
-        archive( Capture::GFunctionCountMap );
+        archive( GCapture->m_FunctionCountMap );
 
         // Process
-        //archive( Capture::GTargetProcess );
+        //archive( GCapture->m_TargetProcess );
 
         // Callstacks
-        archive( Capture::GCallstacks );
+        archive( GCapture->m_Callstacks );
 
         // Sampling profiler
-        archive( Capture::GSamplingProfiler );
-        Capture::GSamplingProfiler->SortByThreadUsage();
-        GOrbitApp->AddSamplingReport( Capture::GSamplingProfiler );
-        Capture::GSamplingProfiler->SetLoadedFromFile( true );
+        archive( GCapture->m_SamplingProfiler );
+        GCapture->m_SamplingProfiler->SortByThreadUsage();
+        GOrbitApp->AddSamplingReport( GCapture->m_SamplingProfiler );
+        GCapture->m_SamplingProfiler->SetLoadedFromFile( true );
 
         // Event buffer
         archive( GEventTracer.GetEventBuffer() );

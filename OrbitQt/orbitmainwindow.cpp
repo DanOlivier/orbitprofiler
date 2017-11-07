@@ -11,6 +11,7 @@
 #include "orbitvisualizer.h"
 #include "orbitdisassemblydialog.h"
 #include "ui_orbitmainwindow.h"
+
 #include <QMessageBox>
 #include <QTimer>
 #include <QFileDialog>
@@ -25,6 +26,7 @@
 #include "Version.h"
 #include "PrintVar.h"
 #include "Utils.h"
+#include "Pdb.h"
 #include "../OrbitPlugin/OrbitSDK.h"
 
 #include "../external/concurrentqueue/concurrentqueue.h"
@@ -54,12 +56,24 @@ OrbitMainWindow::OrbitMainWindow(QApplication* a_App, QWidget *parent)
     ui->HomeHorizontalSplitter->setSizes(sizes);
     ui->splitter_2->setSizes(sizes);
 
-    GOrbitApp->AddRefreshCallback([this](DataViewType a_Type) { this->OnRefreshDataViewPanels(a_Type); });
-    GOrbitApp->AddSamplingReoprtCallback( [this]( shared_ptr<SamplingReport> a_Report ) { this->OnNewSamplingReport( a_Report ); } );
-    GOrbitApp->AddSelectionReportCallback( [this]( shared_ptr<SamplingReport> a_Report ) { this->OnNewSelection( a_Report ); } );
-    GOrbitApp->AddUiMessageCallback( [this]( const wstring & a_Message ) { this->OnReceiveMessage( a_Message ); } );
-    GOrbitApp->SetFindFileCallback( [this]( const wstring & a_Caption, const wstring & a_Dir, const wstring & a_Filter ){ return this->FindFile( a_Caption, a_Dir, a_Filter ); } );
-    GOrbitApp->AddWatchCallback( [this]( const Variable* a_Variable ) { this->OnAddToWatch( a_Variable ); } );
+    GOrbitApp->AddRefreshCallback([this](DataViewType a_Type) { 
+        this->OnRefreshDataViewPanels(a_Type); 
+    });
+    GOrbitApp->AddSamplingReoprtCallback( [this]( shared_ptr<SamplingReport> a_Report ) { 
+        this->OnNewSamplingReport( a_Report ); 
+    } );
+    GOrbitApp->AddSelectionReportCallback( [this]( shared_ptr<SamplingReport> a_Report ) { 
+        this->OnNewSelection( a_Report ); 
+    } );
+    GOrbitApp->AddUiMessageCallback( [this]( const wstring & a_Message ) { 
+        this->OnReceiveMessage( a_Message ); 
+    } );
+    GOrbitApp->SetFindFileCallback( [this]( const wstring & a_Caption, const wstring & a_Dir, const wstring & a_Filter ){ 
+        return this->FindFile( a_Caption, a_Dir, a_Filter ); 
+    } );
+    GOrbitApp->AddWatchCallback( [this]( const Variable* a_Variable ) { 
+        this->OnAddToWatch( a_Variable ); 
+    } );
 
     ParseCommandlineArguments();
 
@@ -141,7 +155,7 @@ OrbitMainWindow::~OrbitMainWindow()
 //-----------------------------------------------------------------------------
 void OrbitMainWindow::ParseCommandlineArguments()
 {
-    vector< string > args;
+    vector<string> args;
     for (QString arg : QCoreApplication::arguments())
     {
         args.push_back(arg.toStdString());
@@ -365,7 +379,7 @@ void OrbitMainWindow::OnReceiveMessage( const wstring & a_Message )
     }
     else if( StartsWith(a_Message, L"pdb:") )
     {
-        if( GOrbitApp->IsLoading() )
+        if( GPdbDbg->IsLoading() )
         {
             m_CurrentPdbName = Replace( ws2s(a_Message), "pdb:", "" );
             m_OutputDialog->Reset();
@@ -451,7 +465,7 @@ void OrbitMainWindow::StartMainTimer()
 //-----------------------------------------------------------------------------
 void OrbitMainWindow::OnTimer()
 {
-    OrbitApp::MainTick();
+    GOrbitApp->MainTick();
 
     for (OrbitGLWidget* glWidget : m_GlWidgets)
     {

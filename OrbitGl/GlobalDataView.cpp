@@ -55,7 +55,7 @@ const vector<float>& GlobalsDataView::GetColumnHeadersRatios()
 //-----------------------------------------------------------------------------
 wstring GlobalsDataView::GetValue( int a_Row, int a_Column )
 {
-    ScopeLock lock( Capture::GTargetProcess->GetDataMutex() );
+    ScopeLock lock( GCapture->m_TargetProcess->GetDataMutex() );
 
     const Variable & variable = GetVariable( a_Row );
 
@@ -104,7 +104,7 @@ wstring GlobalsDataView::GetValue( int a_Row, int a_Column )
 //-----------------------------------------------------------------------------
 void GlobalsDataView::OnSort(int a_Column, bool a_Toggle)
 {
-    const vector<Variable*> & functions = Capture::GTargetProcess->GetGlobals();
+    const vector<Variable*> & functions = GCapture->m_TargetProcess->GetGlobals();
     auto MemberID = Variable::MemberID( s_HeaderMap[a_Column] );
 
     if (a_Toggle)
@@ -180,7 +180,7 @@ void GlobalsDataView::OnAddToWatch( vector<int> & a_Items )
             var = make_shared<Variable>(variable);
         }
 
-        Capture::GTargetProcess->AddWatchedVariable( var );
+        GCapture->m_TargetProcess->AddWatchedVariable( var );
         GOrbitApp->AddWatchedVariable( var.get() );
     }
 }
@@ -201,7 +201,7 @@ void GlobalsDataView::OnFilter( const wstring & a_Filter )
 //-----------------------------------------------------------------------------
 void GlobalsDataView::ParallelFilter()
 {
-    const vector<Variable*> & globals = Capture::GTargetProcess->GetGlobals();
+    const vector<Variable*> & globals = GCapture->m_TargetProcess->GetGlobals();
     const auto prio = oqpi::task_priority::normal;
     auto numWorkers = oqpi_tk::scheduler().workersCount( prio );
     vector< vector<int> > indicesArray;
@@ -242,7 +242,7 @@ void GlobalsDataView::ParallelFilter()
 //-----------------------------------------------------------------------------
 void GlobalsDataView::OnDataChanged()
 {
-    size_t numGlobals = Capture::GTargetProcess->GetGlobals().size();
+    size_t numGlobals = GCapture->m_TargetProcess->GetGlobals().size();
     m_Indices.resize(numGlobals);
     for (int i = 0; i < numGlobals; ++i)
     {
@@ -253,6 +253,6 @@ void GlobalsDataView::OnDataChanged()
 //-----------------------------------------------------------------------------
 Variable & GlobalsDataView::GetVariable(unsigned int a_Row) const
 {
-    vector<Variable*> & globals = Capture::GTargetProcess->GetGlobals();
+    vector<Variable*> & globals = GCapture->m_TargetProcess->GetGlobals();
     return *globals[m_Indices[a_Row]];
 }

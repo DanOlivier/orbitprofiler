@@ -67,15 +67,16 @@ public:
     virtual ~RuleEditor();
 
     void OnReceiveMessage( const Message & a_Message );
-    std::unordered_map<DWORD64, std::shared_ptr<Rule>>& GetRules() { return m_Rules; }
+    typedef std::unordered_map<DWORD64, std::shared_ptr<Rule>> RulesByAddress_t;
+    RulesByAddress_t& GetRules() { return m_Rules; }
 
     void OnTimer() override;
     void ZoomAll();
     void KeyPressed( unsigned int a_KeyCode, bool a_Ctrl, bool a_Shift, bool a_Alt ) override;
     void RenderUI() override;
-    void ProcessVariable( const std::shared_ptr<Variable > a_Variable, char* a_Data );
+    void ProcessVariable( const std::shared_ptr<Variable> a_Variable, char* a_Data );
 
     RuleEditorWindow m_Window;
-    std::unordered_map<DWORD64, std::shared_ptr<Rule>> m_Rules;
+    RulesByAddress_t m_Rules;
     bool m_Opened;
 };

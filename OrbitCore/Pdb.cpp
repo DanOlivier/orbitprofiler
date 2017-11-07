@@ -22,7 +22,6 @@
 #include "OrbitSession.h"
 #include "OrbitType.h"
 #include "OrbitUnreal.h"
-#include "DiaManager.h"
 #include "Path.h"
 
 //#include "external/DIA2Dump/DIA2Dump.h"
@@ -565,12 +564,12 @@ void Pdb::ApplyPresets()
 {
     SCOPE_TIMER_LOG( Format( L"Pdb::ApplyPresets - %s", m_Name.c_str() ) );
 
-    /*if (Capture::GSessionPresets)
+    /*if (GCapture->m_SessionPresets)
     {
         fs::path pdbName = m_Name.filename();
 
-        auto it = Capture::GSessionPresets->m_Modules.find(pdbName);
-        if (it != Capture::GSessionPresets->m_Modules.end())
+        auto it = GCapture->m_SessionPresets->m_Modules.find(pdbName);
+        if (it != GCapture->m_SessionPresets->m_Modules.end())
         {
             SessionModule & a_Module = it->second;
 
@@ -684,10 +683,10 @@ unique_ptr<llvm::pdb::PDBSymbol> Pdb::GetDiaSymbolFromId( ULONG a_Id )
 {
     SCOPE_TIMER_LOG( Format( L"Pdb::ProcessData for %s", m_Name.c_str() ) );
 
-    ScopeLock lock( Capture::GTargetProcess->GetDataMutex() );
+    ScopeLock lock( GCapture->m_TargetProcess->GetDataMutex() );
 
-    auto & functions = Capture::GTargetProcess->GetFunctions();
-    auto & globals   = Capture::GTargetProcess->GetGlobals();
+    auto & functions = GCapture->m_TargetProcess->GetFunctions();
+    auto & globals   = GCapture->m_TargetProcess->GetGlobals();
 
     functions.reserve( functions.size() + m_Functions.size() );
 
@@ -701,7 +700,7 @@ unique_ptr<llvm::pdb::PDBSymbol> Pdb::GetDiaSymbolFromId( ULONG a_Id )
     for( Type & type : m_Types )
     {
         type.m_Pdb = this;
-        Capture::GTargetProcess->AddType( type );
+        GCapture->m_TargetProcess->AddType( type );
         GOrbitUnreal.OnTypeAdded( &type );
     }
 

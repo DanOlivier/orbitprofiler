@@ -35,8 +35,6 @@ set(HEADERS
     ContextSwitch.h
     CoreApp.h
     #cvconst.h
-    DiaManager.h
-    DiaParser.h
     Diff.h
     EventBuffer.h
     EventCallbacks.h
@@ -76,11 +74,8 @@ set(HEADERS
 
 set(SOURCES
     #Callstack.cpp
-    #Capture.cpp
+    Capture.cpp
     #ContextSwitch.cpp
-    CoreApp.cpp
-    #DiaManager.cpp
-    #DiaParser.cpp
     #Diff.cpp
     #EventBuffer.cpp
     #EventCallbacks.cpp

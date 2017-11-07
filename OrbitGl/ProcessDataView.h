@@ -44,7 +44,7 @@ protected:
     ProcessList                 m_ProcessList;
     std::shared_ptr<Process>    m_RemoteProcess;
     ModulesDataView*            m_ModulesDataView;
-    std::shared_ptr< Process >  m_SelectedProcess;
+    std::shared_ptr<Process>  m_SelectedProcess;
     Mutex                       m_Mutex;
     static std::vector<float>   s_HeaderRatios;
 };

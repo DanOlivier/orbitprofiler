@@ -18,83 +18,94 @@ class Session;
 class SamplingProfiler;
 class Function;
 struct CallStack;
+class TcpServer;
+class TextBox;
+class EventTracer;
 
-struct Capture
+class Capture
 {
-    static void Init();
-    static bool Inject( bool a_WaitForConnection = true );
-    static bool Connect();
-    static bool InjectRemote();
-    static void SetTargetProcess( const std::shared_ptr< Process > & a_Process );
-    static bool StartCapture();
-    static void StopCapture();
-    static void ToggleRecording();
-    static void ClearCaptureData();
-    static void PreFunctionHooks();
-    static void SendFunctionHooks();
-    static void SendDataTrackingInfo();
-    static void StartSampling();
-    static void StopSampling();
-    static bool IsCapturing();
-    static void Update();
-    static void DisplayStats();
-    static void TestHooks();
-    static void OpenCapture( const fs::path & a_CaptureName );
-    static bool IsOtherInstanceRunning();
-    static void LoadSession( const std::shared_ptr<Session> & a_Session );
-    static void SaveSession( const fs::path & a_FileName );
-    static void NewSamplingProfiler();
-    static bool IsTrackingEvents();
-    static bool IsRemote();
-    static void RegisterZoneName( DWORD64 a_ID, char* a_Name );
-    static void AddCallstack( CallStack & a_CallStack );
-    static std::shared_ptr<CallStack> GetCallstack( CallstackID a_ID );
-    static void CheckForUnrealSupport();
-    static void PreSave();
+public:
+    Capture();
+    
+    bool Inject( bool a_WaitForConnection = true );
+    bool Connect();
+    bool InjectRemote();
+    void SetTargetProcess(const std::shared_ptr<Process>& a_Process);
+    bool StartCapture();
+    void StopCapture();
+    void ToggleRecording();
+    void ClearCaptureData();
+    void PreFunctionHooks();
+    void SendFunctionHooks();
+    void SendDataTrackingInfo();
+    void StartSampling();
+    void StopSampling();
+    bool IsCapturing();
+    void Update();
+    void DisplayStats();
+    void TestHooks();
+    void OpenCapture( const fs::path & a_CaptureName );
+    bool IsOtherInstanceRunning();
+    void LoadSession( const std::shared_ptr<Session> & a_Session );
+    void SaveSession( const fs::path & a_FileName );
+    void NewSamplingProfiler();
+    bool IsTrackingEvents();
+    bool IsRemote();
+    void RegisterZoneName( DWORD64 a_ID, char* a_Name );
+    void AddCallstack( CallStack & a_CallStack );
+    std::shared_ptr<CallStack> GetCallstack( CallstackID a_ID );
+    //void CheckForUnrealSupport();
+    void PreSave();
     
     typedef void (*LoadPdbAsyncFunc)( const std::vector<fs::path> & a_Modules );
-    static void SetLoadPdbAsyncFunc( LoadPdbAsyncFunc a_Func ){ GLoadPdbAsync = a_Func; }
+    void SetLoadPdbAsyncFunc( LoadPdbAsyncFunc a_Func ){ m_LoadPdbAsync = a_Func; }
 
-    static bool         GInjected;
-    static bool         GIsConnected;
-    static std::string  GInjectedProcess;
-    static std::wstring GInjectedProcessW;
-    static double       GOpenCaptureTime;
-    static int          GCapturePort;
-    static std::wstring GCaptureHost;
-    static std::wstring GPresetToLoad;  // TODO: allow multiple presets
-    static std::wstring GProcessToInject;
-    static bool         GIsSampling;
-    static bool         GIsTesting;
-    static int          GNumSamples;
-    static int          GNumSamplingTicks;
-    static int          GFunctionIndex;
-    static int          GNumInstalledHooks;
-    static bool         GHasSamples;
-    static bool         GHasContextSwitches;
+public:
+    bool         m_Injected = false;
+    bool         m_IsConnected = false;
+    std::string  m_InjectedProcess;
+    std::wstring m_InjectedProcessW;
+    double       m_OpenCaptureTime = 0;
+    int          m_CapturePort = 0;
+    std::wstring m_CaptureHost = L"localhost";
+    std::wstring m_PresetToLoad;  // TODO: allow multiple presets
+    std::wstring m_ProcessToInject;
+    bool         m_IsSampling = false;
+    bool         m_IsTesting = false;
+    int          m_NumSamples = 0;
+    int          m_NumSamplingTicks = 0;
+    int          m_FunctionIndex = -1;
+    int          m_NumInstalledHooks = 0;
+    bool         m_HasSamples = false;
+    bool         m_HasContextSwitches = false;
 
-    static Timer        GTestTimer;
-    static ULONG64      GMainFrameFunction;
-    static ULONG64      GNumContextSwitches;
-    static ULONG64      GNumProfileEvents;
-    static std::shared_ptr<SamplingProfiler> GSamplingProfiler;
-    static std::shared_ptr<Process>          GTargetProcess;
-    static std::shared_ptr<Session>          GSessionPresets;
-    static std::shared_ptr<CallStack>        GSelectedCallstack;
-    static void( *GClearCaptureDataFunc )( );
-    static void( *GSamplingDoneCallback )( std::shared_ptr<SamplingProfiler> & a_SamplingProfiler );
-    static std::map< ULONG64, Function* > GSelectedFunctionsMap;
-    static std::map< ULONG64, Function* > GVisibleFunctionsMap;
-    static std::unordered_map< ULONG64, ULONG64 > GFunctionCountMap;
-    static std::vector<ULONG64> GSelectedAddressesByType[Function::NUM_TYPES];
-    static std::unordered_map< DWORD64, std::shared_ptr<CallStack> > GCallstacks;
-    static std::unordered_map< DWORD64, std::string > GZoneNames;
-    static class TextBox* GSelectedTextBox;
-    static ThreadID GSelectedThreadId;
-    static Timer GCaptureTimer;
-    static std::chrono::system_clock::time_point GCaptureTimePoint;
-    static Mutex GCallstackMutex;
-    static LoadPdbAsyncFunc GLoadPdbAsync;
-    static bool GUnrealSupported;
+    Timer        m_TestTimer;
+    //ULONG64      m_MainFrameFunction = 0;
+    ULONG64      m_NumContextSwitches = 0;
+    ULONG64      m_NumProfileEvents = 0;
+
+    std::shared_ptr<SamplingProfiler> m_SamplingProfiler;
+    std::shared_ptr<Process>          m_TargetProcess;
+    std::shared_ptr<Session>          m_SessionPresets;
+    std::shared_ptr<CallStack>        m_SelectedCallstack;
+
+    void (*m_ClearCaptureDataFunc)();
+    void (*m_SamplingDoneCallback)(std::shared_ptr<SamplingProfiler>& a_SamplingProfiler);
+
+    std::map<ULONG64, Function*> m_SelectedFunctionsMap;
+    std::map<ULONG64, Function*> m_VisibleFunctionsMap;
+    std::unordered_map<ULONG64, ULONG64> m_FunctionCountMap;
+    std::vector<ULONG64> m_SelectedAddressesByType[Function::NUM_TYPES];
+    std::unordered_map<DWORD64, std::shared_ptr<CallStack> > m_Callstacks;
+    std::unordered_map<DWORD64, std::string> m_ZoneNames;
+    TextBox* m_SelectedTextBox = 0;
+    ThreadID m_SelectedThreadId = 0;
+    Timer m_CaptureTimer;
+    std::chrono::system_clock::time_point m_CaptureTimePoint;
+    Mutex m_CallstackMutex;
+    LoadPdbAsyncFunc m_LoadPdbAsync;
+    //bool m_UnrealSupported = false;
+    std::unique_ptr<EventTracer> m_EventTracer;
 };
 
+extern std::shared_ptr<Capture> GCapture;

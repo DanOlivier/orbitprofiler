@@ -11,7 +11,7 @@ public:
     HomeWindow();
     virtual ~HomeWindow();
 
-    void VariableTracingCallback(std::vector< std::string > & a_Entries);
+    void VariableTracingCallback(std::vector<std::string> & a_Entries);
     void Draw() override;
     void RenderUI() override;
     void RenderProcessUI();

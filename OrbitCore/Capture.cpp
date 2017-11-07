@@ -17,7 +17,7 @@
 #include "Params.h"
 #include "EventTracer.h"
 #include "OrbitUnreal.h"
-#include "CoreApp.h"
+//#include "CoreApp.h"
 #include "Params.h"
 #include "OrbitRule.h"
 #include "VariableTracing.h"
@@ -27,57 +27,13 @@
 
 using namespace std;
 
-bool        Capture::GInjected = false;
-bool        Capture::GIsConnected = false;
-string  Capture::GInjectedProcess;
-wstring Capture::GInjectedProcessW;
-double      Capture::GOpenCaptureTime;
-bool        Capture::GIsSampling = false;
-bool        Capture::GIsTesting = false;
-int         Capture::GNumSamples = 0;
-int         Capture::GNumSamplingTicks = 0;
-int         Capture::GFunctionIndex = -1;
-int         Capture::GNumInstalledHooks;
-bool        Capture::GHasSamples;
-bool        Capture::GHasContextSwitches;
-Timer       Capture::GTestTimer;
-ULONG64     Capture::GMainFrameFunction;
-ULONG64     Capture::GNumContextSwitches;
-ULONG64     Capture::GNumProfileEvents;
-int         Capture::GCapturePort = 0;
-
-wstring Capture::GCaptureHost = L"localhost";
-wstring Capture::GPresetToLoad = L"";
-wstring Capture::GProcessToInject = L"";
-
-map< ULONG64, Function* >           Capture::GSelectedFunctionsMap;
-map< ULONG64, Function* >           Capture::GVisibleFunctionsMap;
-unordered_map< ULONG64, ULONG64 >   Capture::GFunctionCountMap;
-shared_ptr<CallStack>               Capture::GSelectedCallstack;
-vector<ULONG64>                     Capture::GSelectedAddressesByType[Function::NUM_TYPES];
-unordered_map< DWORD64, shared_ptr<CallStack> > Capture::GCallstacks;
-Mutex                               Capture::GCallstackMutex;
-unordered_map< DWORD64, string >    Capture::GZoneNames;
-TextBox*    Capture::GSelectedTextBox;
-ThreadID    Capture::GSelectedThreadId;
-Timer       Capture::GCaptureTimer;
-chrono::system_clock::time_point    Capture::GCaptureTimePoint;
-Capture::LoadPdbAsyncFunc           Capture::GLoadPdbAsync;
-
-shared_ptr<SamplingProfiler> Capture::GSamplingProfiler = nullptr;
-shared_ptr<Process>          Capture::GTargetProcess    = nullptr;
-shared_ptr<Session>          Capture::GSessionPresets   = nullptr;
-
-void(*Capture::GClearCaptureDataFunc)();
-void(*Capture::GSamplingDoneCallback)( shared_ptr<SamplingProfiler>& a_SamplingProfiler );
+shared_ptr<Capture> GCapture;
 vector< shared_ptr<SamplingProfiler> > GOldSamplingProfilers;
-bool Capture::GUnrealSupported = false;
 
 //-----------------------------------------------------------------------------
-void Capture::Init()
+Capture::Capture()
 {
-    //GTargetProcess = make_shared<Process>();
-    Capture::GCapturePort = GParams.m_Port;
+    m_CapturePort = GParams.m_Port;
 }
 
 //-----------------------------------------------------------------------------
@@ -85,16 +41,16 @@ bool Capture::Inject( bool a_WaitForConnection )
 {
     /*XXX
     Injection inject;
-    wstring dllName = Path::GetDllPath( GTargetProcess->GetIs64Bit() );
+    wstring dllName = Path::GetDllPath( m_TargetProcess->GetIs64Bit() );
 
     GTcpServer->Disconnect();
 
-    GInjected = inject.Inject( dllName.c_str(), *GTargetProcess, "OrbitInit", GCaptureHost, GCapturePort );
-    if( GInjected )
+    m_Injected = inject.Inject( dllName.c_str(), *m_TargetProcess, "OrbitInit", m_CaptureHost, m_CapturePort );
+    if( m_Injected )
     {
-        ORBIT_LOG( Format( "Injected in %s", GTargetProcess->GetName().c_str() ) );
-        GInjectedProcessW = GTargetProcess->GetName();
-        GInjectedProcess = ws2s(GInjectedProcessW);
+        ORBIT_LOG( Format( "Injected in %s", m_TargetProcess->GetName().c_str() ) );
+        m_InjectedProcessW = m_TargetProcess->GetName();
+        m_InjectedProcess = ws2s(m_InjectedProcessW);
     }
 
     if( a_WaitForConnection )
@@ -102,14 +58,14 @@ bool Capture::Inject( bool a_WaitForConnection )
         int numTries = 50;
         while( !GTcpServer->HasConnection() && numTries-- > 0 )
         {
-            ORBIT_LOG( Format( "Waiting for connection on port %i", GCapturePort ) );
+            ORBIT_LOG( Format( "Waiting for connection on port %i", m_CapturePort ) );
             Sleep(100);
         }
 
-        GInjected = GInjected && GTcpServer->HasConnection();
+        m_Injected = m_Injected && GTcpServer->HasConnection();
     }
 
-    return GInjected;
+    return m_Injected;
     */
     return false;
 }
@@ -119,19 +75,19 @@ bool Capture::InjectRemote()
 {
     /*XXX
     Injection inject;
-    wstring dllName = Path::GetDllPath( GTargetProcess->GetIs64Bit() );
+    wstring dllName = Path::GetDllPath( m_TargetProcess->GetIs64Bit() );
     GTcpServer->Disconnect();
 
-    GInjected = inject.Inject( dllName.c_str(), *GTargetProcess, "OrbitInitRemote", GCaptureHost, GCapturePort );
+    m_Injected = inject.Inject( dllName.c_str(), *m_TargetProcess, "OrbitInitRemote", m_CaptureHost, m_CapturePort );
     
-    if( GInjected )
+    if( m_Injected )
     {
-        ORBIT_LOG( Format( "Injected in %s", GTargetProcess->GetName().c_str() ) );
-        GInjectedProcessW = GTargetProcess->GetName();
-        GInjectedProcess = ws2s( GInjectedProcessW );
+        ORBIT_LOG( Format( "Injected in %s", m_TargetProcess->GetName().c_str() ) );
+        m_InjectedProcessW = m_TargetProcess->GetName();
+        m_InjectedProcess = ws2s( m_InjectedProcessW );
     }
 
-    return GInjected;
+    return m_Injected;
     */
     return false;
 }
@@ -139,11 +95,8 @@ bool Capture::InjectRemote()
 //-----------------------------------------------------------------------------
 void Capture::SetTargetProcess( const shared_ptr< Process > & a_Process )
 {
-    if( a_Process != GTargetProcess )
-    {
-        GInjected = false;
-        GInjectedProcess = "";
-
+    if(a_Process != m_TargetProcess)
+	{
         if( !a_Process->GetIsRemote() )
         {
             // In the case of a remote process, 
@@ -151,25 +104,24 @@ void Capture::SetTargetProcess( const shared_ptr< Process > & a_Process )
             GTcpServer->Disconnect();
         }
 
-        GTargetProcess = a_Process;
-        GTargetProcess->LoadDebugInfo();
-        GSamplingProfiler = make_shared<SamplingProfiler>( a_Process );
-        GSelectedFunctionsMap.clear();
-        GSessionPresets = nullptr;
-        GOrbitUnreal.Clear();
-        GTargetProcess->ClearWatchedVariables();
-    }
+        m_TargetProcess->LoadDebugInfo();
+        m_SamplingProfiler = make_shared<SamplingProfiler>( a_Process );
+        m_SelectedFunctionsMap.clear();
+        m_SessionPresets = nullptr;
+        //m_OrbitUnreal.Clear();
+        m_TargetProcess->ClearWatchedVariables();
+	}
 }
 
 //-----------------------------------------------------------------------------
 bool Capture::Connect()
 {
-    if( !GInjected )
+    if( !m_Injected )
     {
         Inject();
     }
 
-    return GInjected;
+    return m_Injected;
 }
 
 //-----------------------------------------------------------------------------
@@ -177,11 +129,11 @@ bool Capture::StartCapture()
 {
     SCOPE_TIMER_LOG( L"Capture::StartCapture" );
 
-    if( GTargetProcess->GetName().empty() )
+    if( m_TargetProcess->GetName().empty() )
         return false;
 
-    GCaptureTimer.Start();
-    GCaptureTimePoint = chrono::system_clock::now();
+    m_CaptureTimer.Start();
+    m_CaptureTimePoint = chrono::system_clock::now();
 
     if( !IsRemote() )
     {
@@ -191,23 +143,23 @@ bool Capture::StartCapture()
         }
     }
 
-    GInjected = true;
+    m_Injected = true;
     ++Message::GSessionID;
     GTcpServer->Send( Msg_NewSession );
-    GTimerManager->StartRecording();
+    GServerTimerManager->StartRecording();
     
     ClearCaptureData();
     SendFunctionHooks();
 
-    if( Capture::IsTrackingEvents() )
+    if( IsTrackingEvents() )
     {
-        GEventTracer.Start();
+        m_EventTracer->Start();
     }
 
-    if( GSelectedFunctionsMap.size() > 0 )
+    /*if( m_SelectedFunctionsMap.size() > 0 )
     {
-        GCoreApp->SendToUiNow( L"startcapture" );
-    }
+        m_CoreApp->SendToUiNow( L"startcapture" );
+    }*/
     
     return true;
 }
@@ -217,24 +169,24 @@ void Capture::StopCapture()
 {
     if( IsTrackingEvents() )
     {
-        GEventTracer.Stop();
+        m_EventTracer->Stop();
     }
 
-    if (!GInjected)
+    if (!m_Injected)
     {
         return;
     }
 
     GTcpServer->Send( Msg_StopCapture );
-    GTimerManager->StopRecording();
+    GServerTimerManager->StopRecording();
 }
 
 //-----------------------------------------------------------------------------
 void Capture::ToggleRecording()
 {
-    if( GTimerManager )
+    if( GServerTimerManager )
     {
-        if( GTimerManager->m_IsRecording )
+        if( GServerTimerManager->m_IsRecording )
             StopCapture();
         else
             StartCapture();
@@ -244,16 +196,16 @@ void Capture::ToggleRecording()
 //-----------------------------------------------------------------------------
 void Capture::ClearCaptureData()
 {
-    GSelectedFunctionsMap.clear();
-    GFunctionCountMap.clear();
-    GZoneNames.clear();
-    GSelectedTextBox = nullptr;
-    GSelectedThreadId = 0;
-    GNumProfileEvents = 0;
+    m_SelectedFunctionsMap.clear();
+    m_FunctionCountMap.clear();
+    m_ZoneNames.clear();
+    m_SelectedTextBox = nullptr;
+    m_SelectedThreadId = 0;
+    m_NumProfileEvents = 0;
     GTcpServer->ResetStats();
-    GOrbitUnreal.NewSession();
-    GHasSamples = false;
-    GHasContextSwitches = false;
+    //m_OrbitUnreal.NewSession();
+    m_HasSamples = false;
+    m_HasContextSwitches = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -285,7 +237,7 @@ void Capture::PreFunctionHooks()
     // Clear selected functions
     for( int i = 0; i < Function::NUM_TYPES; ++i )
     {
-        GSelectedAddressesByType[i].clear();
+        m_SelectedAddressesByType[i].clear();
     }
 
     // Clear current argument tracking data
@@ -294,17 +246,17 @@ void Capture::PreFunctionHooks()
     // Find OutputDebugStringA
     if( GParams.m_HookOutputDebugString )
     {
-        if( DWORD64 outputAddr = GTargetProcess->GetOutputDebugStringAddress() )
+        if( DWORD64 outputAddr = m_TargetProcess->GetOutputDebugStringAddress() )
         {
-            GSelectedAddressesByType[Function::ORBIT_OUTPUT_DEBUG_STRING].push_back( outputAddr );
+            m_SelectedAddressesByType[Function::ORBIT_OUTPUT_DEBUG_STRING].push_back( outputAddr );
         }
     }
 
     // Find alloc/free functions
-    GTargetProcess->FindCoreFunctions();
+    m_TargetProcess->FindCoreFunctions();
 
     // Unreal
-    CheckForUnrealSupport();
+    //CheckForUnrealSupport();
 }
 
 //-----------------------------------------------------------------------------
@@ -312,34 +264,35 @@ void Capture::SendFunctionHooks()
 {
     PreFunctionHooks();
 
-    for( Function * func : GTargetProcess->GetFunctions() )
+    for( Function* func : m_TargetProcess->GetFunctions() )
     {
         if( func->IsSelected() || func->IsOrbitFunc() )
         {
             func->PreHook();
             DWORD64 address = func->GetVirtualAddress();
-            GSelectedAddressesByType[func->m_OrbitType].push_back(address);
-            GSelectedFunctionsMap[(ULONG64)address] = func;
+            m_SelectedAddressesByType[func->m_OrbitType].push_back(address);
+            m_SelectedFunctionsMap[(ULONG64)address] = func;
             func->ResetStats();
-            GFunctionCountMap[address] = 0;
+            m_FunctionCountMap[address] = 0;
         }
     }
 
-    GVisibleFunctionsMap = GSelectedFunctionsMap;
+    m_VisibleFunctionsMap = m_SelectedFunctionsMap;
 
-    if( GClearCaptureDataFunc )
+    // XXX: Originally configured from GlCanvas ctor
+    if( m_ClearCaptureDataFunc )
     {
-        GClearCaptureDataFunc();
+        m_ClearCaptureDataFunc();
     }
 
     GTcpServer->Send( Msg_StartCapture );
 
     // Unreal
-    if( Capture::GUnrealSupported )
+    /*if( m_UnrealSupported )
     {
-        const OrbitUnrealInfo & info = GOrbitUnreal.GetUnrealInfo();
+        const OrbitUnrealInfo & info = m_OrbitUnreal.GetUnrealInfo();
         GTcpServer->Send( Msg_OrbitUnrealInfo, info );
-    }
+    }*/
 
     // Send argument tracking info
     SendDataTrackingInfo();
@@ -347,7 +300,7 @@ void Capture::SendFunctionHooks()
     // Send all hooks by type
     for( int i = 0; i < Function::NUM_TYPES; ++i )
     {
-        vector<DWORD64> & addresses = GSelectedAddressesByType[i];
+        vector<DWORD64> & addresses = m_SelectedAddressesByType[i];
         if( addresses.size() )
         {
             MessageType msgType = GetMessageType( (Function::OrbitType)i );
@@ -360,12 +313,13 @@ void Capture::SendFunctionHooks()
 void Capture::SendDataTrackingInfo()
 {
     // Send information about arguments we want to track
-    for( auto & pair : *GCoreApp->GetRules() )
+    std::unordered_map<DWORD64, std::shared_ptr<Rule> > rules;
+    for( auto & pair : rules) //*m_CoreApp->GetRules() )
     {
         const shared_ptr<Rule> rule = pair.second;
         Function* func = rule->m_Function;
         Message msg( Msg_ArgTracking );
-        ArgTrackingHeader & header = msg.m_Header.m_ArgTrackingHeader;
+        ArgTrackingHeader& header = msg.m_Header.m_ArgTrackingHeader;
         ULONG64 address = (ULONG64)func->m_Pdb->GetHModule() + (ULONG64)func->m_Address;
         header.m_Function = address;
         header.m_NumArgs = (int)rule->m_TrackedVariables.size();
@@ -374,7 +328,7 @@ void Capture::SendDataTrackingInfo()
         //       We should separate both concepts and revive argument
         //       tracking.
         vector<Argument> args;
-        for( const shared_ptr<Variable > var : rule->m_TrackedVariables )
+        for( const shared_ptr<Variable> var : rule->m_TrackedVariables )
         {
             Argument arg;
             arg.m_Offset = (DWORD)var->m_Address;
@@ -391,73 +345,73 @@ void Capture::SendDataTrackingInfo()
 //-----------------------------------------------------------------------------
 void Capture::TestHooks()
 {
-    if( !GIsTesting )
+    if( !m_IsTesting )
     {
-        GIsTesting = true;
-        GFunctionIndex = 0;
-        GTestTimer.Start();
+        m_IsTesting = true;
+        m_FunctionIndex = 0;
+        m_TestTimer.Start();
     }
     else
     {
-        GIsTesting = false;
+        m_IsTesting = false;
     }
 }
 
 //-----------------------------------------------------------------------------
 void Capture::StartSampling()
 {
-    if( !GIsSampling && Capture::IsTrackingEvents() && !GTargetProcess->GetName().empty() )
+    if( !m_IsSampling && IsTrackingEvents() && !m_TargetProcess->GetName().empty() )
     {
         SCOPE_TIMER_LOG( L"Capture::StartSampling" );
 
-        GCaptureTimer.Start();
-        GCaptureTimePoint = chrono::system_clock::now();
+        m_CaptureTimer.Start();
+        m_CaptureTimePoint = chrono::system_clock::now();
 
         ClearCaptureData();
-        GTimerManager->StartRecording();
-        GEventTracer.Start();
+        GServerTimerManager->StartRecording();
+        m_EventTracer->Start();
 
-        GIsSampling = true;
+        m_IsSampling = true;
     }
 }
 
 //-----------------------------------------------------------------------------
 void Capture::StopSampling()
 {
-    if( GIsSampling )
+    if( m_IsSampling )
     {
         if( IsTrackingEvents() )
         {
-            GEventTracer.Stop();
+            m_EventTracer->Stop();
         }
 
-        GTimerManager->StopRecording();
+        GServerTimerManager->StopRecording();
     }
 }
 
 //-----------------------------------------------------------------------------
 bool Capture::IsCapturing()
 {
-    return GTimerManager && GTimerManager->m_IsRecording;
+    return GServerTimerManager && GServerTimerManager->m_IsRecording;
 }
 
 //-----------------------------------------------------------------------------
 void Capture::Update()
 {
-    if( GIsSampling )
+    if( m_IsSampling )
     {
-        if( GSamplingProfiler->ShouldStop() )
+        if( m_SamplingProfiler->ShouldStop() )
         {
-            GSamplingProfiler->StopCapture();
+            m_SamplingProfiler->StopCapture();
         }
 
-        if( GSamplingProfiler->GetState() == SamplingProfiler::DoneProcessing )
+        if( m_SamplingProfiler->GetState() == SamplingProfiler::DoneProcessing )
         {
-            if( GSamplingDoneCallback )
+            if( m_SamplingDoneCallback )
             {
-                GSamplingDoneCallback( GSamplingProfiler );
+                m_SamplingDoneCallback( m_SamplingProfiler );
             }
-            GIsSampling = false;
+            m_IsSampling = false;
         }
     }
 
@@ -466,28 +420,28 @@ void Capture::Update()
         GPdbDbg->Update();
     }
 
-    if( GInjected && !GTcpServer->HasConnection() )
+    if( m_Injected && !GTcpServer->HasConnection() )
     {
         StopCapture();
-        GInjected = false;
+        m_Injected = false;
     }
 
-    Capture::GHasSamples = GEventTracer.GetEventBuffer().HasEvent();
+    m_HasSamples = m_EventTracer->GetEventBuffer().HasEvent();
 }
 
 //-----------------------------------------------------------------------------
 void Capture::DisplayStats()
 {
-    if (GSamplingProfiler)
+    if (m_SamplingProfiler)
     {
-        TRACE_VAR(GSamplingProfiler->GetNumSamples());
+        TRACE_VAR(m_SamplingProfiler->GetNumSamples());
     }
 }
 
 //-----------------------------------------------------------------------------
 void Capture::OpenCapture( const fs::path &  )
 {
-    LocalScopeTimer Timer( &GOpenCaptureTime );
+    LocalScopeTimer Timer( &m_OpenCaptureTime );
     SCOPE_TIMER_LOG( L"OpenCapture" );
 
     // TODO!
@@ -510,7 +464,7 @@ bool Capture::IsOtherInstanceRunning()
 //-----------------------------------------------------------------------------
 void Capture::LoadSession( const shared_ptr<Session> & a_Session )
 {
-    GSessionPresets = a_Session;
+    m_SessionPresets = a_Session;
 
     vector<fs::path> modulesToLoad;
     for( auto & it : a_Session->m_Modules )
@@ -520,9 +474,9 @@ void Capture::LoadSession( const shared_ptr<Session> & a_Session )
         modulesToLoad.push_back( it.first );
     }
 
-    if( GLoadPdbAsync )
+    if( m_LoadPdbAsync )
     {
-        GLoadPdbAsync( modulesToLoad );
+        m_LoadPdbAsync( modulesToLoad );
     }
 }
 
@@ -530,9 +484,9 @@ void Capture::LoadSession( const shared_ptr<Session> & a_Session )
 void Capture::SaveSession( const fs::path & a_FileName )
 {
     Session session;
-    session.m_ProcessFullPath = GTargetProcess->GetFullName();
+    session.m_ProcessFullPath = m_TargetProcess->GetFullName();
     
-    for( Function* func : GTargetProcess->GetFunctions() )
+    for( Function* func : m_TargetProcess->GetFunctions() )
     {
         if( func->IsSelected() )
         {
@@ -556,28 +510,28 @@ void Capture::SaveSession( const fs::path & a_FileName )
 //-----------------------------------------------------------------------------
 void Capture::NewSamplingProfiler()
 {
-    if( GSamplingProfiler )
+    if( m_SamplingProfiler )
     {
         // To prevent destruction while processing data...
-        GOldSamplingProfilers.push_back( GSamplingProfiler );
+        GOldSamplingProfilers.push_back( m_SamplingProfiler );
     }
 
-    Capture::GSamplingProfiler = make_shared< SamplingProfiler >( Capture::GTargetProcess, true );
+    m_SamplingProfiler = make_shared< SamplingProfiler >( m_TargetProcess, true );
 }
 
 //-----------------------------------------------------------------------------
 bool Capture::IsTrackingEvents()
 {
     static bool yieldEvents = false;
-    if( yieldEvents && IsOtherInstanceRunning() && GTargetProcess )
+    if( yieldEvents && IsOtherInstanceRunning() && m_TargetProcess )
     {
-        if( GTargetProcess->GetName().filename() == L"Orbit.exe" )
+        if( m_TargetProcess->GetName().filename() == L"Orbit.exe" )
         {
             return false;
         }
     }
 
-    if( GTargetProcess->GetIsRemote() && !GTcpServer->IsLocalConnection() )
+    if( m_TargetProcess->GetIsRemote() && !GTcpServer->IsLocalConnection() )
     {
         return false;
     }
@@ -588,29 +542,29 @@ bool Capture::IsTrackingEvents()
 //-----------------------------------------------------------------------------
 bool Capture::IsRemote()
 {
-    return GTargetProcess && GTargetProcess->GetIsRemote();
+    return m_TargetProcess && m_TargetProcess->GetIsRemote();
 }
 
 //-----------------------------------------------------------------------------
 void Capture::RegisterZoneName( DWORD64 a_ID, char* a_Name )
 {
-    GZoneNames[a_ID] = a_Name;
+    m_ZoneNames[a_ID] = a_Name;
 }
 
 //-----------------------------------------------------------------------------
 void Capture::AddCallstack( CallStack & a_CallStack )
 {
-    ScopeLock lock( GCallstackMutex );
-    Capture::GCallstacks[a_CallStack.m_Hash] = make_shared<CallStack>(a_CallStack);
+    ScopeLock lock( m_CallstackMutex );
+    m_Callstacks[a_CallStack.m_Hash] = make_shared<CallStack>(a_CallStack);
 }
 
 //-----------------------------------------------------------------------------
 shared_ptr<CallStack> Capture::GetCallstack( CallstackID a_ID )
 {
-    ScopeLock lock( GCallstackMutex );
+    ScopeLock lock( m_CallstackMutex );
     
-    auto it = Capture::GCallstacks.find( a_ID );
-    if( it != Capture::GCallstacks.end() )
+    auto it = m_Callstacks.find( a_ID );
+    if( it != m_Callstacks.end() )
     {
         return it->second;
     }
@@ -619,17 +573,17 @@ shared_ptr<CallStack> Capture::GetCallstack( CallstackID a_ID )
 }
 
 //-----------------------------------------------------------------------------
-void Capture::CheckForUnrealSupport()
+/*void Capture::CheckForUnrealSupport()
 {
-    GUnrealSupported = GCoreApp->GetUnrealSupportEnabled() && GOrbitUnreal.HasFnameInfo();
-}
+    m_UnrealSupported = m_CoreApp->GetUnrealSupportEnabled() && m_OrbitUnreal.HasFnameInfo();
+}*/
 
 //-----------------------------------------------------------------------------
 void Capture::PreSave()
 {
     // Add selected functions' exact address to sampling profiler
-    for( auto & pair : GSelectedFunctionsMap )
+    for( auto & pair : m_SelectedFunctionsMap )
     {
-        GSamplingProfiler->AddAddress( pair.first );
+        m_SamplingProfiler->AddAddress( pair.first );
     }
 }

@@ -25,7 +25,7 @@ void ProcessList::Clear()
 void ProcessList::Refresh()
 {
     m_Processes.clear();
-    unordered_map< DWORD, shared_ptr< Process > > previousProcessesMap = m_ProcessesMap;
+    unordered_map< DWORD, shared_ptr<Process> > previousProcessesMap = m_ProcessesMap;
     m_ProcessesMap.clear();
 
     uid_t uids[2];
@@ -96,7 +96,7 @@ void ProcessList::SortByCPU()
 //-----------------------------------------------------------------------------
 void ProcessList::UpdateCpuTimes()
 {
-    for( shared_ptr< Process > & process : m_Processes )
+    for( shared_ptr<Process> & process : m_Processes )
     {
         process->UpdateCpuTime();
     }

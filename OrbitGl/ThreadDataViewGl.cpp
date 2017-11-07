@@ -28,11 +28,11 @@ void ThreadDataViewGl::OnSort( int a_Column, bool a_Toggle )
     switch ( (ColumnType)a_Column )
     {
     case ColumnType::THREAD_ID:
-        Capture::GTargetProcess->SortThreadsById();
+        GCapture->m_TargetProcess->SortThreadsById();
         break;
     case ColumnType::HISTORY:
     case ColumnType::USAGE:
-        Capture::GTargetProcess->SortThreadsByUsage();
+        GCapture->m_TargetProcess->SortThreadsByUsage();
         break;
     }
 }

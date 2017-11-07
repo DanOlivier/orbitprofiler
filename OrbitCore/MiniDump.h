@@ -20,9 +20,9 @@ public:
     MiniDump( const fs::path& a_FileName );
     ~MiniDump();
 
-    std::shared_ptr<Process> ToOrbitProcess();
+    std::shared_ptr<Process> ToOrbitProcess(const std::vector<fs::path>& symbolLocations);
 
 protected:
     std::vector<Module>        m_Modules;
-    google_breakpad::Minidump* m_MiniDump;
+    std::unique_ptr<google_breakpad::Minidump> m_MiniDump;
 };

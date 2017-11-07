@@ -14,7 +14,7 @@
 
 using namespace std;
 
-ServerTimerManager* GTimerManager = new ServerTimerManager();
+ServerTimerManager* GServerTimerManager = new ServerTimerManager();
 
 namespace UnitTest2
 {

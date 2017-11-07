@@ -7,6 +7,7 @@
 #include "CoreApp.h"
 #include "CrashHandler.h"
 #include "Message.h"
+#include "ModuleManager.h"
 
 #include <functional>
 #include <memory>
@@ -19,6 +20,29 @@ namespace fs = std::experimental::filesystem;
 
 struct CallStack;
 class Process;
+class Rule;
+
+class ProcessesDataView;
+class ModulesDataView;
+class FunctionsDataView;
+class LiveFunctionsDataView;
+
+class LiveFunctionsDataView;
+class CallStackDataView;
+class TypesDataView;
+class GlobalsDataView;
+class SessionsDataView;
+class CaptureWindow;
+class LogDataView;
+class RuleEditor;
+
+class DataViewModel;
+class SamplingProfiler;
+class SamplingReport;
+class Debugger;
+class EventTracer;
+struct Module;
+class Capture;
 
 //-----------------------------------------------------------------------------
 class OrbitApp : public CoreApp
@@ -30,7 +54,9 @@ public:
     static bool Init();
     static void PostInit();
     static int  OnExit();
-    static void MainTick();
+    
+    void MainTick();
+
     void CheckLicense();
     void SetLicense( const std::wstring & a_License );
     std::string GetVersion();
@@ -43,6 +69,7 @@ public:
     void OnLoadSession( const fs::path& a_FileName );
     void OnSaveCapture( const fs::path& a_FileName );
     void OnLoadCapture( const fs::path& a_FileName );
+    void ClearCaptureData();    
     void OnOpenPdb(const fs::path& a_FileName);
     void OnLaunchProcess(const fs::path& a_ProcessName, 
         const fs::path& a_WorkingDir, const std::wstring a_Args );
@@ -69,54 +96,57 @@ public:
 
     int* GetScreenRes() { return m_ScreenRes; }
 
-    void RegisterProcessesDataView( class ProcessesDataView* a_Processes );
-    void RegisterModulesDataView( class ModulesDataView* a_Modules );
-    void RegisterFunctionsDataView( class FunctionsDataView* a_Functions );
-    void RegisterLiveFunctionsDataView( class LiveFunctionsDataView* a_Functions );
-    void RegisterCallStackDataView( class CallStackDataView* a_Callstack );
-    void RegisterTypesDataView( class TypesDataView* a_Types );
-    void RegisterGlobalsDataView( class GlobalsDataView* a_Globals );
-    void RegisterSessionsDataView( class SessionsDataView* a_Sessions );
-    void RegisterCaptureWindow( class CaptureWindow* a_Capture );
-    void RegisterOutputLog( class LogDataView* a_Log );
-    void RegisterRuleEditor( class RuleEditor* a_RuleEditor );
+    void RegisterProcessesDataView( ProcessesDataView* a_Processes );
+    void RegisterModulesDataView( ModulesDataView* a_Modules );
+    void RegisterFunctionsDataView( FunctionsDataView* a_Functions );
+    void RegisterLiveFunctionsDataView( LiveFunctionsDataView* a_Functions );
+    void RegisterCallStackDataView( CallStackDataView* a_Callstack );
+    void RegisterTypesDataView( TypesDataView* a_Types );
+    void RegisterGlobalsDataView( GlobalsDataView* a_Globals );
+    void RegisterSessionsDataView( SessionsDataView* a_Sessions );
+    void RegisterCaptureWindow( CaptureWindow* a_Capture );
+    void RegisterOutputLog( LogDataView* a_Log );
+    void RegisterRuleEditor( RuleEditor* a_RuleEditor );
 
-    void Unregister( class DataViewModel* a_Model );
+    void Unregister( DataViewModel* a_Model );
     bool SelectProcess( const fs::path& a_Process );
     bool SelectProcess( unsigned long a_ProcessID );
     bool Inject( unsigned long a_ProcessId );
-    static void AddSamplingReport( std::shared_ptr< class SamplingProfiler> & a_SamplingProfiler );
+    static void AddSamplingReport( std::shared_ptr<SamplingProfiler> & a_SamplingProfiler );
     static void AddSelectionReport( std::shared_ptr<SamplingProfiler> & a_SamplingProfiler );
     void GoToCode( DWORD64 a_Address );
 
     // Callbacks
     typedef std::function< void( DataViewType a_Type ) > RefreshCallback;
     void AddRefreshCallback(RefreshCallback a_Callback){ m_RefreshCallbacks.push_back(a_Callback); }
-    typedef std::function< void( std::shared_ptr<class SamplingReport> ) > SamplingReportCallback;
+    
+    typedef std::function< void( std::shared_ptr<SamplingReport> ) > SamplingReportCallback;
     void AddSamplingReoprtCallback(SamplingReportCallback a_Callback) { m_SamplingReportsCallbacks.push_back(a_Callback); }
-    void AddSelectionReportCallback( SamplingReportCallback a_Callback ) { m_SelectionReportCallbacks.push_back( a_Callback ); }
+    void AddSelectionReportCallback(SamplingReportCallback a_Callback) { m_SelectionReportCallbacks.push_back( a_Callback ); }
+    
     typedef std::function< void( Variable* a_Variable ) > WatchCallback;
     void AddWatchCallback( WatchCallback a_Callback ){ m_AddToWatchCallbacks.push_back( a_Callback ); }
     void AddUpdateWatchCallback( WatchCallback a_Callback ){ m_UpdateWatchCallbacks.push_back( a_Callback ); }
+    
     void FireRefreshCallbacks( DataViewType a_Type = DataViewType::ALL );
     void Refresh( DataViewType a_Type = DataViewType::ALL ){ FireRefreshCallbacks( a_Type ); }
     void AddUiMessageCallback( std::function< void( const std::wstring & ) > a_Callback );
+    
     typedef std::function< std::wstring( const std::wstring & a_Caption, const std::wstring & a_Dir, const std::wstring & a_Filter ) > FindFileCallback;
     void SetFindFileCallback( FindFileCallback a_Callback ){ m_FindFileCallback = a_Callback; }
     std::wstring FindFile( const std::wstring & a_Caption, const std::wstring & a_Dir, const std::wstring & a_Filter );
 
-    void SetCommandLineArguments( const std::vector< std::string > & a_Args );
-    const std::vector< std::string > & GetCommandLineArguments(){ return m_Arguments; }
+    void SetCommandLineArguments( const std::vector<std::string> & a_Args );
 
     void SendToUiAsync( const std::wstring & a_Msg ) override;
     void SendToUiNow( const std::wstring & a_Msg ) override;
     void NeedsRedraw();
 
-    const std::map< std::wstring, std::wstring > & GetFileMapping() { return m_FileMapping; }
+    const std::map<std::wstring, std::wstring>& GetFileMapping() { return m_FileMapping; }
 
-    void EnqueueModuleToLoad( const std::shared_ptr<struct Module> & a_Module );
+    void EnqueueModuleToLoad( const std::shared_ptr<Module> & a_Module );
     void LoadModules();
-    bool IsLoading();
+
     void SetTrackContextSwitches( bool a_Value );
     bool GetTrackContextSwitches();
 
@@ -137,17 +167,15 @@ public:
     void LaunchRuleEditor( Function* a_Function );
 
     RuleEditor* GetRuleEditor() { return m_RuleEditor; }
-    virtual const std::unordered_map<DWORD64, std::shared_ptr<class Rule> >* GetRules() override;
 
 private:
-    std::vector< std::string >            m_Arguments;
-    std::vector< RefreshCallback >        m_RefreshCallbacks;
-    std::vector< WatchCallback >          m_AddToWatchCallbacks;
-    std::vector< WatchCallback >          m_UpdateWatchCallbacks;
-    std::vector< SamplingReportCallback > m_SamplingReportsCallbacks;
-    std::vector< SamplingReportCallback > m_SelectionReportCallbacks;
-    std::vector< class DataViewModel* >   m_Panels;
-    FindFileCallback                      m_FindFileCallback;
+    std::vector<RefreshCallback>        m_RefreshCallbacks;
+    std::vector<WatchCallback>          m_AddToWatchCallbacks;
+    std::vector<WatchCallback>          m_UpdateWatchCallbacks;
+    std::vector<SamplingReportCallback> m_SamplingReportsCallbacks;
+    std::vector<SamplingReportCallback> m_SelectionReportCallbacks;
+    std::vector<DataViewModel*>         m_Panels;
+    FindFileCallback                    m_FindFileCallback;
     
     ProcessesDataView*      m_ProcessesDataView = nullptr;
     ModulesDataView*        m_ModulesDataView = nullptr;
@@ -165,21 +193,24 @@ private:
     bool                    m_NeedsThawing = false;
     bool                    m_UnrealEnabled = true;
 
-    std::vector< std::shared_ptr< class SamplingReport> > m_SamplingReports;
-    std::map< std::wstring, std::wstring > m_FileMapping;
+    ModuleManager           m_ModuleManager;
+    std::vector<fs::path>   m_SymbolLocations;
+    //std::shared_ptr<Capture> m_Capture;
+    
+    std::vector< std::shared_ptr<SamplingReport> > m_SamplingReports;
+    std::map<std::wstring, std::wstring> m_FileMapping;
     std::function< void( const std::wstring & ) > m_UiCallback;
 
     std::wstring m_User;
     std::wstring m_License;
 
-    std::queue< std::shared_ptr<struct Module> > m_ModulesToLoad;
+    std::queue< std::shared_ptr<Module> > m_ModulesToLoad;
 
-    class EventTracer* m_EventTracer = nullptr;
-    class Debugger*    m_Debugger = nullptr;
-    int m_NumTicks = 0;
+    std::unique_ptr<Debugger>    m_Debugger;
+    int                          m_NumTicks = 0;
     CrashHandler       m_CrashHandler;
 };
 
 //-----------------------------------------------------------------------------
-extern class OrbitApp* GOrbitApp;
+extern OrbitApp* GOrbitApp;
 

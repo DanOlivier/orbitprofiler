@@ -26,7 +26,7 @@ TimeGraphLayout::TimeGraphLayout()
 //-----------------------------------------------------------------------------
 float TimeGraphLayout::GetThreadStart()
 {
-    if( Capture::GHasContextSwitches )
+    if( GCapture->m_HasContextSwitches )
     {
         return m_WorldY - m_NumCores*m_CoresHeight - max( m_NumCores - 1, 0 )*m_SpaceBetweenCores - m_SpaceBetweenCoresAndThread;
     }
@@ -53,7 +53,7 @@ void TimeGraphLayout::CalculateOffsets()
 
     m_NumTracks = 0;
     if( m_DrawFileIO ) ++m_NumTracks;
-    if( Capture::GHasSamples ) ++m_NumTracks;
+    if( GCapture->m_HasSamples ) ++m_NumTracks;
 
     float offset = GetThreadStart();
     for( ThreadID threadID : m_SortedThreadIds )
@@ -66,7 +66,7 @@ void TimeGraphLayout::CalculateOffsets()
 //-----------------------------------------------------------------------------
 float TimeGraphLayout::GetCoreOffset( int a_CoreId )
 {
-    if( Capture::GHasContextSwitches )
+    if( GCapture->m_HasContextSwitches )
     {
         float coreOffset = m_WorldY - m_CoresHeight - a_CoreId * ( m_CoresHeight + m_SpaceBetweenCores );
         return coreOffset;
@@ -90,7 +90,7 @@ float TimeGraphLayout::GetThreadBlockStart( ThreadID a_TID )
 //-----------------------------------------------------------------------------
 float TimeGraphLayout::GetSamplingTrackOffset( ThreadID a_TID )
 {
-    return Capture::GHasSamples ? m_ThreadBlockOffsets[a_TID] : -1.f;
+    return GCapture->m_HasSamples ? m_ThreadBlockOffsets[a_TID] : -1.f;
 }
 
 //-----------------------------------------------------------------------------

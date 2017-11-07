@@ -129,8 +129,8 @@ void EventTracer::Start()
     // Sampling profiling
     Process::SetPrivilege( SE_SYSTEM_PROFILE_NAME, true );
     SetSamplingFrequency( 2000 );
-    Capture::NewSamplingProfiler();
-    Capture::GSamplingProfiler->StartCapture();
+    GCapture->NewSamplingProfiler();
+    GCapture->m_SamplingProfiler->StartCapture();
     m_IsTracing = true;
     
     if( ControlTrace( 0, KERNEL_LOGGER_NAME, m_SessionProperties, EVENT_TRACE_CONTROL_STOP ) != ERROR_SUCCESS )
@@ -174,10 +174,10 @@ void EventTracer::Stop()
     if( m_IsTracing )
     {
         m_IsTracing = false;
-        if( Capture::GSamplingProfiler )
+        if( GCapture->m_SamplingProfiler )
         {
-            Capture::GSamplingProfiler->StopCapture();
-            Capture::GSamplingProfiler->ProcessSamplesAsync();
+            GCapture->m_SamplingProfiler->StopCapture();
+            GCapture->m_SamplingProfiler->ProcessSamplesAsync();
         }
     }
 

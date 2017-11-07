@@ -123,18 +123,18 @@ Function & CallStackDataView::GetFunction( unsigned int a_Row )
     {
         if( (int)a_Row < m_CallStack->m_Depth )
         {
-            ScopeLock lock(Capture::GTargetProcess->GetDataMutex());
+            ScopeLock lock(GCapture->m_TargetProcess->GetDataMutex());
 
             DWORD64 addr = m_CallStack->m_Data[a_Row];
-            Function * func = Capture::GTargetProcess->GetFunctionFromAddress(addr, false);
+            Function * func = GCapture->m_TargetProcess->GetFunctionFromAddress(addr, false);
             
             if( func )
             {
                 return *func;
             }
-            else if( Capture::GSamplingProfiler )
+            else if( GCapture->m_SamplingProfiler )
             {
-                dummy.m_PrettyName = Capture::GSamplingProfiler->GetSymbolFromAddress( addr );
+                dummy.m_PrettyName = GCapture->m_SamplingProfiler->GetSymbolFromAddress( addr );
                 dummy.m_Address = addr;
                 return dummy;
             }

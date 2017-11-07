@@ -29,7 +29,7 @@ TypesDataView::TypesDataView()
 //-----------------------------------------------------------------------------
 void TypesDataView::OnDataChanged()
 {
-    int numTypes = (int)Capture::GTargetProcess->GetTypes().size();
+    int numTypes = (int)GCapture->m_TargetProcess->GetTypes().size();
     m_Indices.resize(numTypes);
     for( int i = 0; i < numTypes; ++i )
     {
@@ -72,7 +72,7 @@ const vector<float>& TypesDataView::GetColumnHeadersRatios()
 //-----------------------------------------------------------------------------
 wstring TypesDataView::GetValue( int a_Row, int a_Column )
 {
-    ScopeLock lock( Capture::GTargetProcess->GetDataMutex() );
+    ScopeLock lock( GCapture->m_TargetProcess->GetDataMutex() );
 
     Type & type = GetType(a_Row);
 
@@ -123,7 +123,7 @@ void TypesDataView::OnFilter( const wstring & a_Filter )
 void TypesDataView::ParallelFilter( const wstring & a_Filter )
 {
     m_FilterTokens = Tokenize( ToLower( a_Filter ) );
-    vector<Type*> & types = Capture::GTargetProcess->GetTypes();
+    vector<Type*> & types = GCapture->m_TargetProcess->GetTypes();
     const auto prio = oqpi::task_priority::normal;
     auto numWorkers = oqpi_tk::scheduler().workersCount( prio );
     vector< vector<int> > indicesArray;
@@ -170,7 +170,7 @@ void TypesDataView::ParallelFilter( const wstring & a_Filter )
 //-----------------------------------------------------------------------------
 void TypesDataView::OnSort( int a_Column, bool a_Toggle )
 {
-    const vector<Type*> & types = Capture::GTargetProcess->GetTypes();
+    const vector<Type*> & types = GCapture->m_TargetProcess->GetTypes();
     auto MemberID = Type::MemberID( s_HeaderMap[a_Column] );
 
     if (a_Toggle)
@@ -267,6 +267,6 @@ void TypesDataView::OnContextMenu( int a_MenuIndex, vector<int> & a_ItemIndices 
 //-----------------------------------------------------------------------------
 Type & TypesDataView::GetType(unsigned int a_Row) const
 {
-    vector<Type*> & types = Capture::GTargetProcess->GetTypes();
+    vector<Type*> & types = GCapture->m_TargetProcess->GetTypes();
     return *types[m_Indices[a_Row]];
 }

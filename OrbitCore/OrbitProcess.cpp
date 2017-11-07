@@ -257,18 +257,6 @@ bool Process::LineInfoFromAddress( DWORD64 a_Address, LineInfo & o_LineInfo )
 }
 
 //-----------------------------------------------------------------------------
-void Process::LoadSession( const Session& )
-{
-
-}
-
-//-----------------------------------------------------------------------------
-void Process::SaveSession()
-{
-
-}
-
-//-----------------------------------------------------------------------------
 void Process::RefreshWatchedVariables()
 {
     for( shared_ptr<Variable> var : m_WatchedVariables )

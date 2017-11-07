@@ -7,7 +7,7 @@
 
 using namespace std;
 
-vector< string > LogInterface::GetOutput()
+vector<string> LogInterface::GetOutput()
 {
     return GLogger.ConsumeEntries( OrbitLog::Viz );
 }

@@ -12,7 +12,7 @@
 
 using namespace std;
 
-ClientTimerManager* GTimerManager;
+ClientTimerManager* GClientTimerManager;
 
 //-----------------------------------------------------------------------------
 void Orbit::Init( const string & a_Host )
@@ -20,15 +20,15 @@ void Orbit::Init( const string & a_Host )
     PRINT_FUNC;
     PRINT_VAR(a_Host);
     
-    delete GTimerManager;
-    GTimerManager = nullptr;
+    delete GClientTimerManager;
+    GClientTimerManager = nullptr;
     
     GTcpClient = make_unique<TcpClient>(a_Host);
 
     if( GTcpClient->IsValid() )
     {
         GTcpClient->Start();
-        GTimerManager = new ClientTimerManager();
+        GClientTimerManager = new ClientTimerManager();
     }
     else
     {
@@ -55,11 +55,11 @@ HMODULE GetCurrentModule()
 //-----------------------------------------------------------------------------
 void Orbit::DeInit()
 {
-    if( GTimerManager )
+    if( GClientTimerManager )
     {
-        GTimerManager->Stop();
-        delete GTimerManager;
-        GTimerManager = nullptr;
+        GClientTimerManager->Stop();
+        delete GClientTimerManager;
+        GClientTimerManager = nullptr;
     }
 
     HMODULE module = GetCurrentModule();
@@ -69,12 +69,12 @@ void Orbit::DeInit()
 //-----------------------------------------------------------------------------
 void Orbit::Start()
 {
-    GTimerManager->StartClient();
+    GClientTimerManager->StartClient();
 }
 
 //-----------------------------------------------------------------------------
 void Orbit::Stop()
 {
-    GTimerManager->StopClient();
+    GClientTimerManager->StopClient();
     Hijacking::DisableAllHooks();
 }

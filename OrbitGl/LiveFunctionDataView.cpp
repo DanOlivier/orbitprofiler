@@ -232,11 +232,11 @@ void LiveFunctionsDataView::OnFilter( const wstring & a_Filter )
     }
 
     // Filter drawn textboxes
-    Capture::GVisibleFunctionsMap.clear();
+    GCapture->m_VisibleFunctionsMap.clear();
     for( int i = 0; i < m_Indices.size(); ++i )
     {
         Function & func = GetFunction(i);
-        Capture::GVisibleFunctionsMap[func.GetVirtualAddress()] = &func;
+        GCapture->m_VisibleFunctionsMap[func.GetVirtualAddress()] = &func;
     }
 
     GOrbitApp->NeedsRedraw();
@@ -245,7 +245,7 @@ void LiveFunctionsDataView::OnFilter( const wstring & a_Filter )
 //-----------------------------------------------------------------------------
 void LiveFunctionsDataView::OnDataChanged()
 {
-    size_t numFunctions = Capture::GFunctionCountMap.size();
+    size_t numFunctions = GCapture->m_FunctionCountMap.size();
     m_Indices.resize(numFunctions);
     for (int i = 0; i < numFunctions; ++i)
     {
@@ -253,10 +253,10 @@ void LiveFunctionsDataView::OnDataChanged()
     }
 
     m_Functions.clear();
-    for( auto & pair : Capture::GFunctionCountMap )
+    for( auto & pair : GCapture->m_FunctionCountMap )
     {
         const ULONG64& address = pair.first;
-        Function* func = Capture::GSelectedFunctionsMap[address];
+        Function* func = GCapture->m_SelectedFunctionsMap[address];
         m_Functions.push_back( func );
     }
 
@@ -266,7 +266,7 @@ void LiveFunctionsDataView::OnDataChanged()
 //-----------------------------------------------------------------------------
 void LiveFunctionsDataView::OnTimer()
 {
-    if( Capture::IsCapturing() )
+    if( GCapture->IsCapturing() )
     {
         OnSort( m_LastSortedColumn, false );
     }

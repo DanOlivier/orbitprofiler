@@ -75,9 +75,9 @@ vector<string> TcpServer::GetStats()
     stats.push_back( VAR_TO_ANSI( m_NumReceivedMessages ) );
     stats.push_back( VAR_TO_ANSI( m_NumMessagesPerSecond ) );
 
-    string bytesRcv = "Capture::GNumBytesReceiced = " + ws2s( GetPrettySize( m_TcpServer->GetNumBytesReceived() ) ) + "\n";
+    string bytesRcv = "NumBytesReceiced = " + ws2s( GetPrettySize( m_TcpServer->GetNumBytesReceived() ) ) + "\n";
         stats.push_back( bytesRcv );
-        string bitRate = "Capture::Bitrate = "
+        string bitRate = "Bitrate = "
             + ws2s( GetPrettySize( (ULONG64)m_BytesPerSecond ) )
             + "/s"
             + " ( " + GetPrettyBitRate( (ULONG64)m_BytesPerSecond ) + " )\n";
@@ -120,7 +120,7 @@ void TcpServer::Receive( const Message & a_Message )
         Timer* timers = (Timer*)a_Message.GetData();
         for (int i = 0; i < numTimers; ++i)
         {
-            GTimerManager->Add(timers[i]);
+            GServerTimerManager->Add(timers[i]);
         }
         
         if( numTimers > m_MaxTimersAtOnce )
@@ -141,19 +141,19 @@ void TcpServer::Receive( const Message & a_Message )
         m_NumTargetFlushedTcpPackets = *( (int*)a_Message.GetData() );
         break;
     case Msg_NumInstalledHooks:
-        //Capture::GNumInstalledHooks = *((int*)a_Message.GetData());
+        //GCapture->m_NumInstalledHooks = *((int*)a_Message.GetData());
         break;
     case Msg_Callstack:
     {
         //CallStackPOD* callstackPOD = (CallStackPOD*)a_Message.GetData();
         //CallStack callstack(*callstackPOD);
-        //Capture::AddCallstack( callstack );
+        //GCapture->AddCallstack( callstack );
         break;
     }
     case Msg_OrbitZoneName:
     {
         OrbitZoneName* zoneName = (OrbitZoneName*)a_Message.GetData();
-        //Capture::RegisterZoneName( zoneName->m_Address, zoneName->m_Data );
+        //GCapture->RegisterZoneName( zoneName->m_Address, zoneName->m_Data );
         break;
     }
     /*case Msg_OrbitUnrealObject:
@@ -225,12 +225,12 @@ void TcpServer::MainThreadTick()
         m_StatTimer.Reset();
     }
 
-    /*if( Capture::GInjected && Capture::IsCapturing() )
+    /*if( GCapture->m_Injected && GCapture->IsCapturing() )
     {
         TcpSocket* socket = GetSocket();
         if( socket == nullptr || !socket->m_Socket || !socket->m_Socket->is_open() )
         {
-            Capture::StopCapture();
+            GCapture->StopCapture();
         }
     }*/
 }

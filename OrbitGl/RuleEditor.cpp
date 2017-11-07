@@ -574,7 +574,7 @@ RuleEditor::RuleEditor()
     : GlCanvas()
 {
     GOrbitApp->RegisterRuleEditor(this);
-    GTcpServer->SetCallback( Msg_SavedContext, [=]( const Message & a_Msg ){ this->OnReceiveMessage(a_Msg); } );
+
     m_Opened = true;
 }
 
@@ -653,7 +653,7 @@ void RuleEditor::OnReceiveMessage( const Message & a_Message )
     {
         GRedrawBlackBoard = true;
 
-        int ContextSize = Capture::GTargetProcess->GetIs64Bit() ? sizeof(SavedContext64) : sizeof(SavedContext32);
+        int ContextSize = GCapture->m_TargetProcess->GetIs64Bit() ? sizeof(SavedContext64) : sizeof(SavedContext32);
         void* argData = (void*)(a_Message.GetData() + ContextSize);
         //int argDataSize = a_Message.m_Size - ContextSize;
 
@@ -666,7 +666,7 @@ void RuleEditor::OnReceiveMessage( const Message & a_Message )
         shared_ptr<Rule> rule = m_Rules[address];
         int offset = 0;
         const char* maxAddress = a_Message.GetData() + a_Message.m_Size;
-        for( const shared_ptr<Variable > var : rule->m_TrackedVariables )
+        for( const shared_ptr<Variable> var : rule->m_TrackedVariables )
         {
             Argument arg;
             //var->m_Address;
@@ -685,7 +685,7 @@ void RuleEditor::OnReceiveMessage( const Message & a_Message )
 }
 
 //-----------------------------------------------------------------------------
-void RuleEditor::ProcessVariable( const shared_ptr<Variable > a_Variable, char* a_Data )
+void RuleEditor::ProcessVariable( const shared_ptr<Variable> a_Variable, char* a_Data )
 {
     if( a_Variable->m_Size == 4 )
     {
@@ -696,14 +696,14 @@ void RuleEditor::ProcessVariable( const shared_ptr<Variable > a_Variable, char* 
 //-----------------------------------------------------------------------------
 void ArgTracking()
 {
-    if( Capture::GTargetProcess->GetIs64Bit() )
+    if( GCapture->m_TargetProcess->GetIs64Bit() )
     {
         
         /*ORBIT_LOGV(context.m_Context.m_XMM0.m_RegFloat.m_F0);
         ORBIT_LOGV(context.m_EpilogContext.m_RAX.m_Reg32.Low);
         ORBIT_LOGV(context.m_EpilogContext.m_XMM0.m_RegFloat.m_F0);
 */
-       /* Function * func = Capture::GTargetProcess->GetFunctionFromExactAddress( (void*)context.m_Context.m_RET.m_Reg64 );
+       /* Function * func = GCapture->m_TargetProcess->GetFunctionFromExactAddress( (void*)context.m_Context.m_RET.m_Reg64 );
         GCardContainer.Update(func->m_Name, context.m_EpilogContext.m_XMM0.m_RegFloat.m_F0);*/
     }
     else
@@ -713,7 +713,7 @@ void ArgTracking()
         ORBIT_LOGV(context.m_EpilogContext.m_EAX);
         ORBIT_LOGV(context.m_EpilogContext.m_XMM0.m_RegFloat.m_F0);
 
-        Function * func = Capture::GTargetProcess->GetFunctionFromExactAddress( (void*)context.m_Context.m_RET );
+        Function * func = GCapture->m_TargetProcess->GetFunctionFromExactAddress( (void*)context.m_Context.m_RET );
         GCardContainer.Update( func->m_Name, (float)*(reinterpret_cast<int*>(&context.m_EpilogContext.m_EAX))/100.f );*/
     }
 }

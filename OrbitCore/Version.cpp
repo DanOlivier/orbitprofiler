@@ -9,7 +9,7 @@
 using namespace std;
 
 //-----------------------------------------------------------------------------
-bool        OrbitVersion::s_NeedsUpdate;
+bool   OrbitVersion::s_NeedsUpdate;
 string OrbitVersion::s_LatestVersion;
 
 #define OrbitVersionStr "dev"
@@ -83,7 +83,7 @@ void OrbitVersion::CheckForUpdateThread()
         if( pos != string::npos )
         {
             string version = Replace( readBuffer.substr( pos, 60 ), searchStr, "" );
-            vector< string > tokens = Tokenize( version );
+            vector<string> tokens = Tokenize( version );
 
             if( tokens.size() > 0 )
             {

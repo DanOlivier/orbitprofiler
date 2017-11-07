@@ -21,7 +21,7 @@ TcpClient::TcpClient( const string & a_Host )
 {
     PRINT_FUNC;
     PRINT_VAR( a_Host );
-    vector< string > vec = Tokenize( a_Host, ":" );
+    vector<string> vec = Tokenize( a_Host, ":" );
     string & host = vec[0];
     string & port = vec[1];
 

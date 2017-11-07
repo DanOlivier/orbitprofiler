@@ -102,7 +102,7 @@ public:
     void AddCallStack( CallStack & a_CallStack ) { if( m_State == Sampling ) m_Callstacks.push_back( a_CallStack ); }
     const std::shared_ptr<CallStack> GetCallStack( CallstackID a_ID ) { return m_UniqueCallstacks[a_ID]; }
     std::multimap<int, CallstackID> GetCallStacksFromAddress( DWORD64 a_Addr, ThreadID a_TID, int & o_NumCallstacks );
-    std::shared_ptr< SortedCallstackReport > GetSortedCallstacksFromAddress( DWORD64 a_Addr, ThreadID a_TID );
+    std::shared_ptr<SortedCallstackReport> GetSortedCallstacksFromAddress( DWORD64 a_Addr, ThreadID a_TID );
     
     enum SamplingState { Idle, Sampling, PendingStop, Processing, DoneProcessing };
     SamplingState GetState() const { return m_State; }

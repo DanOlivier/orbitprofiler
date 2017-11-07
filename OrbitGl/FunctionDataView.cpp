@@ -56,7 +56,7 @@ const vector<float>& FunctionsDataView::GetColumnHeadersRatios()
 //-----------------------------------------------------------------------------
 wstring FunctionsDataView::GetValue( int a_Row, int a_Column )
 {
-    ScopeLock lock( Capture::GTargetProcess->GetDataMutex() );
+    ScopeLock lock( GCapture->m_TargetProcess->GetDataMutex() );
 
     if( a_Row >= GetNumElements() )
     {
@@ -107,7 +107,7 @@ void FunctionsDataView::OnSort( int a_Column, bool a_Toggle )
         return;
     }
 
-    const vector<Function*> & functions = Capture::GTargetProcess->GetFunctions();
+    const vector<Function*> & functions = GCapture->m_TargetProcess->GetFunctions();
     auto MemberID = Function::MemberID( s_HeaderMap[a_Column] );
 
     if (a_Toggle)
@@ -228,7 +228,7 @@ void FunctionsDataView::OnFilter( const wstring & a_Filter )
 //-----------------------------------------------------------------------------
 void FunctionsDataView::ParallelFilter()
 {
-    vector<Function*> & functions = Capture::GTargetProcess->GetFunctions();
+    vector<Function*> & functions = GCapture->m_TargetProcess->GetFunctions();
     const auto prio = oqpi::task_priority::normal;
     auto numWorkers = oqpi_tk::scheduler().workersCount( prio );
     //int numWorkers = oqpi::thread::hardware_concurrency();
@@ -270,9 +270,9 @@ void FunctionsDataView::ParallelFilter()
 //-----------------------------------------------------------------------------
 void FunctionsDataView::OnDataChanged()
 {
-    ScopeLock lock( Capture::GTargetProcess->GetDataMutex() );
+    ScopeLock lock( GCapture->m_TargetProcess->GetDataMutex() );
 
-    size_t numFunctions = Capture::GTargetProcess->GetFunctions().size();
+    size_t numFunctions = GCapture->m_TargetProcess->GetFunctions().size();
     m_Indices.resize(numFunctions);
     for (int i = 0; i < numFunctions; ++i)
     {
@@ -288,6 +288,6 @@ void FunctionsDataView::OnDataChanged()
 //-----------------------------------------------------------------------------
 Function & FunctionsDataView::GetFunction( unsigned int a_Row )
 {
-    vector<Function*> & functions = Capture::GTargetProcess->GetFunctions();
+    vector<Function*> & functions = GCapture->m_TargetProcess->GetFunctions();
     return *functions[m_Indices[a_Row]];
 }

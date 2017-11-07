@@ -14,32 +14,32 @@
 using namespace std;
 
 //-----------------------------------------------------------------------------
-CaptureWindow::CaptureWindow()
+CaptureWindow::CaptureWindow() : m_TimeGraph(this, &m_TextRenderer, &m_PickingManager)
 {
-    GCurrentTimeGraph = &m_TimeGraph;
-    m_TimeGraph.m_TextRenderer = &m_TextRenderer;
-    m_TimeGraph.m_PickingManager = &m_PickingManager;
-    m_TimeGraph.SetCanvas(this);
     m_DrawUI = false;
-    m_DrawHelp = false;
-    m_DrawMemTracker = false;
-    m_FirstHelpDraw = true;
-    m_DrawStats = false;
-    m_Picking = false;
+    //m_DrawHelp = false;
+    //m_DrawMemTracker = false;
+    //m_FirstHelpDraw = true;
+    //m_DrawStats = false;
+    //m_Picking = false;
 
     m_DesiredWorldWidth  = (float)m_Width;
     m_DesiredWorldHeight = (float)m_Height;
-    m_WorldTopLeftX = 0;
-    m_WorldTopLeftY = 0;
-    m_WorldMaxY = 0;
-    m_ProcessX = 0;
+    //m_WorldTopLeftX = 0;
+    //m_WorldTopLeftY = 0;
+    //m_WorldMaxY = 0;
+    //m_ProcessX = 0;
 
-    GTimerManager->m_TimerAddedCallbacks.push_back( [=]( Timer & a_Timer ){ this->OnTimerAdded( a_Timer ); } );
-    GTimerManager->m_ContextSwitchAddedCallback = [=]( const ContextSwitch & a_CS ){ this->OnContextSwitchAdded( a_CS ); };
+    GServerTimerManager->m_TimerAddedCallbacks.push_back( [=]( Timer & a_Timer ){ 
+        this->OnTimerAdded( a_Timer ); 
+    } );
+    GServerTimerManager->m_ContextSwitchAddedCallback = [=]( const ContextSwitch & a_CS ){ 
+        this->OnContextSwitchAdded( a_CS ); 
+    };
 
-    m_HoverDelayMs = 300;
-    m_CanHover = false;
-    m_IsHovering = false;
+    //m_HoverDelayMs = 300;
+    //m_CanHover = false;
+    //m_IsHovering = false;
     ResetHoverTimer();
 
     m_Slider.SetCanvas(this);
@@ -51,8 +51,6 @@ CaptureWindow::CaptureWindow()
 //-----------------------------------------------------------------------------
 CaptureWindow::~CaptureWindow()
 {
-    if( GCurrentTimeGraph == &m_TimeGraph )
-        GCurrentTimeGraph = nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -62,12 +60,20 @@ void CaptureWindow::OnTimer()
 }
 
 //-----------------------------------------------------------------------------
+void CaptureWindow::DoZoom()
+{
+    m_TimeGraph.UpdateThreadIds();
+    m_TimeGraph.m_Layout.CalculateOffsets();
+    ZoomAll();
+    NeedsUpdate();
+}
+
+//-----------------------------------------------------------------------------
 void CaptureWindow::ZoomAll()
 {
     m_TimeGraph.ZoomAll();
     m_DesiredWorldHeight = m_TimeGraph.GetThreadTotalHeight();
 
-    //float margin = (float)m_TimeGraph.GetMarginInPixels();
     m_WorldTopLeftY = m_WorldMaxY;
     ResetHoverTimer();
     NeedsUpdate();
@@ -100,7 +106,7 @@ void CaptureWindow::MouseMoved( int a_X, int a_Y, bool a_Left, bool a_Right, boo
     m_MousePosY = mousey;
 
     // Pan
-    if ( a_Left && !m_ImguiActive && !m_PickingManager.IsDragging() && !Capture::IsCapturing() )
+    if ( a_Left && !m_ImguiActive && !m_PickingManager.IsDragging() && !GCapture->IsCapturing() )
     {
         float worldMin;
         float worldMax;
@@ -167,8 +173,8 @@ void CaptureWindow::Pick( int a_X, int a_Y )
     
     PickingID pickId = PickingID::Get( *((uint32_t*)(&pixels[0])) );
 
-    Capture::GSelectedTextBox = nullptr;
-    Capture::GSelectedThreadId = 0;
+    GCapture->m_SelectedTextBox = nullptr;
+    GCapture->m_SelectedThreadId = 0;
 
     Pick( pickId, a_X, a_Y );
 
@@ -212,16 +218,16 @@ void CaptureWindow::Pick( PickingID a_PickingID, int a_X, int a_Y  )
 //-----------------------------------------------------------------------------
 void CaptureWindow::SelectTextBox( class TextBox* a_TextBox )
 {
-    Capture::GSelectedTextBox = a_TextBox;
-    Capture::GSelectedThreadId = a_TextBox->GetTimer().m_TID;
-    Capture::GSelectedCallstack = Capture::GetCallstack( a_TextBox->GetTimer().m_CallstackHash );
-    GOrbitApp->SetCallStack( Capture::GSelectedCallstack );
+    GCapture->m_SelectedTextBox = a_TextBox;
+    GCapture->m_SelectedThreadId = a_TextBox->GetTimer().m_TID;
+    GCapture->m_SelectedCallstack = GCapture->GetCallstack( a_TextBox->GetTimer().m_CallstackHash );
+    GOrbitApp->SetCallStack( GCapture->m_SelectedCallstack );
 
     const Timer & a_Timer = a_TextBox->GetTimer();
     DWORD64 address = a_Timer.m_FunctionAddress;
     if( a_Timer.IsType( Timer::ZONE ) )
     {
-        shared_ptr<CallStack> callStack = Capture::GetCallstack( a_Timer.m_CallstackHash );
+        shared_ptr<CallStack> callStack = GCapture->GetCallstack( a_Timer.m_CallstackHash );
         if( callStack && callStack->m_Depth > 1 )
         {
             address = callStack->m_Data[1];
@@ -243,7 +249,7 @@ void CaptureWindow::Hover( int a_X, int a_Y )
     TextBox* textBox = m_TimeGraph.m_Batcher.GetTextBox( pickId );
     if( textBox )
     {
-        Function* func = Capture::GSelectedFunctionsMap[textBox->GetTimer().m_FunctionAddress];
+        Function* func = GCapture->m_SelectedFunctionsMap[textBox->GetTimer().m_FunctionAddress];
         m_ToolTip = Format( L"%s %s", func ? func->PrettyName().c_str() : L"", s2ws(textBox->GetText()).c_str() );
 
         GOrbitApp->SendToUiAsync( L"tooltip:" + m_ToolTip );
@@ -257,8 +263,8 @@ void CaptureWindow::FindCode( DWORD64 address )
     SCOPE_TIMER_LOG( L"FindCode" );
 
     LineInfo lineInfo;
-    if( (Capture::GTargetProcess && Capture::GTargetProcess->LineInfoFromAddress( address, lineInfo ))
-        || (Capture::GSamplingProfiler && Capture::GSamplingProfiler->GetLineInfo( address, lineInfo )) )
+    if( (GCapture->m_TargetProcess && GCapture->m_TargetProcess->LineInfoFromAddress( address, lineInfo ))
+        || (GCapture->m_SamplingProfiler && GCapture->m_SamplingProfiler->GetLineInfo( address, lineInfo )) )
     {
         --lineInfo.m_Line;
 
@@ -477,14 +483,20 @@ void CaptureWindow::KeyPressed( unsigned int a_KeyCode, bool a_Ctrl, bool a_Shif
 //-----------------------------------------------------------------------------
 void CaptureWindow::ToggleSampling()
 {
-    if( Capture::GIsSampling )
+    if( GCapture->m_IsSampling )
     {
-        Capture::StopSampling();
+        GCapture->StopSampling();
     }
-    else if( !GTimerManager->m_IsRecording )
+    else if( !GServerTimerManager->m_IsRecording )
     {
-        Capture::StartSampling();
+        GCapture->StartSampling();
     }
+}
+
+//-----------------------------------------------------------------------------
+void CaptureWindow::ClearCaptureData()
+{
+    m_TimeGraph.Clear();
 }
 
 //-----------------------------------------------------------------------------
@@ -509,7 +521,7 @@ void CaptureWindow::Draw()
 {   
     m_WorldMaxY = 1.5f * ScreenToWorldHeight( (int)m_Slider.GetPixelHeight() );
 
-    if( Capture::IsCapturing() )
+    if( GCapture->IsCapturing() )
     {
         ZoomAll();
     }
@@ -588,7 +600,7 @@ void CaptureWindow::DrawScreenSpace()
         double stop = m_TimeGraph.m_MaxEpochTimeUs;
         double width = stop - start;
         double maxStart = timeSpan - width;
-        double ratio = Capture::IsCapturing() ? 1.0 : maxStart ? start/maxStart : 0.0;
+        double ratio = GCapture->IsCapturing() ? 1.0 : maxStart ? start/maxStart : 0.0;
         
         m_Slider.SetSliderRatio( (float)ratio );
         m_Slider.SetSliderWidthRatio( float(width/timeSpan) );
@@ -637,13 +649,13 @@ void CaptureWindow::DrawStatus()
 
     m_TextRenderer.AddText2D( " press 'H'", s_PosX, LeftY, Z_VALUE_TEXT_UI, s_Color ); LeftY += s_IncY;
 
-    if( Capture::GInjected )
+    if( GCapture->m_Injected )
     {
-        string injectStr = Format( " %s", Capture::GInjectedProcess.c_str() );
+        string injectStr = Format( " %s", GCapture->m_InjectedProcess.c_str() );
         m_ProcessX = m_TextRenderer.AddText2D( injectStr.c_str(), PosX, PosY, Z_VALUE_TEXT_UI, s_Color, -1, true ); PosY += s_IncY;
     }
 
-    if( Capture::GIsTesting )
+    if( GCapture->m_IsTesting )
     {
         m_TextRenderer.AddText2D( "TESTING", PosX, PosY, Z_VALUE_TEXT_UI, s_Color, -1, true ); PosY += s_IncY;
     }
@@ -659,35 +671,35 @@ void CaptureWindow::RenderUI()
     {
         m_StatsWindow.Clear();
 
-        /*m_StatsWindow.AddLog( VAR_TO_CHAR( m_Width ) );
-        m_StatsWindow.AddLog( VAR_TO_CHAR( m_Height ) );
-        m_StatsWindow.AddLog( VAR_TO_CHAR( m_DesiredWorldHeight ) );
-        m_StatsWindow.AddLog( VAR_TO_CHAR( m_DesiredWorldWidth ) );
-        m_StatsWindow.AddLog( VAR_TO_CHAR( m_WorldHeight ) );
-        m_StatsWindow.AddLog( VAR_TO_CHAR( m_WorldWidth ) );
-        m_StatsWindow.AddLog( VAR_TO_CHAR( m_WorldTopLeftX ) );
-        m_StatsWindow.AddLog( VAR_TO_CHAR( m_WorldTopLeftY ) );
-        m_StatsWindow.AddLog( VAR_TO_CHAR( m_WorldMinWidth ) );
+        m_StatsWindow.AddLog( "%S", VAR_TO_CHAR( m_Width ) );
+        m_StatsWindow.AddLog( "%S", VAR_TO_CHAR( m_Height ) );
+        m_StatsWindow.AddLog( "%S", VAR_TO_CHAR( m_DesiredWorldHeight ) );
+        m_StatsWindow.AddLog( "%S", VAR_TO_CHAR( m_DesiredWorldWidth ) );
+        m_StatsWindow.AddLog( "%S", VAR_TO_CHAR( m_WorldHeight ) );
+        m_StatsWindow.AddLog( "%S", VAR_TO_CHAR( m_WorldWidth ) );
+        m_StatsWindow.AddLog( "%S", VAR_TO_CHAR( m_WorldTopLeftX ) );
+        m_StatsWindow.AddLog( "%S", VAR_TO_CHAR( m_WorldTopLeftY ) );
+        m_StatsWindow.AddLog( "%S", VAR_TO_CHAR( m_WorldMinWidth ) );
 
-        m_StatsWindow.AddLog( VAR_TO_CHAR( GTimerManager->m_NumTimersFromPreviousSession ) );
-        m_StatsWindow.AddLog( VAR_TO_CHAR( GTimerManager->m_NumFlushedTimers ) );
-        m_StatsWindow.AddLog( VAR_TO_CHAR( Capture::GNumMessagesFromPreviousSession ) );
-        m_StatsWindow.AddLog( VAR_TO_CHAR( Capture::GNumTargetFlushedEntries ) );
-        m_StatsWindow.AddLog( VAR_TO_CHAR( Capture::GNumTargetFlushedTcpPackets ) );
-        m_StatsWindow.AddLog( VAR_TO_CHAR( GTimerManager->m_NumQueuedEntries ) );
-        m_StatsWindow.AddLog( VAR_TO_CHAR( GTimerManager->m_NumQueuedMessages) );
-        m_StatsWindow.AddLog( VAR_TO_CHAR( GTimerManager->m_NumQueuedTimers) );
-        m_StatsWindow.AddLog( VAR_TO_CHAR( m_SelectStart[0] ) );
-        m_StatsWindow.AddLog( VAR_TO_CHAR( m_SelectStop[0] ) );
-        m_StatsWindow.AddLog( VAR_TO_CHAR( m_TimeGraph.m_CurrentTimeWindow ) );
-        m_StatsWindow.AddLog( VAR_TO_CHAR( Capture::GMaxTimersAtOnce ) );
-        m_StatsWindow.AddLog( VAR_TO_CHAR( Capture::GNumTimersAtOnce ) );
-        m_StatsWindow.AddLog( VAR_TO_CHAR( Capture::GNumTargetQueuedEntries ) );
-        m_StatsWindow.AddLog( VAR_TO_CHAR( m_MousePosX ) );
-        m_StatsWindow.AddLog( VAR_TO_CHAR( m_MousePosY ) );*/
+        m_StatsWindow.AddLog( "%S", VAR_TO_CHAR( GServerTimerManager->m_NumTimersFromPreviousSession ) );
+        m_StatsWindow.AddLog( "%S", VAR_TO_CHAR( GServerTimerManager->m_NumFlushedTimers ) );
+        //m_StatsWindow.AddLog( "%S", VAR_TO_CHAR( GTcpServer->m_NumMessagesFromPreviousSession ) );
+        //m_StatsWindow.AddLog( "%S", VAR_TO_CHAR( GTcpServer->m_NumTargetFlushedEntries ) );
+        //m_StatsWindow.AddLog( "%S", VAR_TO_CHAR( GTcpServer->m_NumTargetFlushedTcpPackets ) );
+        m_StatsWindow.AddLog( "%S", VAR_TO_CHAR( GServerTimerManager->m_NumQueuedEntries ) );
+        m_StatsWindow.AddLog( "%S", VAR_TO_CHAR( GServerTimerManager->m_NumQueuedMessages) );
+        m_StatsWindow.AddLog( "%S", VAR_TO_CHAR( GServerTimerManager->m_NumQueuedTimers) );
+        m_StatsWindow.AddLog( "%S", VAR_TO_CHAR( m_SelectStart[0] ) );
+        m_StatsWindow.AddLog( "%S", VAR_TO_CHAR( m_SelectStop[0] ) );
+        //m_StatsWindow.AddLog( "%S", VAR_TO_CHAR( m_TimeGraph.m_CurrentTimeWindow ) );
+        //m_StatsWindow.AddLog( "%S", VAR_TO_CHAR( GTcpServer->m_MaxTimersAtOnce ) );
+        //m_StatsWindow.AddLog( "%S", VAR_TO_CHAR( GTcpServer->m_NumTimersAtOnce ) );
+        //m_StatsWindow.AddLog( "%S", VAR_TO_CHAR( GTcpServer->m_NumTargetQueuedEntries ) );
+        m_StatsWindow.AddLog( "%S", VAR_TO_CHAR( m_MousePosX ) );
+        m_StatsWindow.AddLog( "%S", VAR_TO_CHAR( m_MousePosY ) );
 
-        m_StatsWindow.AddLine( VAR_TO_ANSI( Capture::GNumProfileEvents ) );
-        m_StatsWindow.AddLine( VAR_TO_ANSI( Capture::GNumInstalledHooks ) );
+        m_StatsWindow.AddLine( VAR_TO_ANSI( GCapture->m_NumProfileEvents ) );
+        m_StatsWindow.AddLine( VAR_TO_ANSI( GCapture->m_NumInstalledHooks ) );
         m_StatsWindow.AddLine( VAR_TO_ANSI( m_TimeGraph.GetNumDrawnTextBoxes() ) );
         m_StatsWindow.AddLine( VAR_TO_ANSI( m_TimeGraph.m_TextBoxes.m_NumItems ) );
         m_StatsWindow.AddLine( VAR_TO_ANSI( m_TimeGraph.m_TextBoxes.m_NumBlocks ) );
@@ -875,7 +887,7 @@ void CaptureWindow::RenderBar()
     DrawTexturedSquare( GTextureTimer, size, timerX, y );
     DrawTexturedSquare( GTextureHelp, size, 0, y );
 
-    if( Capture::IsCapturing() )
+    if( GCapture->IsCapturing() )
     {
         DrawTexturedSquare( GTextureRecord, size, timerX - size, y );
     }

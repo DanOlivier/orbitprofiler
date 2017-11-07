@@ -17,7 +17,7 @@ struct ProcessList
     void SortByCPU();
     void UpdateCpuTimes();
 
-    std::vector< std::shared_ptr< Process > > m_Processes;
-    std::unordered_map< DWORD, std::shared_ptr< Process > > m_ProcessesMap;
+    std::vector< std::shared_ptr<Process> > m_Processes;
+    std::unordered_map< DWORD, std::shared_ptr<Process> > m_ProcessesMap;
 };
 

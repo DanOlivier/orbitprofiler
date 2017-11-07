@@ -28,7 +28,9 @@ public:
     typedef std::function< void( const Message & ) > MsgCallback;
     typedef std::function< void( const std::wstring & ) > StrCallback;
 
-    void SetCallback( MessageType a_MsgType, MsgCallback a_Callback ) { m_Callbacks[a_MsgType] = a_Callback; }
+    void SetCallback( MessageType a_MsgType, MsgCallback a_Callback ) { 
+        m_Callbacks[a_MsgType] = a_Callback; 
+    }
     void SetUiCallback( StrCallback a_Callback ){ m_UiCallback = a_Callback; }
     void MainThreadTick();
 
@@ -40,7 +42,7 @@ public:
     class tcp_server* GetServer(){ return m_TcpServer; }
 
     void ResetStats();
-    std::vector< std::string > GetStats();
+    std::vector<std::string> GetStats();
 
 protected:
     class TcpSocket* GetSocket() override final;

@@ -144,7 +144,7 @@ void ProcessesDataView::OnSelect( int a_Index )
         }
 
         m_ModulesDataView->SetProcess( m_SelectedProcess );
-        Capture::SetTargetProcess( m_SelectedProcess );
+        //XXX:!!! GCapture->SetTargetProcess( m_SelectedProcess );
         GOrbitApp->FireRefreshCallbacks();
     }
 }
@@ -158,7 +158,7 @@ void ProcessesDataView::OnTimer()
 //-----------------------------------------------------------------------------
 void ProcessesDataView::Refresh()
 {
-    if( Capture::IsCapturing() )
+    if( GCapture->IsCapturing() )
     {
         return;
     }
@@ -166,7 +166,7 @@ void ProcessesDataView::Refresh()
     ScopeLock lock( m_Mutex );
     if( m_RemoteProcess )
     {
-        shared_ptr< Process > CurrentRemoteProcess = m_ProcessList.m_Processes.size() == 1 ? m_ProcessList.m_Processes[0] : nullptr;
+        shared_ptr<Process> CurrentRemoteProcess = m_ProcessList.m_Processes.size() == 1 ? m_ProcessList.m_Processes[0] : nullptr;
 
         if( m_RemoteProcess != CurrentRemoteProcess )
         {
@@ -187,9 +187,9 @@ void ProcessesDataView::Refresh()
         OnFilter( m_Filter );
         SetSelectedItem();
 
-        if( Capture::GTargetProcess && !Capture::IsCapturing() )
+        if( GCapture->m_TargetProcess && !GCapture->IsCapturing() )
         {
-            Capture::GTargetProcess->UpdateThreadUsage();
+            GCapture->m_TargetProcess->UpdateThreadUsage();
         }
     }
 }
@@ -218,7 +218,7 @@ bool ProcessesDataView::SelectProcess( const fs::path& a_ProcessName )
         if ( process.GetFullName().filename() == a_ProcessName )
         {
             OnSelect(i);
-            Capture::GPresetToLoad = L"";
+            GCapture->m_PresetToLoad = L"";
             return true;
         }
     }
@@ -237,7 +237,7 @@ bool ProcessesDataView::SelectProcess( DWORD a_ProcessId )
         if( process.GetID() == a_ProcessId )
         {
             OnSelect( i );
-            Capture::GPresetToLoad = L"";
+            GCapture->m_PresetToLoad = L"";
             return true;
         }
     }

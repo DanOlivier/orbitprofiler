@@ -84,7 +84,7 @@ void EventTrack::SetSize( float a_SizeX, float a_SizeY )
 //-----------------------------------------------------------------------------
 void EventTrack::OnPick( int a_X, int a_Y )
 {
-    Capture::GSelectedThreadId = m_ThreadId;
+    GCapture->m_SelectedThreadId = m_ThreadId;
     Vec2 & mousePos = m_MousePos[0];
     m_Canvas->ScreenToWorld( a_X, a_Y, mousePos[0], mousePos[1] );
     m_MousePos[1] = m_MousePos[0];

@@ -55,9 +55,9 @@ SamplingProfiler::~SamplingProfiler()
 //-----------------------------------------------------------------------------
 void SamplingProfiler::StartCapture()
 {
-    Capture::GNumSamples = 0;
-    Capture::GNumSamplingTicks = 0;
-    Capture::GIsSampling = true;
+    GCapture->m_NumSamples = 0;
+    GCapture->m_NumSamplingTicks = 0;
+    GCapture->m_IsSampling = true;
 
     if( !m_ETW )
     {
@@ -93,7 +93,7 @@ void SamplingProfiler::SampleThreadsAsync()
             m_ThreadUsageTimer.Start();
         }
 
-        ++Capture::GNumSamplingTicks;
+        ++GCapture->m_NumSamplingTicks;
 
         for( const auto & thread : m_Process->GetThreads() )
         {
@@ -106,7 +106,7 @@ void SamplingProfiler::SampleThreadsAsync()
                 SetThreadPriority( thread->m_Handle, prev_priority );
 
                 ResumeThread( thread->m_Handle );
-                ++Capture::GNumSamples;
+                ++GCapture->m_NumSamples;
             }
         }
 
@@ -164,7 +164,7 @@ multimap<int, CallstackID> SamplingProfiler::GetCallStacksFromAddress( DWORD64 a
 }
 
 //-----------------------------------------------------------------------------
-shared_ptr< SortedCallstackReport > SamplingProfiler::GetSortedCallstacksFromAddress( DWORD64 a_Addr, ThreadID a_TID )
+shared_ptr<SortedCallstackReport> SamplingProfiler::GetSortedCallstacksFromAddress( DWORD64 a_Addr, ThreadID a_TID )
 {
     shared_ptr<SortedCallstackReport> report = make_shared<SortedCallstackReport>();
     multimap<int, CallstackID> multiMap = GetCallStacksFromAddress( a_Addr, a_TID, report->m_NumCallStacksTotal );
@@ -454,8 +454,8 @@ void SamplingProfiler::AddAddress( DWORD64 a_Address )
     m_AddressToSymbol[symbol_info->Address] = symName;    
 
     LineInfo lineInfo;
-    if(Capture::GTargetProcess &&
-        Capture::GTargetProcess->LineInfoFromAddress( a_Address, lineInfo ) )
+    if(GCapture->m_TargetProcess &&
+        GCapture->m_TargetProcess->LineInfoFromAddress( a_Address, lineInfo ) )
     {
         DWORD64 hash = StringHash(lineInfo.m_File);
         lineInfo.m_FileNameHash = hash;

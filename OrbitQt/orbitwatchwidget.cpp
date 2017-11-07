@@ -264,7 +264,7 @@ void OrbitWatchWidget::UpdateVariable( const Variable * a_Variable )
     }
     else
     {
-        for( const shared_ptr< Variable > var : a_Variable->m_Children )
+        for( const shared_ptr<Variable> var : a_Variable->m_Children )
         {
             UpdateProperty( var.get() );
         }

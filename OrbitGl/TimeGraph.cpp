@@ -27,26 +27,29 @@
 
 using namespace std;
 
-TimeGraph* GCurrentTimeGraph = nullptr;
-
 //-----------------------------------------------------------------------------
-TimeGraph::TimeGraph() : m_NumDrawnTextBoxes(0)
-                       , m_RefEpochTimeUs(0)
-                       , m_MinEpochTimeUs(0)
-                       , m_MaxEpochTimeUs(0)
-                       , m_TimeWindowUs(0)
-                       , m_WorldStartX(0)
-                       , m_WorldWidth(0)
-                       , m_SessionMinCounter(_I64_MAX)
-                       , m_SessionMaxCounter(_I64_MIN)
-                       , m_Margin(40)
-                       , m_MainFrameCounter(0)
-                       , m_TrackAlpha(255)
-                       , m_NeedsUpdatePrimitives(false)
-                       , m_NeedsRedraw(false)
-                       , m_DrawText(true)
-                       , m_Canvas(nullptr)
+TimeGraph::TimeGraph(GlCanvas* canvas, TextRenderer* textRenderer, 
+        PickingManager* pickingManager) : 
+    m_TextRenderer(textRenderer)
+    , m_PickingManager(pickingManager)
+    //,m_NumDrawnTextBoxes(0)
+    //, m_RefEpochTimeUs(0)
+    //, m_MinEpochTimeUs(0)
+    //, m_MaxEpochTimeUs(0)
+    //, m_TimeWindowUs(0)
+    //, m_WorldStartX(0)
+    //, m_WorldWidth(0)
+    , m_SessionMinCounter(_I64_MAX)
+    , m_SessionMaxCounter(_I64_MIN)
+    //, m_MainFrameCounter(0)
+    //, m_TrackAlpha(255)
+    //, m_NeedsUpdatePrimitives(false)
+    //, m_NeedsRedraw(false)
+    //, m_DrawText(true)
+    , m_Canvas(canvas)
 {
+    SetCanvas(this);
+
     m_LastThreadReorder.Start();
 }
 
@@ -126,21 +129,16 @@ double TimeGraph::GetCurrentTimeSpanUs()
 //-----------------------------------------------------------------------------
 void TimeGraph::ZoomTime( float a_ZoomValue, double a_MouseRatio )
 {
-    m_ZoomValue = a_ZoomValue;
-    m_MouseRatio = a_MouseRatio;
-
     static double incrementRatio = 0.1;
     double scale = a_ZoomValue > 0 ? 1 + incrementRatio : 1 - incrementRatio;
-    m_Scale = scale;
 
     double CurrentTimeWindowUs = m_MaxEpochTimeUs - m_MinEpochTimeUs;
-    m_CurrentTimeWindow = CurrentTimeWindowUs;
     m_RefEpochTimeUs = m_MinEpochTimeUs + a_MouseRatio * CurrentTimeWindowUs;
 
     double timeLeft  = max( m_RefEpochTimeUs - m_MinEpochTimeUs, 0.0 );
     double timeRight = max( m_MaxEpochTimeUs - m_RefEpochTimeUs, 0.0 );
-    m_TimeLeft = timeLeft = scale * timeLeft;
-    m_TimeRight = timeRight = scale * timeRight;
+    timeLeft = scale * timeLeft;
+    timeRight = scale * timeRight;
 
     double minEpochTime = m_RefEpochTimeUs - timeLeft;
     double maxEpochTime = m_RefEpochTimeUs + timeRight;
@@ -161,7 +159,6 @@ void TimeGraph::SetMinMax( double a_MinEpochTime, double a_MaxEpochTime )
     double desiredTimeWindow = a_MaxEpochTime - a_MinEpochTime;
     m_MinEpochTimeUs = max( a_MinEpochTime, 0.0 );
     m_MaxEpochTimeUs = min( m_MinEpochTimeUs + desiredTimeWindow, GetSessionTimeSpanUs() );
-    m_CurrentTimeWindow = m_MaxEpochTimeUs - m_MinEpochTimeUs;
 
     NeedsUpdate();
 }
@@ -214,7 +211,7 @@ void TimeGraph::ProcessTimer( Timer & a_Timer )
         m_MemTracker.ProcessFree( a_Timer );
         return;
     case Timer::CORE_ACTIVITY:
-        Capture::GHasContextSwitches = true;
+        GCapture->m_HasContextSwitches = true;
         break;
     default:
         break;
@@ -222,10 +219,10 @@ void TimeGraph::ProcessTimer( Timer & a_Timer )
 
     if( a_Timer.m_FunctionAddress > 0 )
     {
-        Function* func = Capture::GTargetProcess->GetFunctionFromAddress( a_Timer.m_FunctionAddress );
+        Function* func = GCapture->m_TargetProcess->GetFunctionFromAddress( a_Timer.m_FunctionAddress );
         if( func )
         {
-            ++Capture::GFunctionCountMap[a_Timer.m_FunctionAddress];
+            ++GCapture->m_FunctionCountMap[a_Timer.m_FunctionAddress];
             if( func->m_Stats )
             {
                 func->m_Stats->Update( a_Timer );
@@ -257,8 +254,8 @@ void TimeGraph::AddContextSwitch( const ContextSwitch & a_CS )
     if( a_CS.m_Type == ContextSwitch::Out )
     {
         // Processor time line
-        map< long long, ContextSwitch >& csMap = m_CoreUtilizationMap[a_CS.m_ProcessorIndex];
-        if(false){
+        map<long long, ContextSwitch>& csMap = m_CoreUtilizationMap[a_CS.m_ProcessorIndex];
+        if(false) {
             // Thread time line
             csMap = m_ContextSwitchesMap[a_CS.m_ThreadId];
         }
@@ -279,7 +276,7 @@ void TimeGraph::AddContextSwitch( const ContextSwitch & a_CS )
                 else
                     timer.SetType(Timer::THREAD_ACTIVITY);
                 
-                GTimerManager->Add(timer);
+                GServerTimerManager->Add(timer);
             }
         }
     }
@@ -415,7 +412,7 @@ void TimeGraph::NeedsUpdate()
 inline string GetExtraInfo( const Timer & a_Timer )
 {
     string info;
-    if( !Capture::IsCapturing() && a_Timer.GetType() == Timer::UNREAL_OBJECT )
+    if( !GCapture->IsCapturing() && a_Timer.GetType() == Timer::UNREAL_OBJECT )
     {
         info = "[" + ws2s( GOrbitUnreal.GetObjectNames()[a_Timer.m_UserData[0]] ) + "]";
     }
@@ -493,11 +490,11 @@ void TimeGraph::UpdatePrimitives( bool a_Picking )
             bool isContextSwitch = timer.IsType( Timer::THREAD_ACTIVITY );
             bool isCoreActivity  = timer.IsType( Timer::CORE_ACTIVITY );
             bool isVisibleWidth = NormalizedLength * m_Canvas->getWidth() > 1;
-            //bool isMainFrameFunction = Capture::GMainFrameFunction && ( Capture::GMainFrameFunction == timer.m_FunctionAddress );
-            bool isSameThreadIdAsSelected = isCoreActivity && timer.m_TID == Capture::GSelectedThreadId;
-            bool isInactive = ( !isContextSwitch && timer.m_FunctionAddress && ( Capture::GVisibleFunctionsMap[timer.m_FunctionAddress] == nullptr ) ) ||
-                              ( Capture::GSelectedThreadId != 0 && isCoreActivity && !isSameThreadIdAsSelected );
-            bool isSelected = &textBox == Capture::GSelectedTextBox;
+            //bool isMainFrameFunction = GCapture->m_MainFrameFunction && ( GCapture->m_MainFrameFunction == timer.m_FunctionAddress );
+            bool isSameThreadIdAsSelected = isCoreActivity && timer.m_TID == GCapture->m_SelectedThreadId;
+            bool isInactive = ( !isContextSwitch && timer.m_FunctionAddress && ( GCapture->m_VisibleFunctionsMap[timer.m_FunctionAddress] == nullptr ) ) ||
+                              ( GCapture->m_SelectedThreadId != 0 && isCoreActivity && !isSameThreadIdAsSelected );
+            bool isSelected = &textBox == GCapture->m_SelectedTextBox;
 
 
             const unsigned char g = 100;
@@ -534,7 +531,7 @@ void TimeGraph::UpdatePrimitives( bool a_Picking )
                 {
                     double elapsedMillis = ( (double)elapsed ) * 0.001;
                     string time = GetPrettyTime( elapsedMillis );
-                    Function* func = Capture::GSelectedFunctionsMap[timer.m_FunctionAddress];
+                    Function* func = GCapture->m_SelectedFunctionsMap[timer.m_FunctionAddress];
 
                     const char* name = nullptr;
                     if( func )
@@ -545,12 +542,12 @@ void TimeGraph::UpdatePrimitives( bool a_Picking )
 
                         textBox.SetText( text );
                     }
-                    else if( !Capture::IsCapturing() )
+                    else if( !GCapture->IsCapturing() )
                     {
                         // GZoneNames is populated when capturing, prevent race
                         // by accessing it only when not capturing.
-                        auto it = Capture::GZoneNames.find( timer.m_FunctionAddress );
-                        if( it != Capture::GZoneNames.end() )
+                        auto it = GCapture->m_ZoneNames.find( timer.m_FunctionAddress );
+                        if( it != GCapture->m_ZoneNames.end() )
                         {
                             name = it->second.c_str();
                             string text = Format( "%s %s", name, time.c_str() );
@@ -671,14 +668,14 @@ void TimeGraph::SelectEvents( float a_WorldStart, float a_WorldEnd, ThreadID a_T
     m_SelectedCallstackEvents = GEventTracer.GetEventBuffer().GetCallstackEvents( t0, t1, a_TID );
 
     // Generate report
-    shared_ptr<SamplingProfiler> samplingProfiler = make_shared<SamplingProfiler>( Capture::GTargetProcess );
+    shared_ptr<SamplingProfiler> samplingProfiler = make_shared<SamplingProfiler>( GCapture->m_TargetProcess );
     samplingProfiler->SetState( SamplingProfiler::Sampling );
 
     samplingProfiler->SetGenerateSummary(a_TID==-1);
 
     for( CallstackEvent & event : m_SelectedCallstackEvents )
     {
-        const shared_ptr<CallStack> callstack = Capture::GSamplingProfiler->GetCallStack(event.m_Id);
+        const shared_ptr<CallStack> callstack = GCapture->m_SamplingProfiler->GetCallStack(event.m_Id);
         if( callstack )
         {
             callstack->m_ThreadId = event.m_TID;
@@ -698,7 +695,8 @@ void TimeGraph::SelectEvents( float a_WorldStart, float a_WorldEnd, ThreadID a_T
 //-----------------------------------------------------------------------------
 void TimeGraph::Draw( bool a_Picking )
 {
-    if( m_TextBoxes.keep( GParams.m_MaxNumTimers ) || (!a_Picking && m_NeedsUpdatePrimitives) || a_Picking )
+    if( m_TextBoxes.keep( GParams.m_MaxNumTimers ) || 
+        (!a_Picking && m_NeedsUpdatePrimitives) || a_Picking )
     {
         UpdatePrimitives( a_Picking );
     }
@@ -733,7 +731,7 @@ void TimeGraph::UpdateThreadIds()
     m_Layout.ClearThreadColors();
 
     // Reorder threads once every second when capturing
-    if( !Capture::IsCapturing() || m_LastThreadReorder.QueryMillis() > 1000.0 )
+    if( !GCapture->IsCapturing() || m_LastThreadReorder.QueryMillis() > 1000.0 )
     {
         m_Layout.m_SortedThreadIds.clear();
 

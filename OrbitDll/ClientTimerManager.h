@@ -93,4 +93,4 @@ public:
     }
 };
 
-extern ClientTimerManager* GTimerManager;
+extern ClientTimerManager* GClientTimerManager;

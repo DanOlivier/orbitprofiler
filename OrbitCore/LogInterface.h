@@ -9,5 +9,5 @@
 class LogInterface
 {
 public:
-    static std::vector< std::string > GetOutput();
+    static std::vector<std::string> GetOutput();
 };

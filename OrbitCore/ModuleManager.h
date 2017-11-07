@@ -35,6 +35,3 @@ protected:
     std::function<void()> m_UserCompletionCallback;
     std::vector<fs::path> m_ModulesQueue;
 };
-
-extern ModuleManager GModuleManager;
-

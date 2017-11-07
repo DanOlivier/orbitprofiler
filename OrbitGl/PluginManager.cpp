@@ -19,7 +19,7 @@ namespace fs = std::experimental::filesystem;
 void PluginManager::Initialize()
 {
     fs::path dir = Path::GetPluginPath();
-    vector< fs::path > plugins = Path::ListFiles( dir, L".dll" );
+    vector<fs::path> plugins = Path::ListFiles( dir, L".dll" );
 
     for( fs::path & file : plugins )
     {

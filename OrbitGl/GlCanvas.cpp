@@ -15,14 +15,15 @@
 #include "App.h"
 #include "SamplingProfiler.h"
 
-
 #include "VariableTracing.h"
 #include "ServerTimerManager.h"
-#include <imgui.h>
 #include "Card.h"
+#include "CaptureWindow.h"
+
 #include <vector>
 #include <string>
 
+#include <imgui.h>
 #include <imgui_internal.h>
 
 using namespace std;
@@ -39,42 +40,32 @@ float GlCanvas::Z_VALUE_BOX_ACTIVE      = -0.02f;
 float GlCanvas::Z_VALUE_BOX_INACTIVE    = -0.03f;
 
 //-----------------------------------------------------------------------------
-void ClearCaptureData()
-{
-    if( GCurrentTimeGraph )
-    {
-        GCurrentTimeGraph->Clear();
-    }
-
-    GOrbitApp->FireRefreshCallbacks( DataViewType::LIVEFUNCTIONS );
-}
-
-//-----------------------------------------------------------------------------
 GlCanvas::GlCanvas()
 {
     m_TextRenderer.SetCanvas( this );
 
-    m_DesiredWorldWidth = 1600.f;
-    m_DesiredWorldHeight = 1000.f;
-    m_WorldWidth = m_DesiredWorldWidth;
-    m_WorldHeight = m_DesiredWorldHeight;
-    m_WorldTopLeftX = -5.f;
-    m_WorldTopLeftY = 5.f;
-    m_WorldMinWidth = 1.f;
-    m_SelectStart = Vec2( 0.f, 0.f );
-    m_SelectStop = Vec2( 0.f, 0.f );
-    m_IsSelecting = false;
-    m_IsSelectingMiddle = false;
-    m_Picking = false;
-    m_NeedsRedraw = true;
+    //m_DesiredWorldWidth = 1600.f;
+    //m_DesiredWorldHeight = 1000.f;
+    //m_WorldWidth = m_DesiredWorldWidth;
+    //m_WorldHeight = m_DesiredWorldHeight;
+    //m_WorldTopLeftX = -5.f;
+    //m_WorldTopLeftY = 5.f;
+    //m_WorldMinWidth = 1.f;
+    //m_SelectStart = Vec2( 0.f, 0.f );
+    //m_SelectStop = Vec2( 0.f, 0.f );
+    //m_IsSelecting = false;
+    //m_IsSelectingMiddle = false;
+    //m_Picking = false;
+    
+    //m_NeedsRedraw = true;
 
-    m_WheelDelta = 0;
-    m_MinWheelDelta = INT_MAX;
-    m_MaxWheelDelta = INT_MIN;
-    m_WheelMomentum = 0.f;
-    m_MouseRatio = 0.0;
-    m_DrawUI = true;
-    m_ImguiActive = false;
+    //m_WheelDelta = 0;
+    //m_MinWheelDelta = INT_MAX;
+    //m_MaxWheelDelta = INT_MIN;
+    //m_WheelMomentum = 0.f;
+    //m_MouseRatio = 0.0;
+    //m_DrawUI = true;
+    //m_ImguiActive = false;
     m_BackgroundColor = Vec4( 70.f / 255.f, 70.f / 255.f, 70.f / 255.f, 1.0f );
 
     static int counter = 0;
@@ -82,7 +73,8 @@ GlCanvas::GlCanvas()
 
     m_UpdateTimer.Start();
 
-    Capture::GClearCaptureDataFunc = ClearCaptureData;
+    //XXX: Where??
+    //GCapture->m_ClearCaptureDataFunc = GOrbitApp::ClearCaptureData;
 
     //SetCursor(wxCURSOR_BLANK);
 
@@ -348,9 +340,8 @@ void GlCanvas::prepare2DViewport(int topleft_x, int topleft_y, int bottomrigth_x
 
     UpdateSceneBox();
 
-    Capture::DisplayStats();
+    GCapture->DisplayStats();
 
-    extern TcpServer* GTcpServer;
     //TRACE_VAR( m_ScreenClickY );
     //TRACE_VAR( GTcpServer->HasConnection( Server_LocalTarget ) );
     //TRACE_VAR( GTcpServer->HasConnection( Server_RemoteTarget ) );
@@ -365,9 +356,9 @@ void GlCanvas::prepare2DViewport(int topleft_x, int topleft_y, int bottomrigth_x
     //TRACE_VAR( m_WorldHeight );
     //TRACE_VAR( m_DesiredWorldWidth );
     //TRACE_VAR( m_DesiredWorldHeight );/**/
-    //TRACE_VAR( GTimerManager->m_NumQueuedEntries );
-    //TRACE_VAR( GTimerManager->m_NumQueuedMessages );
-    //TRACE_VAR( GTimerManager->m_NumQueuedTimers );
+    //TRACE_VAR( GServerTimerManager->m_NumQueuedEntries );
+    //TRACE_VAR( GServerTimerManager->m_NumQueuedMessages );
+    //TRACE_VAR( GServerTimerManager->m_NumQueuedTimers );
     //TRACE_VAR( GPdbDbg->GetHModule() );
     //TRACE_VAR( m_WheelDelta );
     //TRACE_VAR( m_MinWheelDelta );
@@ -377,8 +368,8 @@ void GlCanvas::prepare2DViewport(int topleft_x, int topleft_y, int bottomrigth_x
     //TRACE_VAR( GDeltaTimeBuffer.Size() );
     //TRACE_VAR( GDeltaTimeBuffer[0] );
     //TRACE_VAR( GDeltaTimeBuffer[512] );
-    //TRACE_VAR( Capture::GOpenCaptureTime );
-    //TRACE_VAR( Capture::GNumContextSwitches );
+    //TRACE_VAR( GCapture->m_OpenCaptureTime );
+    //TRACE_VAR( GCapture->m_NumContextSwitches );
 
     /*if( m_IsSelecting )
     {
@@ -559,7 +550,7 @@ void GlCanvas::RenderUI()
 //-----------------------------------------------------------------------------
 void GlCanvas::RenderSamplingUI()
 {
-    if( !Capture::GIsSampling )
+    if( !GCapture->m_IsSampling )
         return;
 
     ImGui::SetNextWindowSize(ImVec2(500, 100), ImGuiSetCond_FirstUseEver);
@@ -571,8 +562,8 @@ void GlCanvas::RenderSamplingUI()
     ////ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
     //ImGui::Text("Progress Bar");
 
-    float curTime = Capture::GSamplingProfiler->GetSampleTime();
-    float totTime = Capture::GSamplingProfiler->GetSampleTimeTotal();
+    float curTime = GCapture->m_SamplingProfiler->GetSampleTime();
+    float totTime = GCapture->m_SamplingProfiler->GetSampleTimeTotal();
     string prog = Format("%f/%f", curTime, totTime);
     ImGui::ProgressBar(min(curTime/totTime, 1.f), ImVec2(0.f, 0.f), prog.c_str());
 

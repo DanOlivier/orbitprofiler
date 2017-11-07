@@ -98,9 +98,9 @@ void TextBox::Draw( TextRenderer & a_TextRenderer
 {
     bool isCoreActivity = m_Timer.IsType(Timer::CORE_ACTIVITY);
     bool isSameThreadIdAsSelected = isCoreActivity &&
-                                    m_Timer.m_TID == Capture::GSelectedThreadId;
+                                    m_Timer.m_TID == GCapture->m_SelectedThreadId;
 
-    if( Capture::GSelectedThreadId != 0 && isCoreActivity && !isSameThreadIdAsSelected )
+    if( GCapture->m_SelectedThreadId != 0 && isCoreActivity && !isSameThreadIdAsSelected )
     {
         isInactive = true;
     }
@@ -111,7 +111,7 @@ void TextBox::Draw( TextRenderer & a_TextRenderer
     
     Color col = isSameThreadIdAsSelected ? m_Color : isInactive ? grey : m_Color;
 
-    if( this == Capture::GSelectedTextBox )
+    if( this == GCapture->m_SelectedTextBox )
     {
         col = selectionColor;
     }
@@ -148,7 +148,7 @@ void TextBox::Draw( TextRenderer & a_TextRenderer
 
         float maxSize = m_Pos[0]+m_Size[0] - posX;
 
-        Function* func = Capture::GSelectedFunctionsMap[m_Timer.m_FunctionAddress];
+        Function* func = GCapture->m_SelectedFunctionsMap[m_Timer.m_FunctionAddress];
         string text = Format( "%s %s", func ? func->PrettyNameStr().c_str() : "", m_Text.c_str() );
 
         if( !a_IsPicking && !isCoreActivity )

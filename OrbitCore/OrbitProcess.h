@@ -60,7 +60,7 @@ public:
     void AddThreadId( DWORD a_ThreadId ) { m_ThreadIds.insert(a_ThreadId); }
     void RemoveThreadId( DWORD a_ThreadId ) { m_ThreadIds.erase(a_ThreadId); };
     void AddModule( std::shared_ptr<Module> & a_Module );
-    void FindPdbs( const std::vector< fs::path > & a_SearchLocations );
+    void FindPdbs( const std::vector<fs::path> & a_SearchLocations );
 
     static bool SetPrivilege( LPCTSTR a_Name, bool a_Enable );
 
@@ -83,9 +83,6 @@ public:
     std::shared_ptr<Module> GetModuleFromAddress( DWORD64 a_Address );
     std::unique_ptr<llvm::pdb::PDBSymbol> SymbolFromAddress( DWORD64 a_Address );
     bool LineInfoFromAddress( DWORD64 a_Address, struct LineInfo & o_LineInfo );
-
-    void LoadSession(const Session& a_Session);
-    void SaveSession();
 
     std::vector<Function*>& GetFunctions() { return m_Functions; }
     std::vector<Type*>&     GetTypes()     { return m_Types; }

@@ -74,7 +74,7 @@ void MemoryTracker::DumpReport()
     for( auto rit = bytesToCallstack.rbegin(); rit != bytesToCallstack.rend(); ++rit )
     {
         CallstackID id = rit->second;
-        shared_ptr<CallStack> callstack = Capture::GetCallstack( id );
+        shared_ptr<CallStack> callstack = GCapture->GetCallstack( id );
 
         DWORD64 numBytes = rit->first;
         DWORD64 cid = id;

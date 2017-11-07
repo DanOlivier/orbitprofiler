@@ -471,7 +471,8 @@ void WatchWindow::Draw(const char* title, bool* p_opened )
         return;
     }
 
-    const vector< shared_ptr<Variable> > & watchedVars = Capture::GTargetProcess->GetWatchedVariables();
+    const vector< shared_ptr<Variable> > & watchedVars = 
+        GCapture->m_TargetProcess->GetWatchedVariables();
 
     if (ImGui::Button("Sync"))
     {

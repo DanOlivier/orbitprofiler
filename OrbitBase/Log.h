@@ -35,7 +35,7 @@ public:
             m_Entries[0] += a_String;
     }
     void Clear() { m_Entries.clear(); }
-    std::vector< std::string > & GetEntries(){ return m_Entries; }
+    std::vector<std::string> & GetEntries(){ return m_Entries; }
 
     template<typename... Args>
     inline void LOGF( const wchar_t* const _Format, Args&&... args )
@@ -45,7 +45,7 @@ public:
     }
 
 protected:
-    std::vector< std::string > m_Entries;
+    std::vector<std::string> m_Entries;
 };
 
 //-----------------------------------------------------------------------------
@@ -114,10 +114,10 @@ public:
         }
     }
 
-    std::vector< std::string > ConsumeEntries( OrbitLog::Type a_Type )
+    std::vector<std::string> ConsumeEntries( OrbitLog::Type a_Type )
     {
         ScopeLock lock( m_Mutexes[a_Type] );
-        std::vector< std::string > entries = std::move( m_Logs[a_Type].GetEntries() );
+        std::vector<std::string> entries = std::move( m_Logs[a_Type].GetEntries() );
         return entries;
     }
 

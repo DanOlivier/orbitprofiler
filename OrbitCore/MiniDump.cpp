@@ -4,7 +4,7 @@
 
 #include "MiniDump.h"
 #include "OrbitProcess.h"
-#include "CoreApp.h"
+//#include "CoreApp.h"
 #include "PrintVar.h"
 #include "Path.h"
 
@@ -25,11 +25,11 @@ MiniDump::MiniDump( const fs::path& a_FileName )
 //-----------------------------------------------------------------------------
 MiniDump::~MiniDump()
 {
-    delete m_MiniDump;
+    //delete m_MiniDump;
 }
 
 //-----------------------------------------------------------------------------
-shared_ptr<Process> MiniDump::ToOrbitProcess()
+shared_ptr<Process> MiniDump::ToOrbitProcess(const std::vector<fs::path>& symbolLocations)
 {
     MinidumpModuleList* moduleList = m_MiniDump->GetModuleList();
     if( moduleList )
@@ -68,7 +68,7 @@ shared_ptr<Process> MiniDump::ToOrbitProcess()
             process->AddModule(mod);
         }
 
-        process->FindPdbs(GCoreApp->m_SymbolLocations);
+        process->FindPdbs(symbolLocations);
         return process;
     }
 

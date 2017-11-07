@@ -16,7 +16,9 @@ HomeWindow::HomeWindow()
     m_DrawTestUI = false;
     m_DrawLog = true;
 
-    VariableTracing::AddCallback( [=]( vector<string> & a_Entries ){ this->VariableTracingCallback(a_Entries); } );
+    VariableTracing::AddCallback( [=]( vector<string> & a_Entries ){ 
+        this->VariableTracingCallback(a_Entries); 
+    } );
 }
 
 //-----------------------------------------------------------------------------
@@ -26,7 +28,7 @@ HomeWindow::~HomeWindow()
 }
 
 //-----------------------------------------------------------------------------
-void HomeWindow::VariableTracingCallback(vector< string > & a_Entries)
+void HomeWindow::VariableTracingCallback(vector<string> & a_Entries)
 {
     if (m_DrawDebugDisplay)
     {
