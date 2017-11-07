@@ -3,7 +3,7 @@
 //-----------------------------------
 
 #include "MiniDump.h"
-#include "OrbitProcess.h"
+#include "PTM/OrbitProcess.h"
 //#include "CoreApp.h"
 #include "PrintVar.h"
 #include "Path.h"
@@ -18,7 +18,7 @@ namespace fs = std::experimental::filesystem;
 //-----------------------------------------------------------------------------
 MiniDump::MiniDump( const fs::path& a_FileName )
 {
-    m_MiniDump = new google_breakpad::Minidump( a_FileName );
+    m_MiniDump.reset(new google_breakpad::Minidump( a_FileName ));
     m_MiniDump->Read();
 }
 
@@ -31,13 +31,18 @@ MiniDump::~MiniDump()
 //-----------------------------------------------------------------------------
 shared_ptr<Process> MiniDump::ToOrbitProcess(const std::vector<fs::path>& symbolLocations)
 {
+    /*MinidumpThreadList* threadList = m_MiniDump->GetThreadList();
+    if(threadList)
+    {
+        
+    }*/
     MinidumpModuleList* moduleList = m_MiniDump->GetModuleList();
     if( moduleList )
     {
         m_MiniDump->Print();
-        shared_ptr<Process> process = make_shared<Process>();
+        shared_ptr<Process> process = make_shared<Process>(0);
         process->SetIsRemote(true);
-        process->SetID( 0 );
+        //process->SetID( 0 );
 
         unsigned int numModules = moduleList->module_count();
         for( unsigned int i = 0; i < numModules; ++i )
@@ -55,7 +60,7 @@ shared_ptr<Process> MiniDump::ToOrbitProcess(const std::vector<fs::path>& symbol
             mod->m_FullName = fullName;
             mod->m_Name = fullName.filename();
             
-            if( mod->m_Name.extension() == L".exe" )
+            if( module == moduleList->GetMainModule() )
             {
                 process->m_Name = mod->m_Name;
             }

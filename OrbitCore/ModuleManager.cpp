@@ -3,11 +3,11 @@
 //-----------------------------------
 
 #include "ModuleManager.h"
-#include "OrbitModule.h"
+#include "PTM/OrbitModule.h"
 #include "Tcp.h"
 #include "TcpServer.h"
 #include "Capture.h"
-#include "OrbitProcess.h"
+#include "PTM/OrbitProcess.h"
 //#include "CoreApp.h"
 #include "Path.h"
 #include "Pdb.h"
@@ -38,14 +38,14 @@ void ModuleManager::OnReceiveMessage( const Message & a_Msg )
         if( dataType == DataTransferHeader::Data )
         {
             // TODO: make access to watched vars thread safe
-            for (shared_ptr<Variable> var : GCapture->m_TargetProcess->GetWatchedVariables())
+            /*for (shared_ptr<Variable> var : GCapture->m_TargetProcess->GetWatchedVariables())
             {
                 if (var->m_Address == address)
                 {
                     var->ReceiveValue(a_Msg);
                     break;
                 }
-            }
+            }*/
         }
         /*else if( dataType == DataTransferHeader::Code )
         {
@@ -58,7 +58,7 @@ void ModuleManager::OnReceiveMessage( const Message & a_Msg )
 }
 
 //-----------------------------------------------------------------------------
-void ModuleManager::LoadPdbAsync( const shared_ptr<Module> & a_Module, function<void()> a_CompletionCallback )
+/*void ModuleManager::LoadPdbAsync( const shared_ptr<Module> & a_Module, function<void()> a_CompletionCallback )
 {   
     if (!a_Module->m_Loaded)
     {
@@ -76,7 +76,7 @@ void ModuleManager::LoadPdbAsync( const shared_ptr<Module> & a_Module, function<
             }
         }
     }
-}
+}*/
 
 //-----------------------------------------------------------------------------
 void ModuleManager::LoadPdbAsync(const vector<fs::path> a_Modules, function<void()> a_CompletionCallback)
@@ -87,7 +87,7 @@ void ModuleManager::LoadPdbAsync(const vector<fs::path> a_Modules, function<void
 }
 
 //-----------------------------------------------------------------------------
-void ModuleManager::DequeueAndLoad()
+/*void ModuleManager::DequeueAndLoad()
 {
     shared_ptr<Module> module = nullptr;
     
@@ -112,7 +112,7 @@ void ModuleManager::DequeueAndLoad()
 
     // No module was found, call user callback
     m_UserCompletionCallback();
-}
+}*/
 
 //-----------------------------------------------------------------------------
 void ModuleManager::OnPdbLoaded()

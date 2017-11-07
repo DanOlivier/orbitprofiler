@@ -5,12 +5,12 @@
 
 #include "SamplingReportDataView.h"
 #include "CallStackDataView.h"
-#include "SymbolUtils.h"
+#include "PTM/OrbitProcess.h"
 #include "SamplingReport.h"
 #include "App.h"
 #include "Capture.h"
 #include "OrbitType.h"
-#include "OrbitModule.h"
+#include "PTM/OrbitModule.h"
 #include <memory>
 
 using namespace std;

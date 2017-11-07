@@ -48,7 +48,8 @@ bool DmpCallback( const google_breakpad::MinidumpDescriptor& descriptor, void* c
 }
 
 //-----------------------------------------------------------------------------
-bool OnDemandDmpCallback( const google_breakpad::MinidumpDescriptor& descriptor, void* context, bool succeeded )
+bool OnDemandDmpCallback( const google_breakpad::MinidumpDescriptor& descriptor, 
+    void* context, bool succeeded )
 {
     //SendDumpInternal( dump_path, minidump_id );
     return false;

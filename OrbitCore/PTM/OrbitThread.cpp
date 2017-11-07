@@ -2,7 +2,7 @@
 // Copyright Pierric Gimmig 2013-2017
 //-----------------------------------
 
-#include "OrbitThread.h"
+#include "PTM/OrbitThread.h"
 #include "Utils.h"
 
 #include <proc/readproc.h>

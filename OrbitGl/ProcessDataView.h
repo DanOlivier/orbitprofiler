@@ -3,8 +3,14 @@
 //-----------------------------------
 #pragma once
 
-#include "ProcessUtils.h"
+#include "PTM/ProcessUtils.h"
 #include "DataViewModel.h"
+#include "Threading.h"
+
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+
+class Process;
 
 class ProcessesDataView : public DataViewModel
 {

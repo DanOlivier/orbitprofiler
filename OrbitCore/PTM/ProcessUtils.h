@@ -3,8 +3,14 @@
 //-----------------------------------
 #pragma once
 
-#include "OrbitProcess.h"
+//#include "PTM/OrbitProcess.h"
+#include "BaseTypes.h"
+
 #include <unordered_map>
+#include <vector>
+#include <memory>
+
+class Process;
 
 //-----------------------------------------------------------------------------
 struct ProcessList

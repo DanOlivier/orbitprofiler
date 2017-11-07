@@ -43,7 +43,6 @@ public:
     bool IsCapturing();
     void Update();
     void DisplayStats();
-    void TestHooks();
     void OpenCapture( const fs::path & a_CaptureName );
     bool IsOtherInstanceRunning();
     void LoadSession( const std::shared_ptr<Session> & a_Session );
@@ -71,15 +70,12 @@ public:
     std::wstring m_PresetToLoad;  // TODO: allow multiple presets
     std::wstring m_ProcessToInject;
     bool         m_IsSampling = false;
-    bool         m_IsTesting = false;
     int          m_NumSamples = 0;
     int          m_NumSamplingTicks = 0;
-    int          m_FunctionIndex = -1;
     int          m_NumInstalledHooks = 0;
     bool         m_HasSamples = false;
     bool         m_HasContextSwitches = false;
 
-    Timer        m_TestTimer;
     //ULONG64      m_MainFrameFunction = 0;
     ULONG64      m_NumContextSwitches = 0;
     ULONG64      m_NumProfileEvents = 0;

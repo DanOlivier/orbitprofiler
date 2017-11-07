@@ -6,9 +6,8 @@
 #include "BaseTypes.h"
 #include "SerializationMacros.h"
 #include "Threading.h"
-#include "OrbitThread.h"
+#include "PTM/OrbitThread.h"
 
-#include <set>
 #include <unordered_set>
 #include <memory>
 #include <map>
@@ -16,17 +15,8 @@
 #include <experimental/filesystem>
 namespace fs = std::experimental::filesystem;
 
-class Function;
-class Type;
-class Variable;
 //class Thread;
-class Session;
 struct Module;
-
-namespace llvm { namespace pdb {
-    class PDBSymbol;
-    class IPDBSession;
-}}
 
 //#include <proc/readproc.h>
 /*struct proc_t;
@@ -42,14 +32,14 @@ typedef std::unique_ptr<proc_t, ProcDeleter> ProcHandle_t;
 class Process
 {
 public:
+    //Process(DWORD a_ID); // remote (minidump)
     Process(DWORD a_ID, ProcHandle_t handle);
     ~Process();
 
     typedef std::map< DWORD64, std::shared_ptr<Module> > ModuleMap_t;
     typedef std::map< fs::path, std::shared_ptr<Module> > ModuleMapByName_t;
 
-    void LoadDebugInfo();
-    ModuleMap_t ListModules();
+    void PopulateModules();
     void EnumerateThreads();
     void UpdateCpuTime();
     void UpdateThreadUsage();
@@ -57,10 +47,7 @@ public:
     void SortThreadsById();
     bool IsElevated() const { return m_IsElevated; }
     bool HasThread( DWORD a_ThreadId ) const { return m_ThreadIds.find( a_ThreadId ) != m_ThreadIds.end(); }
-    void AddThreadId( DWORD a_ThreadId ) { m_ThreadIds.insert(a_ThreadId); }
-    void RemoveThreadId( DWORD a_ThreadId ) { m_ThreadIds.erase(a_ThreadId); };
     void AddModule( std::shared_ptr<Module> & a_Module );
-    void FindPdbs( const std::vector<fs::path> & a_SearchLocations );
 
     static bool SetPrivilege( LPCTSTR a_Name, bool a_Enable );
 
@@ -75,38 +62,14 @@ public:
     double GetCpuUsage() const { return m_CpuUsage; }
     const ProcHandle_t& GetHandle() const { return m_Handle; }
     bool GetIs64Bit() const { return m_Is64Bit; }
-    int NumModules() const { return (int)m_Modules.size(); }
     bool GetIsRemote() const { return m_IsRemote; }
     void SetIsRemote( bool val ) { m_IsRemote = val; }
 
-    Function* GetFunctionFromAddress( DWORD64 a_Address, bool a_IsExact = true );
     std::shared_ptr<Module> GetModuleFromAddress( DWORD64 a_Address );
-    std::unique_ptr<llvm::pdb::PDBSymbol> SymbolFromAddress( DWORD64 a_Address );
-    bool LineInfoFromAddress( DWORD64 a_Address, struct LineInfo & o_LineInfo );
 
-    std::vector<Function*>& GetFunctions() { return m_Functions; }
-    std::vector<Type*>&     GetTypes()     { return m_Types; }
-    std::vector<Variable*>& GetGlobals()   { return m_Globals; }
     std::vector<std::shared_ptr<Thread> >& GetThreads(){ return m_Threads; }
 
-    void AddWatchedVariable( std::shared_ptr<Variable> a_Variable ) { m_WatchedVariables.push_back( a_Variable ); }
-    const std::vector< std::shared_ptr<Variable> > & GetWatchedVariables(){ return m_WatchedVariables; }
-    void RefreshWatchedVariables();
-    void ClearWatchedVariables();
-
-    void AddType( Type & a_Type );
-
-    Mutex& GetDataMutex() { return m_DataMutex; }
-
-    DWORD64 GetOutputDebugStringAddress();
-    DWORD64 GetRaiseExceptionAddress();
-
-    void FindCoreFunctions();
-
     ORBIT_SERIALIZABLE;
-
-protected:
-    void ClearTransients();
 
 private:
     DWORD       m_ID;
@@ -115,26 +78,14 @@ private:
     fs::path    m_FullName;
     bool        m_IsElevated = false;
 
-    //FILETIME    m_LastUserTime = {0};
-    //FILETIME    m_LastKernTime = {0};
     double      m_CpuUsage = 0.0;
     Timer       m_UpdateCpuTimer;
     bool        m_Is64Bit = false;
-    bool        m_DebugInfoLoaded = false;
     bool        m_IsRemote = false;
-    Mutex       m_DataMutex;
 
     ModuleMap_t m_Modules;
     ModuleMapByName_t m_NameToModuleMap;
     std::vector<std::shared_ptr<Thread> >   m_Threads;
     std::unordered_set<DWORD>               m_ThreadIds;
-
-    // Transients
-    std::vector< Function* >    m_Functions;
-    std::vector< Type* >        m_Types;
-    std::vector< Variable* >    m_Globals;
-    std::vector< std::shared_ptr<Variable> > m_WatchedVariables;
-    
-    std::unordered_set< unsigned long long > m_UniqueTypeHash;
 };
 

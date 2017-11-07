@@ -2,7 +2,8 @@
 // Copyright Pierric Gimmig 2013-2017
 //-----------------------------------
 
-#include "ProcessUtils.h"
+#include "PTM/ProcessUtils.h"
+#include "PTM/OrbitProcess.h"
 #include "Log.h"
 
 #include <proc/readproc.h>

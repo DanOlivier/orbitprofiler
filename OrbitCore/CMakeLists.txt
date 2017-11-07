@@ -1,3 +1,6 @@
+add_subdirectory(PTM)
+add_subdirectory(test)
+
 set(EXTERNAL_HEADERS
     #${EXTERN_ROOT}/DIA2Dump/Callback.h
     #${EXTERN_ROOT}/DIA2Dump/dia2dump.h
@@ -34,7 +37,6 @@ set(HEADERS
     Capture.h
     ContextSwitch.h
     CoreApp.h
-    #cvconst.h
     Diff.h
     EventBuffer.h
     EventCallbacks.h
@@ -50,21 +52,16 @@ set(HEADERS
     ModuleManager.h
     OrbitDia.h
     OrbitFunction.h
-    OrbitModule.h
-    OrbitProcess.h
     OrbitRule.h
     OrbitSession.h
-    OrbitThread.h
     OrbitType.h
     OrbitUnreal.h
     Params.h
     Pdb.h
-    ProcessUtils.h
     RingBuffer.h
     SamplingProfiler.h
     Serialization.h
     ServerTimerManager.h
-    SymbolUtils.h
     Tcp.h
     TcpServer.h
     Variable.h
@@ -74,47 +71,42 @@ set(HEADERS
 
 set(SOURCES
     #Callstack.cpp
-    Capture.cpp
+    #Capture.cpp
     #ContextSwitch.cpp
     #Diff.cpp
     #EventBuffer.cpp
     #EventCallbacks.cpp
     #EventTracer.cpp
     #EventUtils.cpp
-    FunctionStats.cpp
+    #FunctionStats.cpp
     #Injection.cpp
-    LogInterface.cpp
-    MemoryTracker.cpp
+    #LogInterface.cpp
+    #MemoryTracker.cpp
     #MiniDump.cpp
-    ModuleManager.cpp
+    #ModuleManager.cpp
     #OrbitDia.cpp
-    OrbitFunction.cpp
-    OrbitModule.cpp
-    OrbitProcess.cpp
-    OrbitRule.cpp
-    OrbitSession.cpp
-    OrbitThread.cpp
+    #OrbitFunction.cpp
+    #OrbitRule.cpp
+    #OrbitSession.cpp
     #OrbitType.cpp
     #OrbitUnreal.cpp
-    Params.cpp
-    Pdb.cpp
-    ProcessUtils.cpp
+    #Params.cpp
+    #Pdb.cpp
     #SamplingProfiler.cpp
-    Serialization.cpp
-    SymbolUtils.cpp
-    Tcp.cpp
-    TcpServer.cpp
-    Variable.cpp
-    VariableTracing.cpp
-    Version.cpp
+    #Serialization.cpp
+    #Tcp.cpp
+    #TcpServer.cpp
+    #Variable.cpp
+    #VariableTracing.cpp
+    #Version.cpp
 )
 
 source_group("Header Files" FILES ${HEADERS})
 source_group("Source Files" FILES ${SOURCES})
 
 add_library(OrbitCore STATIC
-	${SOURCES} ${EXTERNAL_SOURCES}
-	${HEADERS} ${EXTERNAL_HEADERS}
+    ${EXTERNAL_SOURCES} ${EXTERNAL_HEADERS}
+    ${SOURCES} ${HEADERS} 
 )
 
 target_include_directories(OrbitCore
@@ -128,7 +120,7 @@ PRIVATE
 
 target_link_libraries(OrbitCore
     OrbitBase
-    #dbghelp.lib
+    OrbitPTM
     LLVMBinaryFormat
     LLVMDebugInfoCodeView
     LLVMDebugInfoMSF
@@ -139,7 +131,4 @@ target_link_libraries(OrbitCore
     ${BREAKPAD_LIBRARIES}
     procps
     stdc++fs
-    magic
 )
-
-add_subdirectory(test)

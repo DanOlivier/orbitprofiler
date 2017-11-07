@@ -8,7 +8,7 @@
 #include "TcpForward.h"
 #include "Path.h"
 //#include "Injection.h"
-#include "ProcessUtils.h"
+//#include "PTM/ProcessUtils.h"
 #include "SamplingProfiler.h"
 #include "OrbitSession.h"
 #include "Serialization.h"
@@ -339,21 +339,6 @@ void Capture::SendDataTrackingInfo()
         msg.m_Size = (int)args.size() * sizeof(Argument);
         
         GTcpServer->Send( msg, (void*)args.data() );
-    }
-}
-
-//-----------------------------------------------------------------------------
-void Capture::TestHooks()
-{
-    if( !m_IsTesting )
-    {
-        m_IsTesting = true;
-        m_FunctionIndex = 0;
-        m_TestTimer.Start();
-    }
-    else
-    {
-        m_IsTesting = false;
     }
 }
 

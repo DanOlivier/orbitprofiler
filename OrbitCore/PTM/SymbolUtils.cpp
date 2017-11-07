@@ -2,12 +2,12 @@
 // Copyright Pierric Gimmig 2013-2017
 //-----------------------------------
 
-#include "SymbolUtils.h"
-#include "OrbitDbgHelp.h"
-#include "OrbitDia.h"
-#include "OrbitModule.h"
+#include "PTM/SymbolUtils.h"
+#include "PTM/OrbitModule.h"
+
 #include "PrintVar.h"
 #include "Path.h"
+#include "Log.h"
 
 #include <magic.h>
 
@@ -15,6 +15,8 @@
 #include <sys/types.h>
 #include <fcntl.h>
 #include <unistd.h>
+
+#include <set>
 
 using namespace std;
 namespace fs = std::experimental::filesystem;

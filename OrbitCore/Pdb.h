@@ -53,12 +53,11 @@ public:
     std::vector<Type>&        GetTypes()                  { return m_Types; }
     std::vector<Variable>&    GetGlobals()                { return m_Globals; }
     HMODULE              GetHModule()                { return m_MainModule; }
-    Type &               GetTypeFromId( ULONG a_Id ) { return m_TypeMap[a_Id]; }
+    Type&                GetTypeFromId( ULONG a_Id ) { return m_TypeMap[a_Id]; }
     Type*                GetTypePtrFromId( ULONG a_ID );
     
     llvm::codeview::GUID GetGuid();
 
-    
     void SetMainModule( HMODULE a_Module ){ m_MainModule = a_Module; }
 
     void Print() const;

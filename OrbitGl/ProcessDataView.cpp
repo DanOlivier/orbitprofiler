@@ -10,6 +10,8 @@
 #include "App.h"
 #include "Callstack.h"
 
+#include "PTM/OrbitProcess.h"
+
 using namespace std;
 
 //-----------------------------------------------------------------------------

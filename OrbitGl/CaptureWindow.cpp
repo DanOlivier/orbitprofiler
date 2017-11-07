@@ -6,7 +6,7 @@
 #include "Capture.h"
 #include "GlUtils.h"
 #include "App.h"
-#include "SymbolUtils.h"
+#include "PTM/OrbitProcess.h"
 #include "TcpServer.h"
 #include "ServerTimerManager.h"
 #include "PrintVar.h"
@@ -653,11 +653,6 @@ void CaptureWindow::DrawStatus()
     {
         string injectStr = Format( " %s", GCapture->m_InjectedProcess.c_str() );
         m_ProcessX = m_TextRenderer.AddText2D( injectStr.c_str(), PosX, PosY, Z_VALUE_TEXT_UI, s_Color, -1, true ); PosY += s_IncY;
-    }
-
-    if( GCapture->m_IsTesting )
-    {
-        m_TextRenderer.AddText2D( "TESTING", PosX, PosY, Z_VALUE_TEXT_UI, s_Color, -1, true ); PosY += s_IncY;
     }
 }
 

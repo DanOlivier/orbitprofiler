@@ -46,9 +46,9 @@ TimeGraph::TimeGraph(GlCanvas* canvas, TextRenderer* textRenderer,
     //, m_NeedsUpdatePrimitives(false)
     //, m_NeedsRedraw(false)
     //, m_DrawText(true)
-    , m_Canvas(canvas)
+    //, m_Canvas(canvas)
 {
-    SetCanvas(this);
+    SetCanvas(canvas);
 
     m_LastThreadReorder.Start();
 }

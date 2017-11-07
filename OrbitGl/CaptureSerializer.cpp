@@ -11,8 +11,8 @@
 #include "Pdb.h"
 #include "PrintVar.h"
 #include "App.h"
-#include "OrbitProcess.h"
-#include "OrbitModule.h"
+#include "PTM/OrbitProcess.h"
+#include "PTM/OrbitModule.h"
 
 #include <fstream>
 #include <memory>

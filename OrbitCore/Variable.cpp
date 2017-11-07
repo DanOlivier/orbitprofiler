@@ -25,7 +25,7 @@ Variable::Variable() : m_Line(0)
                      , m_UnmodifiedTypeId(0)
                      , m_Selected(false)
                      , m_BasicType(Invalid)
-                     , m_Pdb(0)
+                     //, m_Pdb(0)
                      , m_Populated(false)
                      , m_IsParent(false)
                      , m_Data(nullptr)
@@ -265,7 +265,7 @@ shared_ptr<Variable> Variable::FindImmediateChild( const wstring & a_Name )
 }
 
 //-----------------------------------------------------------------------------
-const Type * Variable::GetType() const
+/*const Type * Variable::GetType() const
 {
      return m_Pdb ? m_Pdb->GetTypePtrFromId(m_TypeIndex) : nullptr;
 }
@@ -274,7 +274,7 @@ const Type * Variable::GetType() const
 Type * Variable::GetType()
 {
     return m_Pdb ? m_Pdb->GetTypePtrFromId( m_TypeIndex ) : nullptr;
-}
+}*/
 
 //-----------------------------------------------------------------------------
 wstring Variable::GetTypeName() const

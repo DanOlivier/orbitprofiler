@@ -6,6 +6,7 @@
 #include "ThreadDataViewGl.h"
 #include "ThreadView.h"
 #include "Capture.h"
+#include "PTM/OrbitProcess.h"
 
 using namespace std;
 

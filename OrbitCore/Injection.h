@@ -3,12 +3,15 @@
 //-----------------------------------
 #pragma once
 
-#include "ProcessUtils.h"
+//#include "PTM/ProcessUtils.h"
+#include "BaseTypes.h"
 #include <string>
 
 #if !(_WIN32||_WIN64)
 #define WINAPI
 #endif
+
+class Process;
 
 class Injection
 {

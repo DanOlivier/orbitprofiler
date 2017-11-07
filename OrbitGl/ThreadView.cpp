@@ -5,7 +5,8 @@
 #include "ThreadView.h"
 #include "Log.h"
 #include "Capture.h"
-#include "OrbitThread.h"
+#include "PTM/OrbitThread.h"
+#include "PTM/OrbitProcess.h"
 #include "SamplingProfiler.h"
 
 using namespace std;

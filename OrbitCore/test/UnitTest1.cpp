@@ -1,10 +1,10 @@
 #include <Injection.h>
-#include <ServerTimerManager.h>
 #include <Path.h>
-#include <TcpServer.h>
 #include <Log.h>
-#include <SymbolUtils.h>
-#include <OrbitModule.h>
+#include <PTM/SymbolUtils.h>
+#include <PTM/OrbitModule.h>
+#include <PTM/OrbitProcess.h>
+#include <PTM/ProcessUtils.h>
 
 #include <gtest/gtest.h>
 
@@ -14,15 +14,15 @@
 
 using namespace std;
 
-ServerTimerManager* GServerTimerManager = new ServerTimerManager();
+//ServerTimerManager* GServerTimerManager = new ServerTimerManager();
 
-namespace UnitTest2
+namespace UnitTest1
 {
-    class InjectionTest : public testing::Test {
+    class OrbitCoreTest : public testing::Test {
     protected:
         virtual void SetUp()
         {
-            GTcpServer = new TcpServer();
+            //GTcpServer = new TcpServer();
         }
 
         virtual void TearDown() 
@@ -30,7 +30,7 @@ namespace UnitTest2
         }
     };
 
-    TEST_F(InjectionTest, InjectNotepad) 
+    TEST_F(OrbitCoreTest, BasicTest) 
     {
         ProcessList processList;
 

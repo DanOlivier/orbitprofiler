@@ -14,6 +14,7 @@
 #include "Log.h"
 #include "App.h"
 #include "../OrbitPlugin/OrbitSDK.h"
+#include "PTM/OrbitProcess.h"
 
 #include <imgui_internal.h>
 

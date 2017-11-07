@@ -142,7 +142,7 @@ public:
     bool                    m_Selected;
     BasicType               m_BasicType;
     class Timer*            m_SyncTimer;
-    Pdb*                    m_Pdb;
+    //Pdb*                    m_Pdb;
     bool                    m_Populated;
     bool                    m_IsParent;
     DWORD64                 m_BaseOffset;

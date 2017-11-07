@@ -5,13 +5,12 @@
 #include "SamplingProfiler.h"
 #include "Injection.h"
 #include "Capture.h"
-#include "SymbolUtils.h"
 #include "Log.h"
 #include "Params.h"
-#include "OrbitThread.h"
+#include "PTM/OrbitThread.h"
 #include <dia2.h>
 #include "Serialization.h"
-#include "OrbitModule.h"
+#include "PTM/OrbitModule.h"
 #include "PrintVar.h"
 
 #include <set>

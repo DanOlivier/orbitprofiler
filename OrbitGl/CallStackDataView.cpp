@@ -6,7 +6,7 @@
 #include "CallStackDataView.h"
 #include "Callstack.h"
 #include "Capture.h"
-#include "OrbitProcess.h"
+#include "PTM/OrbitProcess.h"
 #include "SamplingProfiler.h"
 #include "Pdb.h"
 #include "App.h"

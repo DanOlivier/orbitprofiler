@@ -4,18 +4,17 @@
 
 
 #include "OrbitFunction.h"
-#include "OrbitModule.h"
+#include "PTM/OrbitModule.h"
 #include "Serialization.h"
 #include "Pdb.h"
 #include "Capture.h"
 #include "Log.h"
 #include "Params.h"
-#include "OrbitProcess.h"
+#include "PTM/OrbitProcess.h"
 #include "TcpServer.h"
 #include "OrbitDia.h"
 #include "SamplingProfiler.h"
 #include "Utils.h"
-#include "SymbolUtils.h"
 //#include "DiaParser.h"
 
 //#include <dia2.h>

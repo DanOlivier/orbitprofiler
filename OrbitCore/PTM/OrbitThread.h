@@ -3,7 +3,7 @@
 //-----------------------------------
 #pragma once
 
-#include "ScopeTimer.h"
+//#include "ScopeTimer.h"
 #include "RingBuffer.h"
 
 #include <memory>
@@ -17,11 +17,13 @@ struct ProcDeleter {
 };
 typedef std::unique_ptr<proc_t, ProcDeleter> ProcHandle_t;
 
+typedef unsigned long ThreadID;
+
 //-----------------------------------------------------------------------------
 class Thread
 {
 public:
-    Thread(DWORD a_ID, ProcHandle_t handle) :
+    Thread(ThreadID a_ID, ProcHandle_t handle) :
         m_TID(a_ID), 
         m_Handle(std::move(handle))
     {
@@ -32,13 +34,8 @@ public:
     void  UpdateUsage();
 
 //private:
-    DWORD       m_TID = 0;
+    ThreadID m_TID = 0;
     ProcHandle_t m_Handle;
-    //bool        m_Init = false;
-    //FILETIME    m_LastUserTime;
-    //FILETIME    m_LastKernTime;
-    //Timer       m_UpdateThreadTimer;
-    RingBuffer< float, 32 > m_Usage;
-    int counter = 0;
+    RingBuffer<float, 32> m_Usage;
 };
 

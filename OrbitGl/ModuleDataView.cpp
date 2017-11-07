@@ -4,8 +4,8 @@
 
 
 #include "ModuleDataView.h"
-#include "OrbitModule.h"
-#include "SymbolUtils.h"
+#include "PTM/OrbitModule.h"
+#include "PTM/OrbitProcess.h"
 #include "App.h"
 
 using namespace std;
@@ -97,8 +97,8 @@ void ModulesDataView::OnSort(int a_Column, bool a_Toggle)
     case MDV_ModuleName:    sorter = ORBIT_PROC_SORT(m_Name);         break;
     case MDV_Path:          sorter = ORBIT_PROC_SORT(m_FullName);     break;
     case MDV_AddressRange:  sorter = ORBIT_PROC_SORT(m_AddressStart); break;
-    case MDV_HasPdb:        sorter = ORBIT_PROC_SORT(m_FoundPdb);     break;
-    case MDV_PdbSize:       sorter = ORBIT_PROC_SORT(m_PdbSize);      break;
+    //case MDV_HasPdb:        sorter = ORBIT_PROC_SORT(m_FoundPdb);     break;
+    //case MDV_PdbSize:       sorter = ORBIT_PROC_SORT(m_PdbSize);      break;
     case MDV_Loaded:        sorter = ORBIT_PROC_SORT(m_Loaded);       break;
     case MDV_Index:
     case MDV_NumColumns:

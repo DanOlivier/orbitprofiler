@@ -10,7 +10,7 @@
 
 #include "Capture.h"
 #include "ContextSwitch.h"
-#include "OrbitProcess.h"
+#include "PTM/OrbitProcess.h"
 #include "SamplingProfiler.h"
 #include "PrintVar.h"
 #include "ServerTimerManager.h"

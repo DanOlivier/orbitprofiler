@@ -2,13 +2,15 @@
 // Copyright Pierric Gimmig 2013-2017
 //-----------------------------------
 
+#include "App.h"
+
+#include "PTM/OrbitProcess.h"
 #include "TextRenderer.h"
 #include "GlCanvas.h"
 #include "Capture.h"
 #include "ImGuiOrbit.h"
 #include "Params.h"
 #include "Log.h"
-#include "App.h"
 #include "ProcessDataView.h"
 #include "ModuleDataView.h"
 #include "FunctionDataView.h"

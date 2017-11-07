@@ -12,7 +12,6 @@
 #include "ImGuiOrbit.h"
 #include "GlCanvas.h"
 #include "OpenGl.h"
-#include "SymbolUtils.h"
 #include "Pdb.h"
 
 #include "Message.h"

@@ -3,9 +3,9 @@
 //-----------------------------------
 
 
-#include "OrbitModule.h"
+#include "PTM/OrbitModule.h"
 #include "Serialization.h"
-#include "Pdb.h"
+//#include "Pdb.h"
 #include "Path.h"
 
 using namespace std;
@@ -35,7 +35,7 @@ bool Module::IsDll() const
 }
 
 //-----------------------------------------------------------------------------
-bool Module::LoadDebugInfo()
+/*bool Module::LoadDebugInfo()
 {
     m_Pdb = make_shared<Pdb>( m_PdbName.c_str() );
     m_Pdb->SetMainModule( (HMODULE)m_AddressStart );
@@ -46,14 +46,14 @@ bool Module::LoadDebugInfo()
     }
 
     return false;
-}
+}*/
 
 //-----------------------------------------------------------------------------
 ORBIT_SERIALIZE( Module, 0 )
 {
     ORBIT_NVP_VAL( 0, m_Name );
     ORBIT_NVP_VAL( 0, m_FullName );
-    ORBIT_NVP_VAL( 0, m_PdbName );
+    //ORBIT_NVP_VAL( 0, m_PdbName );
     ORBIT_NVP_VAL( 0, m_Directory );
     ORBIT_NVP_VAL( 0, m_PrettyName );
     ORBIT_NVP_VAL( 0, m_AddressRange );
@@ -61,8 +61,8 @@ ORBIT_SERIALIZE( Module, 0 )
     ORBIT_NVP_VAL( 0, m_AddressStart );
     ORBIT_NVP_VAL( 0, m_AddressEnd );
     //ORBIT_NVP_VAL( 0, m_EntryPoint );
-    ORBIT_NVP_VAL( 0, m_FoundPdb );
+    //ORBIT_NVP_VAL( 0, m_FoundPdb );
     ORBIT_NVP_VAL( 0, m_Selected );
     ORBIT_NVP_VAL( 0, m_Loaded );
-    ORBIT_NVP_VAL( 0, m_PdbSize );
+    //ORBIT_NVP_VAL( 0, m_PdbSize );
 }

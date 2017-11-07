@@ -73,7 +73,7 @@ public:
     void AddTextBox( const TextBox& a_TextBox );
     void AddContextSwitch( const ContextSwitch & a_CS );
     //void SetPickingManager( class PickingManager* a_Manager ){ m_PickingManager = a_Manager; }
-    //void SetCanvas( GlCanvas* a_Canvas );
+    void SetCanvas( GlCanvas* a_Canvas );
     
 private:
     TextRenderer                    m_TextRendererStatic;

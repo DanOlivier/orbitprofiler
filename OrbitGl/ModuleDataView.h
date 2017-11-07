@@ -4,8 +4,11 @@
 #pragma once
 
 #include "OrbitType.h"
-#include "ProcessUtils.h"
+//#include "PTM/ProcessUtils.h"
 #include "DataViewModel.h"
+
+class Process;
+class Module;
 
 class ModulesDataView : public DataViewModel
 {

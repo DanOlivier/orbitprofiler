@@ -12,7 +12,6 @@
 #include <xxhash.h> // xxHash-r42
 
 #include "SamplingProfiler.h"
-#include "SymbolUtils.h"
 #include "PrintVar.h"
 #include "OrbitDia.h"
 #include "Params.h"
