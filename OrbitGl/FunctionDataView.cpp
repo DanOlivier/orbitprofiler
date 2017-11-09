@@ -204,7 +204,7 @@ void FunctionsDataView::OnContextMenu( int a_MenuIndex, vector<int> & a_ItemIndi
         case FUNC_SET_AS_FRAME:
             for( int i : a_ItemIndices )
             {
-                GetFunction( i ).SetAsMainFrameFunction();
+                GetFunction( i ).Select();
                 break;
             }
             break;

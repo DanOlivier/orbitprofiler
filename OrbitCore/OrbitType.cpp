@@ -13,10 +13,9 @@
 
 #include "SamplingProfiler.h"
 #include "PrintVar.h"
-#include "OrbitDia.h"
 #include "Params.h"
 #include "Serialization.h"
-#include "TcpServer.h"
+//#include "TcpServer.h"
 
 //#include <dia2.h>
 
@@ -31,9 +30,9 @@ void Type::LoadDiaInfo()
         {
             m_DiaInfoLoaded = true;
             GenerateDiaHierarchy();
-            DiaParser parser;
+            /*DiaParser parser;
             parser.GetTypeInformation( this, SymTagData );
-            parser.GetTypeInformation( this, SymTagFunction );
+            parser.GetTypeInformation( this, SymTagFunction );*/
             GenerateDataLayout();
         }
     }
@@ -57,9 +56,9 @@ void Type::GenerateDiaHierarchy()
         
         if( parentType.m_Id == parentId )
         {
-            DiaParser parser;
+            /*DiaParser parser;
             parser.GetTypeInformation( &parentType, SymTagData );
-            parentType.GenerateDiaHierarchy();
+            parentType.GenerateDiaHierarchy();*/
         }
     }
 

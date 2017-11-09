@@ -8,7 +8,6 @@
 #include <map>
 #include <set>
 
-#include "OrbitDbgHelp.h"
 #include "Variable.h"
 #include "FunctionStats.h"
 #include "SerializationMacros.h"

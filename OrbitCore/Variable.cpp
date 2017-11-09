@@ -9,9 +9,7 @@
 #include "TcpServer.h"
 #include "ScopeTimer.h"
 //#include "Capture.h"
-//#include "CoreApp.h"
 #include "Serialization.h"
-//#include "DiaParser.h"
 
 #include <llvm/DebugInfo/PDB/PDBSymbol.h>
 

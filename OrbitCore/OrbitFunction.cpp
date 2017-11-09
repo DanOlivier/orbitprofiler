@@ -2,7 +2,6 @@
 // Copyright Pierric Gimmig 2013-2017
 //-----------------------------------
 
-
 #include "OrbitFunction.h"
 #include "PTM/OrbitModule.h"
 #include "Serialization.h"
@@ -12,12 +11,8 @@
 #include "Params.h"
 #include "PTM/OrbitProcess.h"
 #include "TcpServer.h"
-#include "OrbitDia.h"
 #include "SamplingProfiler.h"
 #include "Utils.h"
-//#include "DiaParser.h"
-
-//#include <dia2.h>
 
 #include <llvm/DebugInfo/PDB/PDBSymbol.h>
 
@@ -27,13 +22,6 @@ using namespace std;
 Function::~Function()
 {
 
-}
-
-//-----------------------------------------------------------------------------
-void Function::SetAsMainFrameFunction()
-{
-    //GCapture->m_MainFrameFunction = (ULONG64)m_Pdb->GetHModule() + this->m_Address;
-    m_Selected = true;
 }
 
 //-----------------------------------------------------------------------------

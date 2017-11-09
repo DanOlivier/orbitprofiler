@@ -4,7 +4,6 @@
 
 #include "CrashHandler.h"
 #include "ScopeTimer.h"
-#include "OrbitDbgHelp.h"
 #include "PrintVar.h"
 #include "Path.h"
 

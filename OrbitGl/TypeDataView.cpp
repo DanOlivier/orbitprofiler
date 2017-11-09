@@ -9,7 +9,6 @@
 #include "App.h"
 #include "PTM/OrbitProcess.h"
 #include "Pdb.h"
-#include "OrbitDia.h"
 #include <algorithm>
 
 #include <llvm/DebugInfo/PDB/PDBSymbol.h>

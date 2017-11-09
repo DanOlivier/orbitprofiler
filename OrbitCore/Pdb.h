@@ -3,7 +3,6 @@
 //-----------------------------------
 #pragma once
 
-#include "OrbitDbgHelp.h"
 #include "OrbitType.h"
 #include "Variable.h"
 

@@ -25,7 +25,6 @@ struct Module
 
     fs::path      m_Name;
     fs::path      m_FullName;
-    //fs::path      m_PdbName;
     fs::path      m_Directory;
     std::wstring  m_PrettyName;
     std::wstring  m_AddressRange;
@@ -34,11 +33,12 @@ struct Module
     DWORD64       m_AddressStart;
     DWORD64       m_AddressEnd;
     //DWORD64       m_EntryPoint;
-    //bool          m_FoundPdb;
     bool          m_Selected;
     bool          m_Loaded;
-    //ULONG64       m_PdbSize;
 
+    //fs::path      m_PdbName;
+    //bool          m_FoundPdb;
+    //ULONG64       m_PdbSize;
     //mutable std::shared_ptr<Pdb> m_Pdb;
 
     ORBIT_SERIALIZABLE;

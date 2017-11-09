@@ -1,6 +1,5 @@
 #pragma once
 
-#include "OrbitDbgHelp.h"
 #include <llvm/DebugInfo/CodeView/CodeView.h>
 #include "BaseTypes.h"
 

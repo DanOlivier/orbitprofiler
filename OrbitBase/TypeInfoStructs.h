@@ -1,8 +1,6 @@
 // Author: Oleg Starodumov
 #pragma once
 
-//#define _NO_CVCONST_H
-#include "OrbitDbgHelp.h"
 #include "Serialization.h"
 
 #include <llvm/DebugInfo/PDB/PDBTypes.h>

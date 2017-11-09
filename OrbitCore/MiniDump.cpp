@@ -4,7 +4,6 @@
 
 #include "MiniDump.h"
 #include "PTM/OrbitProcess.h"
-//#include "CoreApp.h"
 #include "PrintVar.h"
 #include "Path.h"
 

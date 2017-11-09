@@ -142,11 +142,11 @@ void ProcessesDataView::OnSelect( int a_Index )
     {
         if( !m_SelectedProcess->GetIsRemote() )
         {
-            m_SelectedProcess->ListModules();
+            m_SelectedProcess->PopulateModules();
         }
 
         m_ModulesDataView->SetProcess( m_SelectedProcess );
-        //XXX:!!! GCapture->SetTargetProcess( m_SelectedProcess );
+        GCapture->SetTargetProcess( m_SelectedProcess );
         GOrbitApp->FireRefreshCallbacks();
     }
 }

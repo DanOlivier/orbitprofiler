@@ -490,7 +490,6 @@ void TimeGraph::UpdatePrimitives( bool a_Picking )
             bool isContextSwitch = timer.IsType( Timer::THREAD_ACTIVITY );
             bool isCoreActivity  = timer.IsType( Timer::CORE_ACTIVITY );
             bool isVisibleWidth = NormalizedLength * m_Canvas->getWidth() > 1;
-            //bool isMainFrameFunction = GCapture->m_MainFrameFunction && ( GCapture->m_MainFrameFunction == timer.m_FunctionAddress );
             bool isSameThreadIdAsSelected = isCoreActivity && timer.m_TID == GCapture->m_SelectedThreadId;
             bool isInactive = ( !isContextSwitch && timer.m_FunctionAddress && ( GCapture->m_VisibleFunctionsMap[timer.m_FunctionAddress] == nullptr ) ) ||
                               ( GCapture->m_SelectedThreadId != 0 && isCoreActivity && !isSameThreadIdAsSelected );

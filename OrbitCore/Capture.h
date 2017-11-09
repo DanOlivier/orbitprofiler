@@ -76,7 +76,6 @@ public:
     bool         m_HasSamples = false;
     bool         m_HasContextSwitches = false;
 
-    //ULONG64      m_MainFrameFunction = 0;
     ULONG64      m_NumContextSwitches = 0;
     ULONG64      m_NumProfileEvents = 0;
 

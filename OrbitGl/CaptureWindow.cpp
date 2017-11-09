@@ -10,6 +10,7 @@
 #include "TcpServer.h"
 #include "ServerTimerManager.h"
 #include "PrintVar.h"
+#include "SamplingProfiler.h"
 
 using namespace std;
 

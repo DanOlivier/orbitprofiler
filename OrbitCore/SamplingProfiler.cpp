@@ -3,7 +3,6 @@
 //-----------------------------------
 
 #include "SamplingProfiler.h"
-#include "Injection.h"
 #include "Capture.h"
 #include "Log.h"
 #include "Params.h"

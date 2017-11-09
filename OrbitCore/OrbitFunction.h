@@ -3,7 +3,6 @@
 //-----------------------------------
 #pragma once
 
-#include "OrbitDbgHelp.h"
 #include <llvm/DebugInfo/CodeView/CodeView.h>
 #include <llvm/DebugInfo/CodeView/SymbolRecord.h>
 #include "BaseTypes.h"
@@ -57,21 +56,37 @@ public:
     ~Function();
 
     void Print();
-    void SetAsMainFrameFunction();
-    void AddParameter( const FunctionParam & a_Param ){ m_Params.push_back( a_Param ); }
+    void AddParameter( const FunctionParam & a_Param ){ 
+        m_Params.push_back( a_Param ); 
+    }
     const std::wstring & PrettyName();
-    inline const std::string & PrettyNameStr() { if( m_PrettyNameStr.size() == 0 ) m_PrettyNameStr = ws2s( m_PrettyName ); return m_PrettyNameStr; }
-    inline const std::wstring & Lower() { if( m_PrettyNameLower.size() == 0 ) m_PrettyNameLower = ToLower( m_PrettyName ); return m_PrettyNameLower; }
+    inline const std::string & PrettyNameStr() { 
+        if( m_PrettyNameStr.size() == 0 ) 
+            m_PrettyNameStr = ws2s( m_PrettyName ); 
+        return m_PrettyNameStr; 
+    }
+    inline const std::wstring & Lower() { 
+        if( m_PrettyNameLower.size() == 0 ) 
+            m_PrettyNameLower = ToLower( m_PrettyName ); 
+        return m_PrettyNameLower; 
+    }
     static const wchar_t* GetCallingConventionString( int a_CallConv );
     void ProcessArgumentInfo();
     bool IsMemberFunction();
-    unsigned long long Hash() { if( m_NameHash == 0 ) { m_NameHash = StringHash( m_PrettyName ); } return m_NameHash; }
-    bool Hookable();
-    void Select(){ if( Hookable() ) m_Selected = true; }
+    unsigned long long Hash() { 
+        if( m_NameHash == 0 ) { 
+            m_NameHash = StringHash( m_PrettyName ); 
+        } 
+        return m_NameHash; 
+    }
     void PreHook();
+    bool Hookable();
+
+    void Select(){ if( Hookable() ) m_Selected = true; }
     void UnSelect(){ m_Selected = false; }
     void ToggleSelect() { /*if( Hookable() )*/ m_Selected = !m_Selected; }
     bool IsSelected() const { return m_Selected; }
+
     DWORD64 GetVirtualAddress() const;
     bool IsOrbitFunc() { return m_OrbitType != OrbitType::NONE; }
     bool IsOrbitZone() { return m_OrbitType == ORBIT_TIMER_START || m_OrbitType == ORBIT_TIMER_STOP; }
