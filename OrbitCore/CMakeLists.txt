@@ -34,7 +34,6 @@ set(HEADERS
     Capture.h
     ContextSwitch.h
     CoreApp.h
-    cvconst.h
     DiaManager.h
     DiaParser.h
     Diff.h
