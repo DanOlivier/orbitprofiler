@@ -1,5 +1,14 @@
 cmake_minimum_required(VERSION 3.6)
 
+# Note: (Windows + vcpkg) to build and use x64:
+# a) set VCPKG_DEFAULT_TRIPLET=x64-windows, then install all required dependencies
+# b) invoke cmake for 64 bit platform, as follows:
+#    cmake -DCMAKE_GENERATOR_PLATFORM=x64 ..
+# or, i.e.: 
+#    cmake -G "Visual Studio 15 2017 Win64" ..
+# This assumes CMAKE_TOOLCHAIN_FILE is correctly set, in accordance with
+# https://github.com/Microsoft/vcpkg/blob/master/docs/examples/using-sqlite.md#cmake
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
 set(NAME orbitProfiler)
