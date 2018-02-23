@@ -100,9 +100,9 @@ target_include_directories(OrbitGl
 PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
 PRIVATE
-    ${FREETYPE_GL_INCLUDE_DIR}
-    ${CAPSTONE_INCLUDE_DIR}
-    ${FREEGLUT_INCLUDE_DIR}
+    ${FREETYPE_GL_INCLUDE_DIRS}
+    ${CAPSTONE_INCLUDE_DIRS}
+    ${FREEGLUT_INCLUDE_DIRS}
 )
 
 target_link_libraries(OrbitGl
@@ -113,6 +113,6 @@ target_link_libraries(OrbitGl
     ${FREETYPE_LIBRARIES}
     ${IMGUI_LIB}
     ${GLEW_LIBRARIES}
-    ${FREETYPE_GL_LIB}
+    ${FREETYPE_GL_LIBRARIES}
     ${CAPSTONE_LIBRARIES}
 )

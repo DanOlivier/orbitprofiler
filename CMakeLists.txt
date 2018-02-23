@@ -16,7 +16,7 @@ project(${NAME})
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-#include(FindPkgConfig)
+include(FindPkgConfig)
 
 function(PrintVars var)
 if(DEFINED ${var}_FOUND)
@@ -65,51 +65,56 @@ include(CheckStructHasMember)
 
 get_filename_component(EXTERN_ROOT ${CMAKE_SOURCE_DIR}/external REALPATH)
 
-find_package(breakpad REQUIRED)
+#find_package(breakpad REQUIRED)
+pkg_check_modules(BREAKPAD breakpad REQUIRED)
 PrintVars(BREAKPAD)
 
-#pkg_check_modules(FREETYPE freetype2 REQUIRED)
-find_package(freetype REQUIRED)
+pkg_check_modules(FREETYPE freetype2 REQUIRED)
+#find_package(freetype REQUIRED)
 PrintVars(FREETYPE)
 
+#pkg_check_modules(FREEGLUT freeglut REQUIRED)
 #find_package(freeglut REQUIRED)
-find_path(FREEGLUT_INCLUDE_DIR GL/freeglut.h)
-find_library(FREEGLUT_LIB freeglut.lib)
+find_path(FREEGLUT_INCLUDE_DIRS GL/freeglut.h)
+find_library(FREEGLUT_LIB libglut.a)
 PrintVars(FREEGLUT)
 
-#pkg_check_modules(GLEW glew REQUIRED)
-find_package(glew REQUIRED)
+pkg_check_modules(GLEW glew REQUIRED)
+#find_package(glew REQUIRED)
 PrintVars(GLEW)
 
-find_path(FREETYPE_GL_INCLUDE_DIR freetype-gl.h PATH_SUFFIXES freetype-gl)
-find_library(FREETYPE_GL_LIB freetype-gl.lib)
+pkg_check_modules(FREETYPE_GL freetype2 REQUIRED)
+#find_path(FREETYPE_GL_INCLUDE_DIRS freetype-gl.h PATH_SUFFIXES freetype-gl)
+#find_library(FREETYPE_GL_LIBRARIES freetype-gl.lib)
 PrintVars(FREETYPE_GL)
 
 #find_package(imgui REQUIRED)
-find_path(IMGUI_INCLUDE_DIR imgui.h) 
-find_library(IMGUI_LIB imgui.lib)
+find_path(IMGUI_INCLUDE_DIRS imgui.h) 
+find_library(IMGUI_LIB libimgui.a)
 PrintVars(IMGUI)
 
 #pkg_check_modules(ASIO asio REQUIRED)
 #find_package(asio)
-find_path(ASIO_INCLUDE_DIR asio.hpp) 
+find_path(ASIO_INCLUDE_DIRS asio.hpp) 
 PrintVars(ASIO)
 
 #add_definitions(-DASIO_HAS_STD_CHRONO)
 add_definitions(-DASIO_DISABLE_BOOST_DATE_TIME)
-include_directories(${ASIO_INCLUDE_DIR})
+include_directories(${ASIO_INCLUDE_DIRS})
 
-#pkg_check_modules(CURL libcurl REQUIRED)
-find_package(curl REQUIRED)
+pkg_check_modules(CURL libcurl REQUIRED)
+#find_package(curl REQUIRED)
 PrintVars(CURL)
 
+# Just install libcereal-dev, no .pc file
 #pkg_check_modules(CEREAL cereal REQUIRED)
-find_package(cereal REQUIRED)
-PrintVars(CEREAL)
+#find_package(cereal REQUIRED)
+#PrintVars(CEREAL)
 
 #find_package(capstone REQUIRED)
-find_path(CAPSTONE_INCLUDE_DIR capstone.h PATH_SUFFIXES capstone)
-find_library(CAPSTONE_LIBRARIES capstone.lib)
+#find_path(CAPSTONE_INCLUDE_DIRS capstone.h PATH_SUFFIXES capstone)
+#find_library(CAPSTONE_LIBRARIES capstone.lib)
+pkg_check_modules(CAPSTONE capstone REQUIRED)
 PrintVars(CAPSTONE)
 
 #string(REGEX REPLACE "/bin/[^/]*$" "" VCINSTALLDIR "${CMAKE_C_COMPILER}")
